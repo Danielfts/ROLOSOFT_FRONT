@@ -69,7 +69,7 @@ const App: React.FC = () => (
             name="address"
             rules={[{ required: true, message: 'Por favor ingresa tu domicilio' }]}
         >
-            <Input />
+            <Input placeholder="Calle, Numero, Colonia, Municipio, Código Postal" />
         </Form.Item>
 
         <Form.Item
