@@ -77,8 +77,8 @@ const App: React.FC = () => (
             name="curp"
             rules={[
                 { required: true, message: 'Por favor ingresa tu CURP' },
-                { len: 18, message: 'El CURP debe tener 18 caracteres' } // Custom validation rule for length
-            ]}
+                { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingresa un CURP válido' }
+              ]}
         >
             <Input />
         </Form.Item>
@@ -196,7 +196,6 @@ const prefixSelector = (
     <Form.Item name="prefix" noStyle>
         <Select style={{ width: 70 }}>
             <Option value="52">+52</Option>
-            <Option value="1">+1</Option>
         </Select>
     </Form.Item>
 );
