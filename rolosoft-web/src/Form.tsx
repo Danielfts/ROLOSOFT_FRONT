@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, DatePicker, Form, Input, InputNumber, Select, Upload } from 'antd';
+import { Button, Cascader, DatePicker, Form, Input, InputNumber, Select, Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
@@ -19,9 +19,17 @@ const formItemLayout = {
 const App: React.FC = () => (
   <Form {...formItemLayout} variant="filled" style={{ maxWidth: 600 }}>
     <Form.Item
-      label="Nombre Completo"
-      name="fullName"
-      rules={[{ required: true, message: 'Por favor ingresa tu nombre completo' }]}
+      label="Nombre(s)"
+      name="firstName"
+      rules={[{ required: true, message: 'Por favor ingresa tu(s) nombre(s)' }]}
+    >
+      <Input />
+    </Form.Item>
+
+    <Form.Item
+      label="Apellido(s)"
+      name="lastName"
+      rules={[{ required: true, message: 'Por favor ingresa tu(s) apellido(s)' }]}
     >
       <Input />
     </Form.Item>
@@ -83,9 +91,12 @@ const App: React.FC = () => (
     <Form.Item
       label="Teléfono de contacto"
       name="phone"
-      rules={[{ required: true, message: 'Por favor ingresa tu teléfono de contacto' }]}
+      rules={[
+        { required: true, message: 'Por favor ingresa tu teléfono de contacto' },
+        { pattern: /^\+\d{2,3}\s\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },
+      ]}
     >
-      <Input />
+      <Input addonBefore={prefixSelector} style={{ width: '100%' }} />
     </Form.Item>
 
     <Form.Item
@@ -123,16 +134,44 @@ const App: React.FC = () => (
     </Form.Item>
 
     <Form.Item
-      label="Documentación física"
-      name="physicalDocumentation"
+      label="Carta deslinde de responsabilidades"
+      name="liabilityLetter"
       rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
     >
-      <Dragger name="physicalDocumentation" multiple={true}>
+      <Dragger name="liabilityLetter" multiple={true}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
         </p>
         <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
-        <p className="ant-upload-hint">Carta deslinde de responsabilidades, CURP del participante, INE del padre, madre o tutor</p>
+        <p className="ant-upload-hint">Carta deslinde de responsabilidades</p>
+      </Dragger>
+    </Form.Item>
+
+    <Form.Item
+      label="CURP del participante"
+      name="curpLetter"
+      rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
+    >
+      <Dragger name="curpLetter" multiple={true}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
+        <p className="ant-upload-hint">CURP del participante</p>
+      </Dragger>
+    </Form.Item>
+
+    <Form.Item
+      label="INE del padre, madre o tutor"
+      name="ineParent"
+      rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
+    >
+      <Dragger name="ineParent" multiple={true}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
+        <p className="ant-upload-hint">INE del padre, madre o tutor</p>
       </Dragger>
     </Form.Item>
 
@@ -142,6 +181,15 @@ const App: React.FC = () => (
       </Button>
     </Form.Item>
   </Form>
+);
+
+const prefixSelector = (
+  <Form.Item name="prefix" noStyle>
+    <Select style={{ width: 70 }}>
+      <Option value="52">+52</Option>
+      <Option value="1">+1</Option>
+    </Select>
+  </Form.Item>
 );
 
 const normFile = (e: { fileList: any }) => {
