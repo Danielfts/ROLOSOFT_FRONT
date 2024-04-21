@@ -8,7 +8,7 @@ const { Option } = Select;
 const formItemLayout = {
     labelCol: {
         xs: { span: 24 },
-        sm: { span: 6 },
+        sm: { span: 10 },
     },
     wrapperCol: {
         xs: { span: 24 },
@@ -78,7 +78,7 @@ const App: React.FC = () => (
             rules={[
                 { required: true, message: 'Por favor ingresa tu CURP' },
                 { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingresa un CURP válido' }
-              ]}
+            ]}
         >
             <Input />
         </Form.Item>
@@ -120,7 +120,7 @@ const App: React.FC = () => (
             name="imssNumber"
             rules={[
                 { required: true, message: 'Por favor ingresa tu número de afiliación del IMSS' },
-                { type: 'string', len: 11, message: 'El número de afiliación IMSS debe tener 11 dígitos' },
+                { pattern: /^(\d{2})(\d{2})(\d{2})\d{5}$/, message: 'Por favor ingresa un numero de afiliacion valido' },
             ]}
         >
             <Input />
@@ -133,7 +133,7 @@ const App: React.FC = () => (
             getValueFromEvent={normFile}
             rules={[{ required: true, message: 'Por favor sube la fotografía personalizada' }]}
         >
-            <Dragger name="photo" multiple={false} accept="image/*" maxCount={1}>
+            <Dragger name="photo" accept="image/*" maxCount={1}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
@@ -147,21 +147,22 @@ const App: React.FC = () => (
             name="liabilityLetter"
             rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
         >
-            <Dragger name="liabilityLetter" multiple={true}>
+            <Dragger name="liabilityLetter" maxCount={1}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
-                <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
+                <p className="ant-upload-text">Haz clic o arrastra el archivo aquí para subirlo</p>
                 <p className="ant-upload-hint">Carta deslinde de responsabilidades</p>
             </Dragger>
         </Form.Item>
+
 
         <Form.Item
             label="CURP del participante"
             name="curpLetter"
             rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
         >
-            <Dragger name="curpLetter" multiple={true}>
+            <Dragger name="curpLetter" maxCount={1}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
@@ -175,7 +176,7 @@ const App: React.FC = () => (
             name="ineParent"
             rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
         >
-            <Dragger name="ineParent" multiple={true}>
+            <Dragger name="ineParent" maxCount={1}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
