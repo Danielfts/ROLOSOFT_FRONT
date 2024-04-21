@@ -73,12 +73,16 @@ const App: React.FC = () => (
     </Form.Item>
 
     <Form.Item
-      label="CURP"
-      name="curp"
-      rules={[{ required: true, message: 'Por favor ingresa tu CURP' }]}
-    >
-      <Input />
-    </Form.Item>
+  label="CURP"
+  name="curp"
+  rules={[
+    { required: true, message: 'Por favor ingresa tu CURP' },
+    { len: 18, message: 'El CURP debe tener 18 caracteres' } // Custom validation rule for length
+  ]}
+>
+  <Input />
+</Form.Item>
+
 
     <Form.Item
       label="Nombre del padre, madre o tutor"
@@ -121,16 +125,20 @@ const App: React.FC = () => (
       <Input />
     </Form.Item>
 
-    <Form.Item label="Añadir una fotografía personalizada">
-      <Form.Item name="photo" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
-        <Upload.Dragger name="photo" multiple={false} accept="image/*">
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">Haz clic o arrastra una imagen aquí para subirla</p>
-          <p className="ant-upload-hint">Imagen no mayor a 1MB</p>
-        </Upload.Dragger>
-      </Form.Item>
+    <Form.Item
+      label="Añadir una fotografía personalizada"
+      name="photo"
+      valuePropName="fileList"
+      getValueFromEvent={normFile}
+      rules={[{ required: true, message: 'Por favor sube la fotografía personalizada' }]}
+    >
+      <Dragger name="photo" multiple={false} accept="image/*" maxCount={1}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Haz clic o arrastra una imagen aquí para subirla</p>
+        <p className="ant-upload-hint">Imagen no mayor a 1MB</p>
+      </Dragger>
     </Form.Item>
 
     <Form.Item
