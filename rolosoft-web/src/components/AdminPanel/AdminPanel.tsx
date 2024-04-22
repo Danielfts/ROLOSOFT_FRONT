@@ -63,14 +63,14 @@ const App: React.FC = () => {
             },
             {
               key: '4',
-              icon: <TrophyOutlined />,
-              label: 'Tabla General',
+              icon: <UploadOutlined />,
+              label: 'Tabla Goleo',
               onClick: () => setSelectedMenu('4'),
             },
             {
               key: '5',
-              icon: <UploadOutlined />,
-              label: 'Tabla Goleo',
+              icon: <TrophyOutlined />,
+              label: 'Tabla General',
               onClick: () => setSelectedMenu('5'),
             }
           ]}
