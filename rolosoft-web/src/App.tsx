@@ -1,107 +1,72 @@
 import React, { useState } from 'react';
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
-  UserAddOutlined,
-  CalendarOutlined
-} from '@ant-design/icons';
-import { Button, Layout, Menu, theme } from 'antd';
-import User from './View/User';
-import Match from './View/Match';
-import GeneralT from './View/GeneralT';
-import GoalT from './View/GoalT';
+import { Avatar, Button, Card, Layout, theme } from 'antd';
+import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
+import Login from './Login';
+import Admin from './Admin';
+import { useNavigate } from 'react-router-dom';
 
-const { Header, Sider, Content } = Layout;
+
+const { Header, Content } = Layout;
+const { Meta } = Card;
 
 const App: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1');
+  const navigate = useNavigate();
 
-  const handleMenuClick = (key: string) => {
-    setSelectedKey(key);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => {
+    // For demonstration purposes, assuming successful login
+    setIsLoggedIn(true);
   };
 
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
-  let contentView;
-  switch (selectedKey) {
-    case '1':
-      contentView = <User/>;
-      break;
-    case '2':
-      contentView = <Match />;
-      break;
-    case '3':
-      contentView = <GeneralT />;
-      break;
-    case '4':
-      contentView = <GoalT />;
-      break;
-    default:
-      contentView = <div>Invalid Selection</div>;
-  }
-
   return (
-    <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="demo-logo-vertical" />
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={['1']}
-          onSelect={({ key }) => handleMenuClick(key as string)}
-          items={[
-            {
-              key: '1',
-              icon: <UserAddOutlined />,
-              label: 'Registrar Usuario',
-            },
-            {
-              key: '2',
-              icon: <CalendarOutlined />,
-              label: 'Registrar Partido',
-            },
-            {
-              key: '3',
-              icon: <UploadOutlined />,
-              label: 'Tabla General',
-            },
-            {
-              key: '4',
-              icon: <UploadOutlined />,
-              label: 'Tabla Goleo',
-            },
-          ]}
-        />
-      </Sider>
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
-          />
-        </Header>
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: '100vh',
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          {contentView}
-        </Content>
-      </Layout>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Header style={{ padding: 0, background: theme.useToken().token.colorBgContainer }}>
+      </Header>
+      <Content style={{ margin: '24px 16px', padding: 24, background: theme.useToken().token.colorBgContainer }}>
+        {isLoggedIn ? (
+          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+            <Card
+              style={{ width: 300 }}
+              cover={<img alt="example" src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png" />}
+              actions={[
+                <SettingOutlined key="setting" />,
+                <EditOutlined key="edit" />,
+                <EllipsisOutlined key="ellipsis" />,
+              ]}
+              onClick={() => {
+                navigate('/Admin');
+              }}
+            >
+              <Meta
+                avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
+                title="Card 1"
+                description="This is the description for Card 1"
+              />
+            </Card>
+            <Card
+              style={{ width: 300 }}
+              cover={<img alt="example" src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png" />}
+              actions={[
+                <SettingOutlined key="setting" />,
+                <EditOutlined key="edit" />,
+                <EllipsisOutlined key="ellipsis" />,
+              ]}
+              onClick={() => {
+                navigate('/Admin');
+              }}
+            >
+              <Meta
+                avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
+                title="Card 2"
+                description="This is the description for Card 2"
+              />
+            </Card>
+          </div>
+        ) : (
+          <Login onLogin={handleLogin} />
+        )}
+      </Content>
     </Layout>
   );
 };
