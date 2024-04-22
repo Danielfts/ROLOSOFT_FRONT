@@ -1,11 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Card } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Card } from 'antd';
 
 const { Meta } = Card;
 
-// Sample data for players
 const players = [
   {
     id: '1',
@@ -22,23 +21,30 @@ const players = [
 const Users: React.FC = () => {
   const navigate = useNavigate();
 
+  const handleRegisterClick = () => {
+    navigate('/registeruser'); // Adjusted path as per your requirement
+  };
+
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
-      {players.map((player) => (
-        <Card
-          key={player.id}
-          style={{ width: 300 }}
-          cover={<img alt={player.name} src={player.imgSrc} />}
-          actions={[
-            <EditOutlined key="edit" onClick={() => navigate('/Admin')} />,
-            <DeleteOutlined key="delete" />,
-          ]}
-        >
-          <Meta
-            title={player.name}
-          />
-        </Card>
-      ))}
+    <div>
+      <Button type="primary" onClick={handleRegisterClick} style={{ marginBottom: 20 }}>
+        Register New User
+      </Button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
+        {players.map((player) => (
+          <Card
+            key={player.id}
+            style={{ width: 300 }}
+            cover={<img alt={player.name} src={player.imgSrc} />}
+            actions={[
+              <EditOutlined key="edit" />,
+              <DeleteOutlined key="delete" />,
+            ]}
+          >
+            <Meta title={player.name} />
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
