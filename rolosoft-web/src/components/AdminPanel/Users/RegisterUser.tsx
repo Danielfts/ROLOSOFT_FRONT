@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button, Cascader, DatePicker, Form, Input, InputNumber, Select, Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
@@ -16,7 +17,7 @@ const formItemLayout = {
     },
 };
 
-const App: React.FC = () => (
+const RegisterUser: React.FC = () => (
     <Form {...formItemLayout} variant="filled" style={{ maxWidth: 600 }}>
         <Form.Item
             label="Nombre(s)"
@@ -208,4 +209,4 @@ const normFile = (e: { fileList: any }) => {
     return e && e.fileList;
 };
 
-export default App;
+export default RegisterUser;
