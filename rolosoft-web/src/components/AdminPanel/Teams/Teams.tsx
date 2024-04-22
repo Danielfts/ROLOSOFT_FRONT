@@ -9,12 +9,12 @@ const teams = [
   {
     id: '1',
     imgSrc: "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png",
-    name: "John Doe",
+    name: "Equipo 1",
   },
   {
     id: '2',
     imgSrc: "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png",
-    name: "Jane Smith",
+    name: "Equipo 2",
   },
 ];
 

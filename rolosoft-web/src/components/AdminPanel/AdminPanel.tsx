@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserAddOutlined, CalendarOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Layout, Menu } from 'antd';
-
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Button, Layout, Menu, theme } from 'antd';
 import Users from './Users/Users';
 import Teams from './Teams/Teams';
 import Matches from './Matches/Matches';
-import GoalTable from './GoalsTable/GoalsTable';
-import ScoreTable from './ScoreTable/ScoreTable';
+import GoalsTable from './GoalsTable/GoalsTable';
+import GeneralTable from './ScoreTable/ScoreTable';
+
 
 const { Header, Sider, Content } = Layout;
 
-const AdminPanel: React.FC = () => {
+const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState('1');
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
+
+  const renderContent = () => {
+    switch (selectedMenu) {
+      case '1':
+        return <Users />;
+      case '2':
+        return <Teams />;
+      case '3':
+        return <Matches />;
+      case '4':
+        return <GoalsTable />;
+      case '5':
+        return <GeneralTable />;
+      default:
+        return <div>Select a menu item</div>;
+    }
+  };
 
   return (
     <Layout>
@@ -21,38 +41,43 @@ const AdminPanel: React.FC = () => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['user']}
+          defaultSelectedKeys={['1']}
           items={[
             {
-              key: 'users',
-              icon: <UserAddOutlined />,
-              label: <Link to="/components/Users/Users">Registrar Usuario</Link>,
+              key: '1',
+              icon: <UserOutlined />,
+              label: 'Usuarios',
+              onClick: () => setSelectedMenu('1'),
             },
             {
-                key: 'teams',
-                icon: <UserAddOutlined />,
-                label: <Link to="/components/Teams/Teams">Registrar Equipo</Link>,
-              },
+              key: '2',
+              icon: <TeamOutlined />,
+              label: 'Equipos',
+              onClick: () => setSelectedMenu('2'),
+            },
             {
-              key: 'matches',
+              key: '3',
               icon: <CalendarOutlined />,
-              label: <Link to="/components/Match/Match">Registrar Partido</Link>,
+              label: 'Partidos',
+              onClick: () => setSelectedMenu('3'),
             },
             {
-              key: 'goals-table',
-              icon: <UploadOutlined />,
-              label: <Link to="/components/GoalsTable/GoalsTable">Tabla Goleo</Link>,
+              key: '4',
+              icon: <TrophyOutlined />,
+              label: 'Tabla General',
+              onClick: () => setSelectedMenu('4'),
             },
             {
-              key: 'score-table',
+              key: '5',
               icon: <UploadOutlined />,
-              label: <Link to="/components/ScoreTable/ScoreTable">Tabla General</Link>,
-            },
+              label: 'Tabla Goleo',
+              onClick: () => setSelectedMenu('5'),
+            }
           ]}
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: 'var(--color-bg-container)' }}>
+        <Header style={{ padding: 0, background: colorBgContainer }}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -69,21 +94,15 @@ const AdminPanel: React.FC = () => {
             margin: '24px 16px',
             padding: 24,
             minHeight: '100vh',
-            background: 'var(--color-bg-container)',
-            borderRadius: 'var(--border-radius-lg)',
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
           }}
         >
-          <Routes>
-            <Route path="/player" element={<Users />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/matches" element={<Matches />} />
-            <Route path="/score" element={<ScoreTable />} />
-            <Route path="/goal" element={<GoalTable />} />
-          </Routes>
+          {renderContent()}
         </Content>
       </Layout>
     </Layout>
   );
 };
 
-export default AdminPanel;
+export default App;
