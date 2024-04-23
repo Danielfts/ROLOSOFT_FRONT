@@ -9,7 +9,7 @@ type DataSourceType = {
   teamOne?: string;
   teamTwo?: string;
   matchDate?: number;
-  fieldNumber?: number; // Adding new property for field number
+  fieldNumber?: number;
 };
 
 const defaultData: DataSourceType[] = [
@@ -41,7 +41,7 @@ export default () => {
   ];
 
   const fieldOptions = [1, 2, 3, 4].map((field) => ({
-    label: `Field ${field}`,
+    label: `Cancha ${field}`,
     value: field,
   }));
 
@@ -74,7 +74,7 @@ export default () => {
       valueType: 'date',
     },
     {
-      title: 'Número de campo',
+      title: 'Cancha',
       dataIndex: 'fieldNumber',
       valueType: 'select',
       valueEnum: fieldOptions.reduce((acc: ValueEnum, cur) => {
@@ -120,7 +120,7 @@ export default () => {
             matchDate: new Date().getTime(),
             fieldNumber: 1, // Default field number
           }),
-          creatorButtonText: 'Añadir un partido',
+          creatorButtonText: 'Añadir partido',
         }}
         columns={columns}
         dataSource={dataSource}

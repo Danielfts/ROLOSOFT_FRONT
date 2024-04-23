@@ -18,18 +18,9 @@ const players = [
   },
 ];
 
-const Users: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleRegisterClick = () => {
-    navigate('/registeruser'); // Adjusted path as per your requirement
-  };
-
+const Players: React.FC = () => {
   return (
     <div>
-      <Button type="primary" onClick={handleRegisterClick} style={{ marginBottom: 20 }}>
-        Register New User
-      </Button>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
         {players.map((player) => (
           <Card
@@ -49,4 +40,4 @@ const Users: React.FC = () => {
   );
 };
 
-export default Users;
+export default Players;

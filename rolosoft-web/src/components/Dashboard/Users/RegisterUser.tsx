@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button, Cascader, DatePicker, Form, Input, InputNumber, Select, Upload } from 'antd';
+import { Button, DatePicker, Form, Input, Radio, Select, Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
@@ -19,6 +19,19 @@ const formItemLayout = {
 
 const RegisterUser: React.FC = () => (
     <Form {...formItemLayout} variant="filled" style={{ maxWidth: 600 }}>
+
+        <Form.Item
+            label="Tipo de usuario"
+            name = "userType"
+            rules={[{ required: true, message: 'Por favor ingresa el tipo de ususario' }]}
+        >
+            <Radio.Group>
+                <Radio value="player"> Jugador </Radio>
+                <Radio value="legaltutor"> Madre, Padre o Tutor </Radio>
+                <Radio value="admin"> Administrador </Radio>
+            </Radio.Group>
+        </Form.Item>
+
         <Form.Item
             label="Nombre(s)"
             name="firstName"
@@ -44,6 +57,36 @@ const RegisterUser: React.FC = () => (
         </Form.Item>
 
         <Form.Item
+            label="Genero"
+            name="gender"
+            rules={[{ required: true, message: 'Por favor ingresa el genero' }]}
+        >
+            <Radio.Group>
+                <Radio value="male"> Masculino </Radio>
+                <Radio value="female"> Femenino </Radio>
+            </Radio.Group>
+        </Form.Item>
+
+        <Form.Item
+            label="Domicilio"
+            name="address"
+            rules={[{ required: true, message: 'Por favor ingresa tu domicilio' }]}
+        >
+            <Input placeholder="Calle, Numero, Colonia, Municipio, Código Postal" />
+        </Form.Item>
+
+        <Form.Item
+            label="Teléfono de contacto"
+            name="phone"
+            rules={[
+                { required: true, message: 'Por favor ingresa tu teléfono de contacto' },
+                { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },
+            ]}
+        >
+            <Input addonBefore={prefixSelector} style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item
             label="Escuela"
             name="school"
             rules={[{ required: true, message: 'Por favor selecciona tu escuela' }]}
@@ -66,14 +109,6 @@ const RegisterUser: React.FC = () => (
         </Form.Item>
 
         <Form.Item
-            label="Domicilio"
-            name="address"
-            rules={[{ required: true, message: 'Por favor ingresa tu domicilio' }]}
-        >
-            <Input placeholder="Calle, Numero, Colonia, Municipio, Código Postal" />
-        </Form.Item>
-
-        <Form.Item
             label="CURP"
             name="curp"
             rules={[
@@ -84,34 +119,10 @@ const RegisterUser: React.FC = () => (
             <Input />
         </Form.Item>
 
-
         <Form.Item
-            label="Nombre del padre, madre o tutor"
+            label="CURP del padre, madre o tutor (se encuentra en el INE)"
             name="parentName"
-            rules={[{ required: true, message: 'Por favor ingresa el nombre del padre, madre o tutor' }]}
-        >
-            <Input />
-        </Form.Item>
-
-        <Form.Item
-            label="Teléfono de contacto"
-            name="phone"
-            rules={[
-                { required: true, message: 'Por favor ingresa tu teléfono de contacto' },
-                { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },
-            ]}
-        >
-            <Input addonBefore={prefixSelector} style={{ width: '100%' }} />
-        </Form.Item>
-
-
-        <Form.Item
-            label="Correo electrónico"
-            name="email"
-            rules={[
-                { required: true, message: 'Por favor ingresa tu correo electrónico' },
-                { type: 'email', message: 'Por favor ingresa un correo electrónico válido' },
-            ]}
+            rules={[{ required: true, message: 'Por favor ingresa el CURP del padre, madre o tutor' }]}
         >
             <Input />
         </Form.Item>
@@ -186,11 +197,35 @@ const RegisterUser: React.FC = () => (
             </Dragger>
         </Form.Item>
 
+        <Form.Item
+            label="Correo electrónico"
+            name="email"
+            rules={[
+                { required: true, message: 'Por favor ingresa tu correo electrónico' },
+                { type: 'email', message: 'Por favor ingresa un correo electrónico válido' },
+            ]}
+        >
+            <Input />
+        </Form.Item>
+
+        <Form.Item
+            label="Contrasenia"
+            name="email"
+            rules={[
+                { required: true, message: 'Por favor ingresa tu correo electrónico' },
+                { type: 'email', message: 'Por favor ingresa un correo electrónico válido' },
+            ]}
+        >
+            <Input />
+        </Form.Item>
+
+
         <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
             <Button type="primary" htmlType="submit">
                 Enviar
             </Button>
         </Form.Item>
+
     </Form>
 );
 

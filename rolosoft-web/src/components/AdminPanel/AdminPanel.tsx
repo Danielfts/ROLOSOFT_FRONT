@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
-import Users from './Users/Users';
+import Users from './Players/Players';
 import Teams from './Teams/Teams';
 import Matches from './Matches/Matches';
 import GoalsTable from './GoalsTable/GoalsTable';
@@ -10,7 +10,7 @@ import GeneralTable from './ScoreTable/ScoreTable';
 
 const { Header, Sider, Content } = Layout;
 
-const App: React.FC = () => {
+const AdminPanel: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('1');
   const {
@@ -46,7 +46,7 @@ const App: React.FC = () => {
             {
               key: '1',
               icon: <UserOutlined />,
-              label: 'Usuarios',
+              label: 'Jugadores',
               onClick: () => setSelectedMenu('1'),
             },
             {
@@ -63,14 +63,14 @@ const App: React.FC = () => {
             },
             {
               key: '4',
-              icon: <TrophyOutlined />,
-              label: 'Tabla General',
+              icon: <UploadOutlined />,
+              label: 'Tabla Goleo',
               onClick: () => setSelectedMenu('4'),
             },
             {
               key: '5',
-              icon: <UploadOutlined />,
-              label: 'Tabla Goleo',
+              icon: <TrophyOutlined />,
+              label: 'Tabla General',
               onClick: () => setSelectedMenu('5'),
             }
           ]}
@@ -105,4 +105,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default AdminPanel;

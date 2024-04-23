@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import { Button, Checkbox, Form, Input, Layout, message } from 'antd';
 import axios from 'axios';
+
+const { Content } = Layout;
+
+const layoutStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100vh',
+  backgroundColor: '#f0f2f5',
+  padding: '20vh',
+};
+
+
+const formStyle: React.CSSProperties = {
+  padding: '20px',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  backgroundColor: '#fff',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '300px',  // Keeps the form reasonably narrow
+};
+
 
 interface LoginFormFields {
   username: string;
@@ -11,13 +34,12 @@ interface LoginFormFields {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [simulateSuccess, setSimulateSuccess] = useState(false);  // Temporary simulation state
+  const [simulateSuccess, setSimulateSuccess] = useState<boolean>(false);
 
   const onFinish = async (values: LoginFormFields) => {
     if (simulateSuccess) {
-      // Simulate successful login without calling the backend
       message.success('Simulated Login Successful');
-      navigate('/dashboard');  // Correct navigation path after successful login
+      navigate('/dashboard');
       return;
     }
 
@@ -29,11 +51,11 @@ const Login: React.FC = () => {
 
       if (response.status === 200) {
         message.success('Login Successful');
-        navigate('/dashboard');  // Correct navigation path after successful login
+        navigate('/dashboard');
       } else {
         message.error('Login Failed: ' + response.data.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login Error:', error);
       message.error('Login failed. Check console for more details.');
     }
@@ -45,53 +67,49 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Form
-      name="basic"
-      labelCol={{ span: 8 }}
-      wrapperCol={{ span: 16 }}
-      style={{ maxWidth: 600 }}
-      initialValues={{ remember: true }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-    >
-      <Form.Item
-        label="Username"
-        name="username"
-        rules={[{ required: true, message: 'Please input your username!' }]}
-      >
-        <Input />
-      </Form.Item>
-
-      <Form.Item
-        label="Password"
-        name="password"
-        rules={[{ required: true, message: 'Please input your password!' }]}
-      >
-        <Input.Password />
-      </Form.Item>
-
-      <Form.Item
-        name="remember"
-        valuePropName="checked"
-        wrapperCol={{ offset: 8, span: 16 }}
-      >
-        <Checkbox>Remember me</Checkbox>
-      </Form.Item>
-
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
-
-      {/* Toggle switch for simulation */}
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Checkbox checked={simulateSuccess} onChange={e => setSimulateSuccess(e.target.checked)}>
-          Simulate Success
-        </Checkbox>
-      </Form.Item>
-    </Form>
+    <Layout style={layoutStyle}>
+      <Content>
+        <Form
+          name="basic"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          style={formStyle}
+        >
+          <Form.Item
+            label="Username"
+            name="username"
+            rules={[{ required: true, message: 'Please input your username!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[{ required: true, message: 'Please input your password!' }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            name="remember"
+            valuePropName="checked"
+          >
+            <Checkbox>Remember me</Checkbox>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Submit
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Checkbox checked={simulateSuccess} onChange={e => setSimulateSuccess(e.target.checked)}>
+              Simulate Success
+            </Checkbox>
+          </Form.Item>
+        </Form>
+      </Content>
+    </Layout>
   );
 };
 
