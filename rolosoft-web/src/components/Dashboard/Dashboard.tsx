@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
             {
               key: '2',
               icon: <TrophyOutlined />,
-              label: 'Tabla General',
+              label: 'Copas',
               onClick: () => setSelectedMenu('2'),
             },
           ]}
