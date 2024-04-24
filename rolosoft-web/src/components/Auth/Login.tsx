@@ -14,7 +14,6 @@ const layoutStyle: React.CSSProperties = {
   padding: '20vh',
 };
 
-
 const formStyle: React.CSSProperties = {
   padding: '20px',
   border: '1px solid #ccc',
@@ -22,30 +21,22 @@ const formStyle: React.CSSProperties = {
   backgroundColor: '#fff',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   width: '100%',
-  maxWidth: '300px',  // Keeps the form reasonably narrow
+  maxWidth: '300px',
 };
 
-
 interface LoginFormFields {
-  username: string;
+  email: string;
   password: string;
   remember: boolean;
 }
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [simulateSuccess, setSimulateSuccess] = useState<boolean>(false);
 
   const onFinish = async (values: LoginFormFields) => {
-    if (simulateSuccess) {
-      message.success('Simulated Login Successful');
-      navigate('/dashboard');
-      return;
-    }
-
     try {
-      const response = await axios.post('/api/login', {
-        username: values.username,
+      const response = await axios.post(process.env.REACT_APP_API_URL!, {
+        email: values.email,
         password: values.password,
       });
 
@@ -53,11 +44,27 @@ const Login: React.FC = () => {
         message.success('Login Successful');
         navigate('/dashboard');
       } else {
+        // This block may not be needed if you're catching errors properly below
         message.error('Login Failed: ' + response.data.message);
       }
     } catch (error: any) {
       console.error('Login Error:', error);
-      message.error('Login failed. Check console for more details.');
+      if (error.response) {
+        const { status } = error.response;
+        switch (status) {
+          case 401:
+            message.error('Unauthorized: Incorrect password.');
+            break;
+          case 404:
+            message.error('Not Found: Email does not exist.');
+            break;
+          default:
+            message.error('Login failed. ' + (error.response.data?.message || 'Check console for more details.'));
+            break;
+        }
+      } else {
+        message.error('Login failed. Network error or no response from server.');
+      }
     }
   };
 
@@ -78,9 +85,9 @@ const Login: React.FC = () => {
           style={formStyle}
         >
           <Form.Item
-            label="Username"
-            name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
+            label="Email"
+            name="email"
+            rules={[{ required: true, message: 'Please input your email!' }]}
           >
             <Input />
           </Form.Item>
@@ -101,11 +108,6 @@ const Login: React.FC = () => {
             <Button type="primary" htmlType="submit" block>
               Submit
             </Button>
-          </Form.Item>
-          <Form.Item>
-            <Checkbox checked={simulateSuccess} onChange={e => setSimulateSuccess(e.target.checked)}>
-              Simulate Success
-            </Checkbox>
           </Form.Item>
         </Form>
       </Content>
