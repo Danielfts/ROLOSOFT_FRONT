@@ -22,7 +22,7 @@ const Users: React.FC = () => {
   const navigate = useNavigate();
 
   const handleRegisterClick = () => {
-    navigate('/registeruser');
+    navigate('/registerUser');
   };
 
   return (

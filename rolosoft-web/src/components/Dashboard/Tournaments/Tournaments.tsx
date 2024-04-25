@@ -1,37 +1,92 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined} from '@ant-design/icons';
-import { Card } from 'antd';
+import type { ProColumns } from '@ant-design/pro-components';
+import { ConfigProvider } from 'antd';
+import esES from 'antd/lib/locale/es_ES';
+import { EditableProTable } from '@ant-design/pro-components';
+import React, { useState } from 'react';
 
-const { Meta } = Card;
-
-const tournaments = [
-  { year: '2021', title: "2021 Tournament", description: "Details of the 2021 tournament." },
-  { year: '2022', title: "2022 Tournament", description: "Details of the 2022 tournament." },
-];
-
-const Tournaments: React.FC = () => {
-  const navigate = useNavigate();
-
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
-      {tournaments.map((tournament) => (
-        <Card
-          key={tournament.year}
-          style={{ width: 300 }}
-          actions={[
-            <EditOutlined key="edit" onClick={() => navigate('/AdminPanel')} />,
-            <DeleteOutlined key="delete" />,
-          ]}
-        >
-          <Meta
-            title={tournament.title}
-            description={tournament.description}
-          />
-        </Card>
-      ))}
-    </div>
-  );
+type DataSourceType = {
+  id: React.Key;
+  name: string;
+  beginDate: number;
+  endDate: number;
 };
 
-export default Tournaments;
+const defaultData: DataSourceType[] = [
+  {
+    id: 624748504,
+    name: 'Evento 1',
+    beginDate: 1590486176000,
+    endDate: 1593088176000,
+  },
+  {
+    id: 624691229,
+    name: 'Evento 2',
+    beginDate: 1590481162000,
+    endDate: 1593073162000,
+  },
+];
+
+export default () => {
+  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
+  const [dataSource, setDataSource] = useState<readonly DataSourceType[]>(defaultData);
+
+  const columns: ProColumns<DataSourceType>[] = [
+    {
+      title: 'Nombre',
+      dataIndex: 'name',
+      valueType: 'text',
+    },
+    {
+      title: 'Fecha de inicio',
+      dataIndex: 'beginDate',
+      valueType: 'date',
+    },
+    {
+      title: 'Fecha de fin',
+      dataIndex: 'endDate',
+      valueType: 'date',
+    },
+    {
+      title: 'Acciones',
+      valueType: 'option',
+      render: (text, record, _, action) => [
+        <a
+          key="editable"
+          onClick={() => {
+            action?.startEditable?.(record.id);
+          }}
+        >
+          Editar
+        </a>,
+      ],
+    },
+  ];
+
+  return (
+    <ConfigProvider locale={esES}>
+      <EditableProTable<DataSourceType>
+        rowKey="id"
+        recordCreatorProps={{
+          position: 'top',
+          record: () => ({
+            id: (Math.random() * 1000000).toFixed(0),
+            name: '', 
+            beginDate: new Date().getTime(), 
+            endDate: new Date().getTime(), 
+          }),
+          creatorButtonText: 'Añadir nueva copa',
+        }}
+        columns={columns}
+        dataSource={dataSource}
+        editable={{
+          type: 'multiple',
+          editableKeys,
+          onSave: async (rowKey, data, row) => {
+            console.log(rowKey, data, row);
+          },
+          onChange: setEditableRowKeys,
+        }}
+      />
+    </ConfigProvider>
+  );
+};

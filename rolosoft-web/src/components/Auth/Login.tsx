@@ -36,41 +36,41 @@ const Login: React.FC = () => {
 
   const onFinish = async (values: LoginFormFields) => {
     try {
-      const response = await axios.post(process.env.REACT_APP_API_URL!, {
+      const response = await axios.post(process.env.LOGIN_API_URL!, {
         email: values.email,
         password: values.password,
       });
 
       if (response.status === 200) {
-        message.success('Login Successful');
+        message.success('Inicio de sesión exitoso');
         navigate('/dashboard');
       } else {
-        message.error('Login Failed: ' + response.data.message);
+        message.error('Inicio de sesión fallido: ' + response.data.message);
       }
     } catch (error: any) {
-      console.error('Login Error:', error);
+      console.error('Error de inico de sesión:', error);
       if (error.response) {
         const { status } = error.response;
         switch (status) {
           case 401:
-            message.error('Unauthorized: Incorrect password.');
+            message.error('Unauthorized: Contraseña incorrecta.');
             break;
           case 404:
-            message.error('Not Found: Email does not exist.');
+            message.error('Not Found: El email no existe.');
             break;
           default:
             message.error('Login failed. ' + (error.response.data?.message || 'Check console for more details.'));
             break;
         }
       } else {
-        message.error('Login failed. Network error or no response from server.');
+        message.error('Inicio de sesión fallido. Error de red o no hay respuesta del servidor.');
       }
     }
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
-    message.error('Please correct the errors in the form.');
+    message.error('Por favor corriga los errores en los campos.');
   };
 
   return (
@@ -87,26 +87,26 @@ const Login: React.FC = () => {
           <Form.Item
             label="Email"
             name="email"
-            rules={[{ required: true, message: 'Please input your email!' }]}
+            rules={[{ required: true, message: 'Ingrese su email' }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Password"
             name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
+            rules={[{ required: true, message: 'Ingrese su constraseña' }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
-            name="remember"
+            name="Recordar"
             valuePropName="checked"
           >
             <Checkbox>Remember me</Checkbox>
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              Submit
+              Inicia Sesión
             </Button>
           </Form.Item>
         </Form>
