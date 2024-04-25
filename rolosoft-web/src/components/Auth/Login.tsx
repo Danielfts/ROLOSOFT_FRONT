@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
-import './styles/Login.css';
 
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Form, Input, Layout, message } from 'antd';
 import axios from 'axios';
 
 const { Content } = Layout;
+
+const layoutStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100vh',
+  backgroundColor: '#f0f2f5',
+  padding: '20vh',
+};
+
+const formStyle: React.CSSProperties = {
+  padding: '20px',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  backgroundColor: '#fff',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '300px',
+};
 
 interface LoginFormFields {
   email: string;
@@ -27,7 +45,6 @@ const Login: React.FC = () => {
         message.success('Login Successful');
         navigate('/dashboard');
       } else {
-        // This block may not be needed if you're catching errors properly below
         message.error('Login Failed: ' + response.data.message);
       }
     } catch (error: any) {
@@ -57,7 +74,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Layout className="layoutStyle">
+    <Layout style={layoutStyle}>
       <Content>
         <Form
           name="basic"
@@ -65,7 +82,7 @@ const Login: React.FC = () => {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
-          className="formStyle"
+          style={formStyle}
         >
           <Form.Item
             label="Email"

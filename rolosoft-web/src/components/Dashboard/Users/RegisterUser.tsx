@@ -1,8 +1,8 @@
-import React from 'react';
-import { Button, DatePicker, Form, Input, Radio, Select, Upload } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Form, Input, Radio, Button, Select, DatePicker, message, RadioChangeEvent } from 'antd';
+import axios from 'axios';
+import moment from 'moment';
 
-const { Dragger } = Upload;
 const { Option } = Select;
 
 const formContainerStyle: React.CSSProperties = {
@@ -22,243 +22,195 @@ const formStyle: React.CSSProperties = {
     borderRadius: '8px',
     backgroundColor: '#fff',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    
 };
 
 const formItemLayout = {
-    labelCol: {
-        xs: { span: 24 },
-        sm: { span: 10 },
-    },
-    wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 14 },
-    },
+    labelCol: { span: 10 },
+    wrapperCol: { span: 14 },
 };
 
-const RegisterUser: React.FC = () => (
-    <div style={formContainerStyle}>
-        <Form {...formItemLayout} style={formStyle}>
-            <Form.Item
-                label="Tipo de usuario"
-                name="userType"
-                rules={[{ required: true, message: 'Por favor ingresa el tipo de ususario' }]}
-            >
-                <Radio.Group>
-                    <Radio value="player">Jugador</Radio>
-                    <Radio value="legaltutor">Madre, Padre o Tutor</Radio>
-                    <Radio value="admin">Administrador</Radio>
-                </Radio.Group>
-            </Form.Item>
+interface BaseUser {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    birthDate: string;
+    gender: string;
+    phone: string;
+    CURP: string;
+}
 
-            <Form.Item
-                label="Nombre(s)"
-                name="firstName"
-                rules={[{ required: true, message: 'Por favor ingresa tu(s) nombre(s)' }]}
-            >
-                <Input />
-            </Form.Item>
+interface AdminUser extends BaseUser {
+    role: "admin";
+}
 
-            <Form.Item
-                label="Apellido(s)"
-                name="lastName"
-                rules={[{ required: true, message: 'Por favor ingresa tu(s) apellido(s)' }]}
-            >
-                <Input />
-            </Form.Item>
+interface StudentDetails {
+    school: string;
+    fieldPosition: string;
+    shirtNumber: number;
+    team: string;
+    IMSS: string;
+}
 
-            <Form.Item
-                label="Fecha de nacimiento"
-                name="dateOfBirth"
-                rules={[{ required: true, message: 'Por favor selecciona tu fecha de nacimiento' }]}
-            >
-                <DatePicker />
-            </Form.Item>
+interface StudentUser extends BaseUser {
+    role: "student";
+    student: StudentDetails;
+}
 
-            <Form.Item
-                label="Genero"
-                name="gender"
-                rules={[{ required: true, message: 'Por favor ingresa el genero' }]}
-            >
-                <Radio.Group>
-                    <Radio value="male">Masculino</Radio>
-                    <Radio value="female">Femenino</Radio>
-                </Radio.Group>
-            </Form.Item>
+type UserFormValues = Omit<BaseUser, 'role' | 'birthDate'> & {
+    birthDate: moment.Moment;
+    userType: string;
+    school?: string;
+    fieldPosition?: string;
+    shirtNumber?: number;
+    team?: string;
+    IMSS?: string;
+};
 
-            <Form.Item
-                label="Domicilio"
-                name="address"
-                rules={[{ required: true, message: 'Por favor ingresa tu domicilio' }]}
-            >
-                <Input placeholder="Calle, Numero, Colonia, Municipio, Código Postal" />
-            </Form.Item>
+const RegisterUser: React.FC = () => {
+    const [form] = Form.useForm<UserFormValues>();
+    const [userType, setUserType] = useState<string>('');
 
-            <Form.Item
-                label="Teléfono de contacto"
-                name="phone"
-                rules={[
-                    { required: true, message: 'Por favor ingresa tu teléfono de contacto' },
-                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },
-                ]}
-            >
-                <Input addonBefore={prefixSelector} style={{ width: '100%' }} />
-            </Form.Item>
+    const handleUserTypeChange = (e: RadioChangeEvent) => {
+        setUserType(e.target.value);
+    };
 
-            <Form.Item
-                label="Escuela"
-                name="school"
-                rules={[{ required: true, message: 'Por favor selecciona tu escuela' }]}
-            >
-                <Select>
-                    <Option value="escuela1">Escuela 1</Option>
-                    <Option value="escuela2">Escuela 2</Option>
-                </Select>
-            </Form.Item>
+    const handleSubmit = async (values: UserFormValues) => {
+        const { birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
+        const formattedBirthDate = birthDate.format('YYYY-MM-DD');
 
-            <Form.Item
-                label="Grado"
-                name="grade"
-                rules={[{ required: true, message: 'Por favor selecciona tu grado' }]}
-            >
-                <Select>
-                    <Option value="grado1">Grado 1</Option>
-                    <Option value="grado2">Grado 2</Option>
-                </Select>
-            </Form.Item>
+        let payload: AdminUser | StudentUser;
 
-            <Form.Item
-                label="CURP"
-                name="curp"
-                rules={[
-                    { required: true, message: 'Por favor ingresa tu CURP' },
-                    { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingresa un CURP válido' }
-                ]}
-            >
-                <Input />
-            </Form.Item>
+        if (userType === 'player') {
+            const studentDetails: StudentDetails = {
+                school: school!,
+                fieldPosition: fieldPosition!,
+                shirtNumber: shirtNumber!,
+                team: team!,
+                IMSS: IMSS!,
+            };
 
-            <Form.Item
-                label="CURP del padre, madre o tutor (INE)"
-                name="parentName"
-                rules={[{ required: true, message: 'Por favor ingresa el CURP del padre, madre o tutor' }]}
-            >
-                <Input />
-            </Form.Item>
+            payload = {
+                ...rest,
+                birthDate: formattedBirthDate,
+                gender,
+                role: "student",
+                CURP: rest.CURP,
+                student: studentDetails,
+            } as StudentUser;
 
-            <Form.Item
-                label="No. afiliación IMSS"
-                name="imssNumber"
-                rules={[
-                    { required: true, message: 'Por favor ingresa tu número de afiliación del IMSS' },
-                    { pattern: /^(\d{2})(\d{2})(\d{2})\d{5}$/, message: 'Por favor ingresa un numero de afiliacion valido' },
-                ]}
-            >
-                <Input />
-            </Form.Item>
+        } else {
+            payload = {
+                ...rest,
+                birthDate: formattedBirthDate,
+                gender,
+                role: "admin",
+                CURP: rest.CURP,
+            } as AdminUser;
+        }
 
-            <Form.Item
-                label="Añadir una fotografía personalizada"
-                name="photo"
-                valuePropName="fileList"
-                getValueFromEvent={normFile}
-                rules={[{ required: true, message: 'Por favor sube la fotografía personalizada' }]}
-            >
-                <Dragger name="photo" accept="image/*" maxCount={1}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Haz clic o arrastra una imagen aquí para subirla</p>
-                    <p className="ant-upload-hint">Imagen no mayor a 1MB</p>
-                </Dragger>
-            </Form.Item>
+        try {
+            const endpoint = process.env.REACT_APP_CREATE_USER_API_URL;
+            const response = await axios.post(endpoint!, payload);
+            if (response.status === 201) {
+                message.success('El usuario fue registrado exitosamente!');
+                form.resetFields();
+            } else {
+                message.error('Registro fallido: ' + response.data.message);
+            }
+        } catch (error) {
+            message.error('Error de red o servidor');
+            console.error('Registro del error:', error);
+        }
+    };
 
-            <Form.Item
-                label="Carta deslinde de responsabilidades"
-                name="liabilityLetter"
-                rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
-            >
-                <Dragger name="liabilityLetter" maxCount={1}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Haz clic o arrastra el archivo aquí para subirlo</p>
-                    <p className="ant-upload-hint">Carta deslinde de responsabilidades</p>
-                </Dragger>
-            </Form.Item>
+    return (
+        <div style={formContainerStyle}>
+            <Form {...formItemLayout} form={form} onFinish={handleSubmit} style={formStyle} layout="horizontal">
+                <Form.Item name="userType" label="Tipo de usuario" rules={[{ required: true }]}>
+                    <Radio.Group onChange={handleUserTypeChange}>
+                        <Radio value="admin">Administrador</Radio>
+                        <Radio value="player">Jugador</Radio>
+                    </Radio.Group>
+                </Form.Item>
 
-            <Form.Item
-                label="CURP del participante"
-                name="curpLetter"
-                rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
-            >
-                <Dragger name="curpLetter" maxCount={1}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
-                    <p className="ant-upload-hint">CURP del participante</p>
-                </Dragger>
-            </Form.Item>
+                <Form.Item name="gender" label="Género" rules={[{ required: true }]}>
+                    <Radio.Group>
+                        <Radio value="masculine">Masculino</Radio>
+                        <Radio value="femenine">Feminino</Radio>
+                    </Radio.Group>
+                </Form.Item>
 
-            <Form.Item
-                label="INE del padre, madre o tutor"
-                name="ineParent"
-                rules={[{ required: true, message: 'Por favor sube la documentación física requerida' }]}
-            >
-                <Dragger name="ineParent" maxCount={1}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Haz clic o arrastra los archivos aquí para subirlos</p>
-                    <p className="ant-upload-hint">INE del padre, madre o tutor</p>
-                </Dragger>
-            </Form.Item>
+                {/* Common fields */}
+                <Form.Item name="firstName" label="Nombres" rules={[
+                    { required: true },
+                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingrese un teléfono válido' }
+                ]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="lastName" label="Apellidos" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="email" label="Email" rules={[
+                    { required: true, type: 'email' },
+                    { type: 'email', message: 'Por favor ingrese un email válido' }
+                ]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="password" label="Contraseña" rules={[{ required: true, min: 8 }]}>
+                    <Input.Password />
+                </Form.Item>
+                <Form.Item name="birthDate" label="Fecha de nacimiento" rules={[{ required: true }]}>
+                    <DatePicker />
+                </Form.Item>
+                <Form.Item name="phone" label="Teléfono" rules={[
+                    { required: true },
+                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="CURP" label="CURP" rules={[
+                    { required: true },
+                    { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }
+                ]}>
+                    <Input />
+                </Form.Item>
 
-            <Form.Item
-                label="Correo electrónico"
-                name="email"
-                rules={[
-                    { required: true, message: 'Por favor ingresa tu correo electrónico' },
-                    { type: 'email', message: 'Por favor ingresa un correo electrónico válido' },
-                ]}
-            >
-                <Input />
-            </Form.Item>
+                {userType === 'player' && (
+                    <>
 
-            <Form.Item
-                label="Contraseña"
-                name="password"
-                rules={[
-                    { required: true, message: 'Por favor ingresa tu contraseña' },
-                    { min: 8, message: 'La contraseña debe tener al menos 8 caracteres' },
-                ]}
-            >
-                <Input.Password />
-            </Form.Item>
+                        <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="parentCURP" label="CURP del padre, madre o tutor" rules={[
+                            { required: true },
+                            { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
+                            <Select>
+                                <Option value="colegioA">Colegio A</Option>
+                                <Option value="colegioB">Colegio B</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="shirtNumber" label="Número de playera" rules={[{ required: true }]}>
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
-                <Button type="primary" htmlType="submit">
-                    Enviar
-                </Button>
-            </Form.Item>
-        </Form>
-    </div>
-);
+                    </>
+                )}
 
-const prefixSelector = (
-    <Form.Item name="prefix" noStyle>
-        <Select style={{ width: 70 }}>
-            <Option value="52">+52</Option>
-        </Select>
-    </Form.Item>
-);
-
-const normFile = (e: { fileList: any }) => {
-    if (Array.isArray(e)) {
-        return e;
-    }
-    return e && e.fileList;
+                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
+                    <Button type="primary" htmlType="submit">Registrar</Button>
+                </Form.Item>
+            </Form>
+        </div>
+    );
 };
 
 export default RegisterUser;
