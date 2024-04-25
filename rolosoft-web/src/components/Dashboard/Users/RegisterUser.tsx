@@ -113,82 +113,100 @@ const RegisterUser: React.FC = () => {
             const endpoint = process.env.REACT_APP_CREATE_USER_API_URL;
             const response = await axios.post(endpoint!, payload);
             if (response.status === 201) {
-                message.success('User registered successfully!');
+                message.success('El usuario fue registrado exitosamente!');
                 form.resetFields();
             } else {
-                message.error('Registration failed: ' + response.data.message);
+                message.error('Registro fallido: ' + response.data.message);
             }
         } catch (error) {
-            message.error('Network or server error');
-            console.error('Registration error:', error);
+            message.error('Error de red o servidor');
+            console.error('Registro del error:', error);
         }
     };
 
     return (
         <div style={formContainerStyle}>
             <Form {...formItemLayout} form={form} onFinish={handleSubmit} style={formStyle} layout="horizontal">
-                <Form.Item name="userType" label="User Type" rules={[{ required: true }]}>
+                <Form.Item name="userType" label="Tipo de usuario" rules={[{ required: true }]}>
                     <Radio.Group onChange={handleUserTypeChange}>
-                        <Radio value="admin">Admin</Radio>
-                        <Radio value="player">Player</Radio>
+                        <Radio value="admin">Administrador</Radio>
+                        <Radio value="player">Jugador</Radio>
                     </Radio.Group>
                 </Form.Item>
 
-                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                <Form.Item name="gender" label="Género" rules={[{ required: true }]}>
                     <Radio.Group>
-                        <Radio value="MALE">Masculine</Radio>
-                        <Radio value="FEMALE">Feminine</Radio>
+                        <Radio value="masculine">Masculino</Radio>
+                        <Radio value="femenine">Feminino</Radio>
                     </Radio.Group>
                 </Form.Item>
 
                 {/* Common fields */}
-                <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
+                <Form.Item name="firstName" label="Nombres" rules={[
+                    { required: true },
+                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingrese un teléfono válido' }
+                ]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
+                <Form.Item name="lastName" label="Apellidos" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+                <Form.Item name="email" label="Email" rules={[
+                    { required: true, type: 'email' },
+                    { type: 'email', message: 'Por favor ingrese un email válido' }
+                ]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="password" label="Password" rules={[{ required: true, min: 8 }]}>
+                <Form.Item name="password" label="Contraseña" rules={[{ required: true, min: 8 }]}>
                     <Input.Password />
                 </Form.Item>
-                <Form.Item name="birthDate" label="Birth Date" rules={[{ required: true }]}>
+                <Form.Item name="birthDate" label="Fecha de nacimiento" rules={[{ required: true }]}>
                     <DatePicker />
                 </Form.Item>
-                <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                <Form.Item name="phone" label="Teléfono" rules={[
+                    { required: true },
+                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="CURP" label="CURP" rules={[{ required: true }]}>
+                <Form.Item name="CURP" label="CURP" rules={[
+                    { required: true },
+                    { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }
+                ]}>
                     <Input />
                 </Form.Item>
 
                 {userType === 'player' && (
                     <>
-                        <Form.Item name="school" label="School" rules={[{ required: true }]}>
+
+                        <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="parentCURP" label="CURP del padre, madre o tutor" rules={[
+                            { required: true },
+                            { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
                             <Select>
                                 <Option value="colegioA">Colegio A</Option>
                                 <Option value="colegioB">Colegio B</Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item name="fieldPosition" label="Field Position" rules={[{ required: true }]}>
+                        <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="shirtNumber" label="Shirt Number" rules={[{ required: true }]}>
+                        <Form.Item name="shirtNumber" label="Número de playera" rules={[{ required: true }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="team" label="Team" rules={[{ required: true }]}>
+                        <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="IMSS" label="IMSS Number" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
+
                     </>
                 )}
 
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
-                    <Button type="primary" htmlType="submit">Register</Button>
+                    <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>
             </Form>
         </div>
