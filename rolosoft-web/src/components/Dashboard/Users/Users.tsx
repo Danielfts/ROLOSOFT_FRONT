@@ -1,93 +1,154 @@
-import React, { useState } from 'react';
-import { EditableProTable, ProColumns } from '@ant-design/pro-components';
-import { Button, ConfigProvider } from 'antd';
-import esES from 'antd/lib/locale/es_ES';
-import { useNavigate } from 'react-router-dom';
+import { Button, Table, Modal, Input } from "antd";
+import { useState } from "react";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-type UserData = {
-  id: string;
+// Define a type for user data
+type User = {
+  id: number;
   name: string;
   email: string;
   userType: string;
 };
 
-const defaultUsers: UserData[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    userType: 'Administrator',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    userType: 'Member',
-  },
-];
+function Users() {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [dataSource, setDataSource] = useState<User[]>([
+    {
+      id: 1,
+      name: "John Doe",
+      email: "john.doe@example.com",
+      userType: "Admin",
+    },
+    {
+      id: 2,
+      name: "Jane Doe",
+      email: "jane.doe@example.com",
+      userType: "User",
+    },
+  ]);
 
-const UsersTable: React.FC = () => {
-  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>(defaultUsers.map(user => user.id));
-  const [dataSource, setDataSource] = useState<UserData[]>(defaultUsers);
-  const navigate = useNavigate();
-
-  const columns: ProColumns<UserData>[] = [
+  const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      valueType: 'text',
+      key: "1",
+      title: "ID",
+      dataIndex: "id",
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      valueType: 'text',
+      key: "2",
+      title: "Name",
+      dataIndex: "name",
     },
     {
-      title: 'User Type',
-      dataIndex: 'userType',
-      valueType: 'text',
+      key: "3",
+      title: "Email",
+      dataIndex: "email",
     },
     {
-      title: 'Actions',
-      valueType: 'option',
-      render: (text, record, index, action) => [
-        <a key="edit" onClick={() => action?.startEditable?.(record.id)}>Edit</a>
-      ],
+      key: "4",
+      title: "User Type",
+      dataIndex: "userType",
+    },
+    {
+      key: "5",
+      title: "Actions",
+      render: (record: User) => (
+        <>
+          <EditOutlined
+            onClick={() => {
+              onEditUser(record);
+            }}
+          />
+          <DeleteOutlined
+            onClick={() => {
+              onDeleteUser(record);
+            }}
+            style={{ color: "red", marginLeft: 12 }}
+          />
+        </>
+      ),
     },
   ];
 
-  const handleAddNewUser = () => {
-    navigate('/registerUser');
+  const onAddUser = () => {
+    const randomNumber = Math.floor(Math.random() * 1000);
+    const newUser: User = {
+      id: randomNumber,
+      name: "User " + randomNumber,
+      email: randomNumber + "@example.com",
+      userType: "User",
+    };
+    setDataSource((prev) => [...prev, newUser]);
   };
 
-  const onChangeDataSource = (newData: readonly UserData[]) => {
-    setDataSource(newData as UserData[]);
+  const onDeleteUser = (record: User) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this user?",
+      okText: "Yes",
+      okType: "danger",
+      onOk: () => {
+        setDataSource((prev) => prev.filter((user) => user.id !== record.id));
+      },
+    });
+  };
+
+  const onEditUser = (record: User) => {
+    setIsEditing(true);
+    setEditingUser({ ...record });
+  };
+
+  const resetEditing = () => {
+    setIsEditing(false);
+    setEditingUser(null);
   };
 
   return (
-    <ConfigProvider locale={esES}>
-      <Button type="primary" onClick={handleAddNewUser} style={{ marginBottom: 20 }}>
-        Registra Nuevo Usuario
-      </Button>
-      <EditableProTable<UserData>
-        rowKey="id"
-        headerTitle="Manage Users"
-        columns={columns}
-        value={dataSource}
-        onChange={onChangeDataSource}
-        editable={{
-          editableKeys,
-          onValuesChange: (record, recordList) => {
-            setDataSource(recordList);
-          },
-          onChange: setEditableRowKeys,
-        }}
-        pagination={{
-          pageSize: 5,
-        }}
-      />
-    </ConfigProvider>
+    <div className="App">
+      <header className="App-header">
+        <Button onClick={onAddUser}>Add New User</Button>
+        <Table columns={columns} dataSource={dataSource} />
+        <Modal
+          title="Edit User"
+          visible={isEditing}
+          okText="Save"
+          onCancel={resetEditing}
+          onOk={() => {
+            setDataSource((prev) =>
+              prev.map((user) =>
+                user.id === editingUser?.id ? editingUser : user
+              )
+            );
+            resetEditing();
+          }}
+        >
+          <Input
+            value={editingUser?.name}
+            onChange={(e) =>
+              setEditingUser((prev) =>
+                prev ? { ...prev, name: e.target.value } : null
+              )
+            }
+          />
+          <Input
+            value={editingUser?.email}
+            onChange={(e) =>
+              setEditingUser((prev) =>
+                prev ? { ...prev, email: e.target.value } : null
+              )
+            }
+          />
+          <Input
+            value={editingUser?.userType}
+            onChange={(e) =>
+              setEditingUser((prev) =>
+                prev ? { ...prev, userType: e.target.value } : null
+              )
+            }
+          />
+        </Modal>
+      </header>
+    </div>
   );
-};
+}
 
-export default UsersTable;
+export default Users;
