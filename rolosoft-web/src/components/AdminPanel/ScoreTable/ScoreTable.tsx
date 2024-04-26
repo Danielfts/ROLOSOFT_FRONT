@@ -4,7 +4,6 @@ import esES from 'antd/lib/locale/es_ES';
 import type { ProColumns } from '@ant-design/pro-components';
 import { EditableProTable } from '@ant-design/pro-components';
 
-// Define the data structure for each row in the table
 interface DataSourceType {
   id: React.Key;
   team: string;
@@ -18,7 +17,6 @@ interface DataSourceType {
   GC: number;
 };
 
-// Example initial data
 const defaultData: DataSourceType[] = [
   {
     id: 624748504,
@@ -93,7 +91,7 @@ export default () => {
         rowKey="id"
         maxLength={5}
         columns={columns}
-        dataSource={[...dataSource].sort((a, b) => b.PT - a.PT)} // Creating a shallow copy and sorting by PT in descending order
+        dataSource={[...dataSource].sort((a, b) => b.PT - a.PT)}
         editable={{
           type: 'multiple',
           editableKeys,
@@ -106,7 +104,7 @@ export default () => {
           position: 'top',
           record: () => ({
             id: (Math.random() * 1000000).toFixed(0),
-            team: teamOptions[0].value, // Default team
+            team: teamOptions[0].value,
             PT: 0,
             DF: 0,
             JJ: 0,

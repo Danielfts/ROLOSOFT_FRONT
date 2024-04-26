@@ -94,14 +94,6 @@ export default () => {
         >
           Editar
         </a>,
-        <a
-          key="delete"
-          onClick={() => {
-            setDataSource(dataSource.filter((item) => item.id !== record.id));
-          }}
-        >
-          Eliminar
-        </a>,
       ],
     },
   ];

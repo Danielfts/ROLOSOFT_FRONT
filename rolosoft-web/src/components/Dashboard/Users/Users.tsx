@@ -1,52 +1,93 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { EditableProTable, ProColumns } from '@ant-design/pro-components';
+import { Button, ConfigProvider } from 'antd';
+import esES from 'antd/lib/locale/es_ES';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
-const { Meta } = Card;
+type UserData = {
+  id: string;
+  name: string;
+  email: string;
+  userType: string;
+};
 
-const players = [
+const defaultUsers: UserData[] = [
   {
     id: '1',
-    imgSrc: "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png",
-    name: "John Doe",
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    userType: 'Administrator',
   },
   {
     id: '2',
-    imgSrc: "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png",
-    name: "Jane Smith",
+    name: 'Jane Smith',
+    email: 'jane.smith@example.com',
+    userType: 'Member',
   },
 ];
 
-const Users: React.FC = () => {
+const UsersTable: React.FC = () => {
+  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>(defaultUsers.map(user => user.id));
+  const [dataSource, setDataSource] = useState<UserData[]>(defaultUsers);
   const navigate = useNavigate();
 
-  const handleRegisterClick = () => {
-    navigate('/registeruser');
+  const columns: ProColumns<UserData>[] = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      valueType: 'text',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      valueType: 'text',
+    },
+    {
+      title: 'User Type',
+      dataIndex: 'userType',
+      valueType: 'text',
+    },
+    {
+      title: 'Actions',
+      valueType: 'option',
+      render: (text, record, index, action) => [
+        <a key="edit" onClick={() => action?.startEditable?.(record.id)}>Edit</a>
+      ],
+    },
+  ];
+
+  const handleAddNewUser = () => {
+    navigate('/registerUser');
+  };
+
+  const onChangeDataSource = (newData: readonly UserData[]) => {
+    setDataSource(newData as UserData[]);
   };
 
   return (
-    <div>
-      <Button type="primary" onClick={handleRegisterClick} style={{ marginBottom: 20 }}>
+    <ConfigProvider locale={esES}>
+      <Button type="primary" onClick={handleAddNewUser} style={{ marginBottom: 20 }}>
         Registra Nuevo Usuario
       </Button>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
-        {players.map((player) => (
-          <Card
-            key={player.id}
-            style={{ width: 300 }}
-            cover={<img alt={player.name} src={player.imgSrc} />}
-            actions={[
-              <EditOutlined key="edit" />,
-              <DeleteOutlined key="delete" />,
-            ]}
-          >
-            <Meta title={player.name} />
-          </Card>
-        ))}
-      </div>
-    </div>
+      <EditableProTable<UserData>
+        rowKey="id"
+        headerTitle="Manage Users"
+        columns={columns}
+        value={dataSource}
+        onChange={onChangeDataSource}
+        editable={{
+          editableKeys,
+          onValuesChange: (record, recordList) => {
+            setDataSource(recordList);
+          },
+          onChange: setEditableRowKeys,
+        }}
+        pagination={{
+          pageSize: 5,
+        }}
+      />
+    </ConfigProvider>
   );
 };
 
-export default Users;
+export default UsersTable;

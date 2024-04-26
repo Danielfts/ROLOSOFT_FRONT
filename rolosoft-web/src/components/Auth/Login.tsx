@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Form, Input, Layout, message } from 'antd';
 import axios from 'axios';
@@ -36,41 +35,27 @@ const Login: React.FC = () => {
 
   const onFinish = async (values: LoginFormFields) => {
     try {
-      const response = await axios.post(process.env.REACT_APP_API_URL!, {
+      const response = await axios.post(process.env.REACT_APP_LOGIN_API_URL!, {
         email: values.email,
         password: values.password,
       });
 
       if (response.status === 200) {
-        message.success('Login Successful');
+        localStorage.setItem('token', response.data.data.token); // Storing the token
+        message.success('Inicio de sesión exitoso');
         navigate('/dashboard');
       } else {
-        message.error('Login Failed: ' + response.data.message);
+        message.error('Inicio de sesión fallido: ' + response.data.message);
       }
     } catch (error: any) {
-      console.error('Login Error:', error);
-      if (error.response) {
-        const { status } = error.response;
-        switch (status) {
-          case 401:
-            message.error('Unauthorized: Incorrect password.');
-            break;
-          case 404:
-            message.error('Not Found: Email does not exist.');
-            break;
-          default:
-            message.error('Login failed. ' + (error.response.data?.message || 'Check console for more details.'));
-            break;
-        }
-      } else {
-        message.error('Login failed. Network error or no response from server.');
-      }
+      console.error('Error de inicio de sesión:', error);
+      message.error('Inicio de sesión fallido. Revisar la consola para más detalles.');
     }
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
-    message.error('Please correct the errors in the form.');
+    message.error('Por favor corriga los errores en los campos.');
   };
 
   return (
@@ -87,14 +72,14 @@ const Login: React.FC = () => {
           <Form.Item
             label="Email"
             name="email"
-            rules={[{ required: true, message: 'Please input your email!' }]}
+            rules={[{ required: true, message: 'Ingrese su email' }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Password"
             name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
+            rules={[{ required: true, message: 'Ingrese su contraseña' }]}
           >
             <Input.Password />
           </Form.Item>
@@ -106,7 +91,7 @@ const Login: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              Submit
+              Inicia Sesión
             </Button>
           </Form.Item>
         </Form>

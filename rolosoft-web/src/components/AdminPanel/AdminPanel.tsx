@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, RiseOutlined, TrophyOutlined, NotificationOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import Users from './Players/Players';
 import Teams from './Teams/Teams';
 import Matches from './Matches/Matches';
 import GoalsTable from './GoalsTable/GoalsTable';
 import GeneralTable from './ScoreTable/ScoreTable';
+import News from './News/News';
 
 
 const { Header, Sider, Content } = Layout;
@@ -29,6 +30,8 @@ const AdminPanel: React.FC = () => {
         return <GoalsTable />;
       case '5':
         return <GeneralTable />;
+      case '6':
+        return <News />;
       default:
         return <div>Select a menu item</div>;
     }
@@ -63,7 +66,7 @@ const AdminPanel: React.FC = () => {
             },
             {
               key: '4',
-              icon: <UploadOutlined />,
+              icon: <RiseOutlined />,
               label: 'Tabla Goleo',
               onClick: () => setSelectedMenu('4'),
             },
@@ -72,6 +75,12 @@ const AdminPanel: React.FC = () => {
               icon: <TrophyOutlined />,
               label: 'Tabla General',
               onClick: () => setSelectedMenu('5'),
+            },
+            {
+              key: '6',
+              icon: <NotificationOutlined />,
+              label: 'Noticias',
+              onClick: () => setSelectedMenu('6'),
             }
           ]}
         />

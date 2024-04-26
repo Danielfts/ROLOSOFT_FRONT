@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
       case '2':
         return <Tournaments />;
       default:
-        return <div>Select a menu item</div>;
+        return <div>Selecciona una accion</div>;
     }
   };
 
