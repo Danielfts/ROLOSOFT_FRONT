@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Form, Input, Layout, message } from 'antd';
 import axios from 'axios';
@@ -36,35 +35,21 @@ const Login: React.FC = () => {
 
   const onFinish = async (values: LoginFormFields) => {
     try {
-      const response = await axios.post(process.env.LOGIN_API_URL!, {
+      const response = await axios.post(process.env.REACT_APP_LOGIN_API_URL!, {
         email: values.email,
         password: values.password,
       });
 
       if (response.status === 200) {
+        localStorage.setItem('token', response.data.data.token); // Storing the token
         message.success('Inicio de sesión exitoso');
         navigate('/dashboard');
       } else {
         message.error('Inicio de sesión fallido: ' + response.data.message);
       }
     } catch (error: any) {
-      console.error('Error de inico de sesión:', error);
-      if (error.response) {
-        const { status } = error.response;
-        switch (status) {
-          case 401:
-            message.error('Unauthorized: Contraseña incorrecta.');
-            break;
-          case 404:
-            message.error('Not Found: El email no existe.');
-            break;
-          default:
-            message.error('Login failed. ' + (error.response.data?.message || 'Check console for more details.'));
-            break;
-        }
-      } else {
-        message.error('Inicio de sesión fallido. Error de red o no hay respuesta del servidor.');
-      }
+      console.error('Error de inicio de sesión:', error);
+      message.error('Inicio de sesión fallido. Revisar la consola para más detalles.');
     }
   };
 
@@ -94,12 +79,12 @@ const Login: React.FC = () => {
           <Form.Item
             label="Password"
             name="password"
-            rules={[{ required: true, message: 'Ingrese su constraseña' }]}
+            rules={[{ required: true, message: 'Ingrese su contraseña' }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
-            name="Recordar"
+            name="remember"
             valuePropName="checked"
           >
             <Checkbox>Remember me</Checkbox>

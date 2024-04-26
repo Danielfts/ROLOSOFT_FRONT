@@ -76,12 +76,18 @@ const RegisterUser: React.FC = () => {
     };
 
     const handleSubmit = async (values: UserFormValues) => {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        console.log("Sending headers:", headers);
+        console.log("Sending payload:", values);
+
         const { birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
         const formattedBirthDate = birthDate.format('YYYY-MM-DD');
 
         let payload: AdminUser | StudentUser;
 
-        if (userType === 'player') {
+        if (userType === 'student') {
             const studentDetails: StudentDetails = {
                 school: school!,
                 fieldPosition: fieldPosition!,
@@ -110,8 +116,7 @@ const RegisterUser: React.FC = () => {
         }
 
         try {
-            const endpoint = process.env.REACT_APP_CREATE_USER_API_URL;
-            const response = await axios.post(endpoint!, payload);
+            const response = await axios.post(process.env.REACT_APP_CREATE_USER_API_URL!, payload, { headers });
             if (response.status === 201) {
                 message.success('El usuario fue registrado exitosamente!');
                 form.resetFields();
@@ -127,7 +132,7 @@ const RegisterUser: React.FC = () => {
     return (
         <div style={formContainerStyle}>
             <Form {...formItemLayout} form={form} onFinish={handleSubmit} style={formStyle} layout="horizontal">
-                <Form.Item name="userType" label="Tipo de usuario" rules={[{ required: true }]}>
+                <Form.Item name="role" label="Tipo de usuario" rules={[{ required: true }]}>
                     <Radio.Group onChange={handleUserTypeChange}>
                         <Radio value="admin">Administrador</Radio>
                         <Radio value="player">Jugador</Radio>
@@ -136,21 +141,20 @@ const RegisterUser: React.FC = () => {
 
                 <Form.Item name="gender" label="Género" rules={[{ required: true }]}>
                     <Radio.Group>
-                        <Radio value="masculine">Masculino</Radio>
-                        <Radio value="femenine">Feminino</Radio>
+                        <Radio value="MALE">Masculino</Radio>
+                        <Radio value="FEMALE">Feminino</Radio>
                     </Radio.Group>
                 </Form.Item>
 
                 {/* Common fields */}
-                <Form.Item name="firstName" label="Nombres" rules={[
-                    { required: true },
-                    { pattern: /^\+?\d{10}$/, message: 'Por favor ingrese un teléfono válido' }
-                ]}>
+                <Form.Item name="firstName" label="Nombres" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
+
                 <Form.Item name="lastName" label="Apellidos" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
+
                 <Form.Item name="email" label="Email" rules={[
                     { required: true, type: 'email' },
                     { type: 'email', message: 'Por favor ingrese un email válido' }
