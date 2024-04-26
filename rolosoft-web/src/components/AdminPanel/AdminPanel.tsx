@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined, NotificationOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, RiseOutlined, TrophyOutlined, NotificationOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import Users from './Players/Players';
 import Teams from './Teams/Teams';
@@ -66,7 +66,7 @@ const AdminPanel: React.FC = () => {
             },
             {
               key: '4',
-              icon: <UploadOutlined />,
+              icon: <RiseOutlined />,
               label: 'Tabla Goleo',
               onClick: () => setSelectedMenu('4'),
             },
@@ -77,7 +77,7 @@ const AdminPanel: React.FC = () => {
               onClick: () => setSelectedMenu('5'),
             },
             {
-              key: '5',
+              key: '6',
               icon: <NotificationOutlined />,
               label: 'Noticias',
               onClick: () => setSelectedMenu('6'),
