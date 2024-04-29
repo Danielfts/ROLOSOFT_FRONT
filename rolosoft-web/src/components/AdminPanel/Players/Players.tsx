@@ -1,223 +1,159 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import type { GetRef, InputRef } from 'antd';
-import { Button, Form, Input, Popconfirm, Table } from 'antd';
+import { Button, Table, Modal, Input } from "antd";
+import { useState } from "react";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-type FormInstance<T> = GetRef<typeof Form<T>>;
-
-const EditableContext = React.createContext<FormInstance<any> | null>(null);
-
-interface Item {
-  key: string;
+// Define a type for contact data
+type Contact = {
+  id: number;
   name: string;
-  age: string;
+  email: string;
   address: string;
-}
-
-interface EditableRowProps {
-  index: number;
-}
-
-const EditableRow: React.FC<EditableRowProps> = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
 };
 
-interface EditableCellProps {
-  title: React.ReactNode;
-  editable: boolean;
-  children: React.ReactNode;
-  dataIndex: keyof Item;
-  record: Item;
-  handleSave: (record: Item) => void;
-}
-
-const EditableCell: React.FC<EditableCellProps> = ({
-  title,
-  editable,
-  children,
-  dataIndex,
-  record,
-  handleSave,
-  ...restProps
-}) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<InputRef>(null);
-  const form = useContext(EditableContext)!;
-
-  useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-    }
-  }, [editing]);
-
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({ [dataIndex]: record[dataIndex] });
-  };
-
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-
-      toggleEdit();
-      handleSave({ ...record, ...values });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
-
-  let childNode = children;
-
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{ margin: 0 }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
-        {children}
-      </div>
-    );
-  }
-
-  return <td {...restProps}>{childNode}</td>;
-};
-
-type EditableTableProps = Parameters<typeof Table>[0];
-
-interface DataType {
-  key: React.Key;
-  name: string;
-  age: string;
-  address: string;
-}
-
-type ColumnTypes = Exclude<EditableTableProps['columns'], undefined>;
-
-const Players: React.FC = () => {
-  const [dataSource, setDataSource] = useState<DataType[]>([
+function Players() {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [dataSource, setDataSource] = useState<Contact[]>([
     {
-      key: '0',
-      name: 'Edward King 0',
-      age: '32',
-      address: 'London, Park Lane no. 0',
+      id: 1,
+      name: "John Doe",
+      email: "john.doe@example.com",
+      address: "1234 Main St",
     },
     {
-      key: '1',
-      name: 'Edward King 1',
-      age: '32',
-      address: 'London, Park Lane no. 1',
+      id: 2,
+      name: "Jane Smith",
+      email: "jane.smith@example.com",
+      address: "5678 Market Ave",
     },
   ]);
 
-  const [count, setCount] = useState(2);
-
-  const handleDelete = (key: React.Key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
-  };
-
-  const defaultColumns: (ColumnTypes[number] & { editable?: boolean; dataIndex: string })[] = [
+  const columns = [
     {
-      title: 'name',
-      dataIndex: 'name',
-      width: '30%',
-      editable: true,
+      key: "1",
+      title: "ID",
+      dataIndex: "id",
+      sorter: (a: Contact, b: Contact) => a.id - b.id,
     },
     {
-      title: 'age',
-      dataIndex: 'age',
+      key: "2",
+      title: "Name",
+      dataIndex: "name",
+      sorter: (a: Contact, b: Contact) => a.name.localeCompare(b.name),
     },
     {
-      title: 'address',
-      dataIndex: 'address',
+      key: "3",
+      title: "Email",
+      dataIndex: "email",
     },
     {
-      title: 'operation',
-      dataIndex: 'operation',
-      render: (_, record) =>
-        dataSource.length >= 1 ? (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-            <a>Delete</a>
-          </Popconfirm>
-        ) : null,
+      key: "4",
+      title: "Address",
+      dataIndex: "address",
+    },
+    {
+      key: "5",
+      title: "Actions",
+      render: (record: Contact) => (
+        <>
+          <EditOutlined
+            onClick={() => {
+              onEditContact(record);
+            }}
+          />
+          <DeleteOutlined
+            onClick={() => {
+              onDeleteContact(record);
+            }}
+            style={{ color: "red", marginLeft: 12 }}
+          />
+        </>
+      ),
     },
   ];
 
-  const handleAdd = () => {
-    const newData: DataType = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: '32',
-      address: `London, Park Lane no. ${count}`,
+  const onAddContact = () => {
+    const randomNumber = Math.floor(Math.random() * 1000);
+    const newContact: Contact = {
+      id: randomNumber,
+      name: "Contact " + randomNumber,
+      email: "contact" + randomNumber + "@example.com",
+      address: "New Address " + randomNumber,
     };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
+    setDataSource((prev) => [...prev, newContact]);
   };
 
-  const handleSave = (row: DataType) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
+  const onDeleteContact = (record: Contact) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this contact?",
+      okText: "Yes",
+      okType: "danger",
+      onOk: () => {
+        setDataSource((prev) => prev.filter((contact) => contact.id !== record.id));
+      },
     });
-    setDataSource(newData);
   };
 
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
+  const onEditContact = (record: Contact) => {
+    setIsEditing(true);
+    setEditingContact({ ...record });
   };
 
-  const columns = defaultColumns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record: DataType) => ({
-        record,
-        editable: col.editable,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        handleSave,
-      }),
-    };
-  });
+  const resetEditing = () => {
+    setIsEditing(false);
+    setEditingContact(null);
+  };
 
   return (
-    <div>
-      <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-        Add a row
-      </Button>
-      <Table
-        components={components}
-        rowClassName={() => 'editable-row'}
-        bordered
-        dataSource={dataSource}
-        columns={columns as ColumnTypes}
-      />
+    <div className="App">
+      <header className="App-header">
+        <Button onClick={onAddContact}>Add New Contact</Button>
+        <Table columns={columns} dataSource={dataSource} />
+        <Modal
+          title="Edit Contact"
+          visible={isEditing}
+          okText="Save"
+          onCancel={resetEditing}
+          onOk={() => {
+            setDataSource((prev) =>
+              prev.map((contact) =>
+                contact.id === editingContact?.id ? editingContact : contact
+              )
+            );
+            resetEditing();
+          }}
+        >
+          <Input
+            placeholder="Name"
+            value={editingContact?.name}
+            onChange={(e) =>
+              setEditingContact((prev) =>
+                prev ? { ...prev, name: e.target.value } : null
+              )
+            }
+          />
+          <Input
+            placeholder="Email"
+            value={editingContact?.email}
+            onChange={(e) =>
+              setEditingContact((prev) =>
+                prev ? { ...prev, email: e.target.value } : null
+              )
+            }
+          />
+          <Input
+            placeholder="Address"
+            value={editingContact?.address}
+            onChange={(e) =>
+              setEditingContact((prev) =>
+                prev ? { ...prev, address: e.target.value } : null
+              )
+            }
+          />
+        </Modal>
+      </header>
     </div>
   );
-};
+}
 
 export default Players;
