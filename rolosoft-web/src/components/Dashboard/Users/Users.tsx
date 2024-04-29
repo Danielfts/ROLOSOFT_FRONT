@@ -1,29 +1,34 @@
-import { Button, Table, Modal, Input } from "antd";
+import { Button, Table, Modal, message } from "antd";
 import { useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import RegisterUser from './RegisterUser'; // Assuming the form is in the same directory
 
 // Define a type for user data
 type User = {
   id: number;
   name: string;
   email: string;
+  address: string; // Add address field
   userType: string;
 };
 
 function Users() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [dataSource, setDataSource] = useState<User[]>([
     {
       id: 1,
       name: "John Doe",
       email: "john.doe@example.com",
+      address: "123 Elm St",
       userType: "Admin",
     },
     {
       id: 2,
       name: "Jane Doe",
       email: "jane.doe@example.com",
+      address: "456 Maple Ave",
       userType: "User",
     },
   ]);
@@ -33,21 +38,25 @@ function Users() {
       key: "1",
       title: "ID",
       dataIndex: "id",
+      sorter: (a: User, b: User) => a.id - b.id,
     },
     {
       key: "2",
       title: "Name",
       dataIndex: "name",
+      sorter: (a: User, b: User) => a.name.localeCompare(b.name),
     },
     {
       key: "3",
       title: "Email",
       dataIndex: "email",
+      sorter: (a: User, b: User) => a.email.localeCompare(b.email),
     },
     {
       key: "4",
-      title: "User Type",
-      dataIndex: "userType",
+      title: "Address",
+      dataIndex: "address",
+      sorter: (a: User, b: User) => a.address.localeCompare(b.address),
     },
     {
       key: "5",
@@ -71,14 +80,7 @@ function Users() {
   ];
 
   const onAddUser = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newUser: User = {
-      id: randomNumber,
-      name: "User " + randomNumber,
-      email: randomNumber + "@example.com",
-      userType: "User",
-    };
-    setDataSource((prev) => [...prev, newUser]);
+    setIsRegistering(true);
   };
 
   const onDeleteUser = (record: User) => {
@@ -88,6 +90,7 @@ function Users() {
       okType: "danger",
       onOk: () => {
         setDataSource((prev) => prev.filter((user) => user.id !== record.id));
+        message.success("User deleted successfully!");
       },
     });
   };
@@ -112,39 +115,18 @@ function Users() {
           visible={isEditing}
           okText="Save"
           onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((user) =>
-                user.id === editingUser?.id ? editingUser : user
-              )
-            );
-            resetEditing();
-          }}
+          onOk={resetEditing}
         >
-          <Input
-            value={editingUser?.name}
-            onChange={(e) =>
-              setEditingUser((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            value={editingUser?.email}
-            onChange={(e) =>
-              setEditingUser((prev) =>
-                prev ? { ...prev, email: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            value={editingUser?.userType}
-            onChange={(e) =>
-              setEditingUser((prev) =>
-                prev ? { ...prev, userType: e.target.value } : null
-              )
-            }
-          />
+          {/* Editing form can be similar to RegisterUser with pre-filled values */}
+        </Modal>
+        <Modal
+          title="Register New User"
+          visible={isRegistering}
+          footer={null}
+          onCancel={() => setIsRegistering(false)}
+          width='80%'
+        >
+          <RegisterUser />
         </Modal>
       </header>
     </div>

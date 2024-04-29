@@ -1,109 +1,159 @@
-import type { ProColumns } from '@ant-design/pro-components';
-import { ConfigProvider } from 'antd';
-import esES from 'antd/lib/locale/es_ES';
-import { EditableProTable } from '@ant-design/pro-components';
-import React, { useState } from 'react';
+import { Button, Table, Modal, Input, InputNumber } from "antd";
+import { useState } from "react";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-type DataSourceType = {
-  id: React.Key;
-  player?: string;
-  goals?: number;
-  points?: number;
+// Define a type for player statistics
+type Player = {
+  id: number;
+  name: string;
+  goals: number;
+  points: number;
 };
 
-// Example initial data
-const defaultData: DataSourceType[] = [
-  {
-    id: 624748504,
-    player: 'Player 1',
-    goals: 5,
-    points: 15,
-  },
-  {
-    id: 624691229,
-    player: 'Player 2',
-    goals: 3,
-    points: 9,
-  },
-];
-
-export default () => {
-  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
-  const [dataSource, setDataSource] = useState<readonly DataSourceType[]>(defaultData);
-
-  const playerOptions = [
-    { label: 'Player 1', value: 'Player 1' },
-    { label: 'Player 2', value: 'Player 2' },
-    { label: 'Player 3', value: 'Player 3' },
-    { label: 'Player 4', value: 'Player 4' },
-  ];
-
-  interface ValueEnum {
-    [key: string]: { text: string };
-  }
-
-  const columns: ProColumns<DataSourceType>[] = [
+function GoalsTable() {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [dataSource, setDataSource] = useState<Player[]>([
     {
-      title: 'Jugador',
-      dataIndex: 'player',
-      valueType: 'select',
-      valueEnum: playerOptions.reduce((acc: ValueEnum, cur) => {
-        acc[cur.value] = { text: cur.label };
-        return acc;
-      }, {}),
+      id: 1,
+      name: "Lionel Messi",
+      goals: 30,
+      points: 90,
     },
     {
-      title: 'Goles',
-      dataIndex: 'goals',
-      valueType: 'digit',
+      id: 2,
+      name: "Cristiano Ronaldo",
+      goals: 28,
+      points: 84,
+    },
+  ]);
+
+  const columns = [
+    {
+      key: "1",
+      title: "Jugador",
+      dataIndex: "name",
+      sorter: (a: Player, b: Player) => a.name.localeCompare(b.name),
     },
     {
-      title: 'Puntos',
-      dataIndex: 'points',
-      valueType: 'digit',
+      key: "2",
+      title: "Goles",
+      dataIndex: "goals",
+      sorter: (a: Player, b: Player) => a.goals - b.goals,
     },
     {
-      title: 'Acciones',
-      valueType: 'option',
-      render: (text, record, _, action) => [
-        <a
-          key="editable"
-          onClick={() => {
-            action?.startEditable?.(record.id);
-          }}
-        >
-          Editar
-        </a>,
-      ],
+      key: "3",
+      title: "Puntos",
+      dataIndex: "points",
+      sorter: (a: Player, b: Player) => a.points - b.points,
+    },
+    {
+      key: "4",
+      title: "Actions",
+      render: (record: Player) => (
+        <>
+          <EditOutlined
+            onClick={() => {
+              onEditPlayer(record);
+            }}
+          />
+          <DeleteOutlined
+            onClick={() => {
+              onDeletePlayer(record);
+            }}
+            style={{ color: "red", marginLeft: 12 }}
+          />
+        </>
+      ),
     },
   ];
+
+  const onAddPlayer = () => {
+    const randomNumber = Math.floor(Math.random() * 1000);
+    const newPlayer: Player = {
+      id: randomNumber,
+      name: "New Player " + randomNumber,
+      goals: Math.floor(Math.random() * 50), // Random goals up to 50
+      points: Math.floor(Math.random() * 150), // Random points up to 150
+    };
+    setDataSource((prev) => [...prev, newPlayer]);
+  };
+
+  const onDeletePlayer = (record: Player) => {
+    Modal.confirm({
+      title: "¿Estás seguro de que quieres eliminar este jugador?",
+      okText: "Sí",
+      okType: "danger",
+      onOk: () => {
+        setDataSource((prev) => prev.filter((player) => player.id !== record.id));
+      },
+    });
+  };
+
+  const onEditPlayer = (record: Player) => {
+    setIsEditing(true);
+    setEditingPlayer({ ...record });
+  };
+
+  const resetEditing = () => {
+    setIsEditing(false);
+    setEditingPlayer(null);
+  };
 
   return (
-    <ConfigProvider locale={esES}>
-      <EditableProTable<DataSourceType>
-        rowKey="id"
-        maxLength={5}
-        recordCreatorProps={{
-          position: 'top',
-          record: () => ({
-            id: (Math.random() * 1000000).toFixed(0),
-            player: playerOptions[0].value, // Default player
-            goals: 0,
-            points: 0,
-          }),
-          creatorButtonText: 'Añadir registro',
-        }}
-        columns={columns}
-        dataSource={dataSource}
-        editable={{
-          type: 'multiple',
-          editableKeys,
-          onSave: async (rowKey, data, row) => {
-            console.log(rowKey, data, row);
-          },
-          onChange: setEditableRowKeys,
-        }}
-      />
-    </ConfigProvider>
+    <div className="App">
+      <header className="App-header">
+        <Button onClick={onAddPlayer}>Agregar Nuevo Jugador</Button>
+        <Table columns={columns} dataSource={dataSource} />
+        <Modal
+          title="Editar Jugador"
+          visible={isEditing}
+          okText="Guardar"
+          onCancel={resetEditing}
+          onOk={() => {
+            setDataSource((prev) =>
+              prev.map((player) =>
+                player.id === editingPlayer?.id ? editingPlayer : player
+              )
+            );
+            resetEditing();
+          }}
+        >
+          <Input
+            placeholder="Nombre del Jugador"
+            value={editingPlayer?.name}
+            onChange={(e) =>
+              setEditingPlayer((prev) =>
+                prev ? { ...prev, name: e.target.value } : null
+              )
+            }
+          />
+          <InputNumber
+            min={0}
+            max={100}
+            defaultValue={0}
+            value={editingPlayer?.goals}
+            onChange={(goals) =>
+              setEditingPlayer((prev) =>
+                prev ? { ...prev, goals: goals || 0 } : null
+              )
+            }
+          />
+          <InputNumber
+            min={0}
+            max={300}
+            defaultValue={0}
+            value={editingPlayer?.points}
+            onChange={(points) =>
+              setEditingPlayer((prev) =>
+                prev ? { ...prev, points: points || 0 } : null
+              )
+            }
+          />
+        </Modal>
+      </header>
+    </div>
   );
-};
+}
+
+export default GoalsTable;

@@ -2,8 +2,8 @@ import { Button, Table, Modal, Input } from "antd";
 import { useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-// Define a type for student data
-type Student = {
+// Define a type for contact data
+type Contact = {
   id: number;
   name: string;
   email: string;
@@ -12,45 +12,34 @@ type Student = {
 
 function Players() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [dataSource, setDataSource] = useState<Student[]>([
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [dataSource, setDataSource] = useState<Contact[]>([
     {
       id: 1,
-      name: "John",
-      email: "john@gmail.com",
-      address: "John Address",
+      name: "John Doe",
+      email: "john.doe@example.com",
+      address: "1234 Main St",
     },
     {
       id: 2,
-      name: "David",
-      email: "david@gmail.com",
-      address: "David Address",
-    },
-    {
-      id: 3,
-      name: "James",
-      email: "james@gmail.com",
-      address: "James Address",
-    },
-    {
-      id: 4,
-      name: "Sam",
-      email: "sam@gmail.com",
-      address: "Sam Address",
+      name: "Jane Smith",
+      email: "jane.smith@example.com",
+      address: "5678 Market Ave",
     },
   ]);
 
-  // Define the column structure with appropriate types
   const columns = [
     {
       key: "1",
       title: "ID",
       dataIndex: "id",
+      sorter: (a: Contact, b: Contact) => a.id - b.id,
     },
     {
       key: "2",
       title: "Name",
       dataIndex: "name",
+      sorter: (a: Contact, b: Contact) => a.name.localeCompare(b.name),
     },
     {
       key: "3",
@@ -65,89 +54,100 @@ function Players() {
     {
       key: "5",
       title: "Actions",
-      render: (record: Student) => {
-        return (
-          <>
-            <EditOutlined
-              onClick={() => {
-                onEditStudent(record);
-              }}
-            />
-            <DeleteOutlined
-              onClick={() => {
-                onDeleteStudent(record);
-              }}
-              style={{ color: "red", marginLeft: 12 }}
-            />
-          </>
-        );
-      },
+      render: (record: Contact) => (
+        <>
+          <EditOutlined
+            onClick={() => {
+              onEditContact(record);
+            }}
+          />
+          <DeleteOutlined
+            onClick={() => {
+              onDeleteContact(record);
+            }}
+            style={{ color: "red", marginLeft: 12 }}
+          />
+        </>
+      ),
     },
   ];
 
-  const onAddStudent = () => {
+  const onAddContact = () => {
     const randomNumber = Math.floor(Math.random() * 1000);
-    const newStudent: Student = {
+    const newContact: Contact = {
       id: randomNumber,
-      name: "Name " + randomNumber,
-      email: randomNumber + "@gmail.com",
-      address: "Address " + randomNumber,
+      name: "Contact " + randomNumber,
+      email: "contact" + randomNumber + "@example.com",
+      address: "New Address " + randomNumber,
     };
-    setDataSource((prev) => [...prev, newStudent]);
+    setDataSource((prev) => [...prev, newContact]);
   };
 
-  const onDeleteStudent = (record: Student) => {
+  const onDeleteContact = (record: Contact) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this student record?",
+      title: "Are you sure you want to delete this contact?",
       okText: "Yes",
       okType: "danger",
       onOk: () => {
-        setDataSource((prev) => prev.filter((student) => student.id !== record.id));
+        setDataSource((prev) => prev.filter((contact) => contact.id !== record.id));
       },
     });
   };
 
-  const onEditStudent = (record: Student) => {
+  const onEditContact = (record: Contact) => {
     setIsEditing(true);
-    setEditingStudent({ ...record });
+    setEditingContact({ ...record });
   };
 
   const resetEditing = () => {
     setIsEditing(false);
-    setEditingStudent(null);
+    setEditingContact(null);
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddStudent}>Add a new Student</Button>
+        <Button onClick={onAddContact}>Add New Contact</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="Edit Student"
+          title="Edit Contact"
           visible={isEditing}
           okText="Save"
           onCancel={resetEditing}
           onOk={() => {
-            setDataSource((prev) => prev.map((student) => (student.id === editingStudent?.id ? editingStudent : student)));
+            setDataSource((prev) =>
+              prev.map((contact) =>
+                contact.id === editingContact?.id ? editingContact : contact
+              )
+            );
             resetEditing();
           }}
         >
           <Input
-            value={editingStudent?.name}
+            placeholder="Name"
+            value={editingContact?.name}
             onChange={(e) =>
-              setEditingStudent((prev) => (prev ? { ...prev, name: e.target.value } : null))
+              setEditingContact((prev) =>
+                prev ? { ...prev, name: e.target.value } : null
+              )
             }
           />
           <Input
-            value={editingStudent?.email}
+            placeholder="Email"
+            value={editingContact?.email}
             onChange={(e) =>
-              setEditingStudent((prev) => (prev ? { ...prev, email: e.target.value } : null))
+              setEditingContact((prev) =>
+                prev ? { ...prev, email: e.target.value } : null
+              )
             }
           />
           <Input
-            value={editingStudent?.address}
+            placeholder="Address"
+            value={editingContact?.address}
             onChange={(e) =>
-              setEditingStudent((prev) => (prev ? { ...prev, address: e.target.value } : null))
+              setEditingContact((prev) =>
+                prev ? { ...prev, address: e.target.value } : null
+              )
             }
           />
         </Modal>

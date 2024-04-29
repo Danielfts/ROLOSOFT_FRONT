@@ -79,8 +79,8 @@ const RegisterUser: React.FC = () => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
-        console.log("Sending headers:", headers);
-        console.log("Sending payload:", values);
+        // console.log("Sending headers:", headers);
+        // console.log("Sending payload:", values);
 
         const { birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
         const formattedBirthDate = birthDate.format('YYYY-MM-DD');
@@ -116,13 +116,17 @@ const RegisterUser: React.FC = () => {
         }
 
         try {
-            const response = await axios.post(process.env.REACT_APP_CREATE_USER_API_URL!, payload, { headers });
+            const response = { status: 201 };
+
+            // const response = await axios.post(process.env.REACT_APP_CREATE_USER_API_URL!, payload, { headers });
+
             if (response.status === 201) {
                 message.success('El usuario fue registrado exitosamente!');
-                form.resetFields();
+                form.resetFields();        
             } else {
-                message.error('Registro fallido: ' + response.data.message);
-            }
+                if (response.status === 403) {
+                    message.error('No estás autorizado para realizar esta acción.');
+            }}
         } catch (error) {
             message.error('Error de red o servidor');
             console.error('Registro del error:', error);

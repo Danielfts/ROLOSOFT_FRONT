@@ -37,23 +37,27 @@ function Tournaments() {
       key: "1",
       title: "ID",
       dataIndex: "id",
+      sorter: (a: Tournament, b: Tournament) => a.id - b.id,
     },
     {
       key: "2",
       title: "Name",
       dataIndex: "name",
+      sorter: (a: Tournament, b: Tournament) => a.name.localeCompare(b.name),
     },
     {
       key: "3",
       title: "Begin Date",
       dataIndex: "beginDate",
       render: (beginDate: moment.Moment) => beginDate.format("YYYY-MM-DD"),
+      sorter: (a: Tournament, b: Tournament) => a.beginDate.valueOf() - b.beginDate.valueOf(),
     },
     {
       key: "4",
       title: "End Date",
       dataIndex: "endDate",
       render: (endDate: moment.Moment) => endDate.format("YYYY-MM-DD"),
+      sorter: (a: Tournament, b: Tournament) => a.endDate.valueOf() - b.endDate.valueOf(),
     },
     {
       key: "5",
@@ -79,6 +83,7 @@ function Tournaments() {
       ),
     },
   ];
+
 
   const onAddTournament = () => {
     const randomNumber = Math.floor(Math.random() * 1000);
