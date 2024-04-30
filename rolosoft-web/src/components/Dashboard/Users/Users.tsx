@@ -117,7 +117,6 @@ function Users() {
           onCancel={resetEditing}
           onOk={resetEditing}
         >
-          {/* Editing form can be similar to RegisterUser with pre-filled values */}
         </Modal>
         <Modal
           title="Register New User"
