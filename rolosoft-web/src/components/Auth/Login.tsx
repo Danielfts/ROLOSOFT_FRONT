@@ -48,8 +48,19 @@ const Login: React.FC = () => {
         message.error('Inicio de sesión fallido: ' + response.data.message);
       }
     } catch (error: any) {
-      console.error('Error de inicio de sesión:', error);
-      message.error('Inicio de sesión fallido. Revisar la consola para más detalles.');
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          message.error('El correo no se encontró');
+        } else if (error.response?.status === 401) {
+          message.error('Contraseña incorrecta');
+        } else {
+          message.error('Inicio de sesión fallido. Revisar la consola para más detalles.');
+        }
+        console.error('Error de inicio de sesión:', error);
+      } else {
+        console.error('Error de inicio de sesión:', error);
+        message.error('Error inesperado durante el inicio de sesión. Revisar la consola para más detalles.');
+      }
     }
   };
 

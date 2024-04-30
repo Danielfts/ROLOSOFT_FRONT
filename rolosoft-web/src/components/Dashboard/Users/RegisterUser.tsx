@@ -77,13 +77,9 @@ const RegisterUser: React.FC = () => {
 
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
-
-        // console.log("Sending headers:", headers);
-        // console.log("Sending payload:", values);
-
+        const headers = { Authorization: token };
+        const formattedBirthDate = values.birthDate.format('YYYY-MM-DD');
         const { birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
-        const formattedBirthDate = birthDate.format('YYYY-MM-DD');
 
         let payload: AdminUser | StudentUser;
 
@@ -116,20 +112,30 @@ const RegisterUser: React.FC = () => {
         }
 
         try {
-            const response = { status: 201 };
-
-            // const response = await axios.post(process.env.REACT_APP_CREATE_USER_API_URL!, payload, { headers });
-
+            const response = await axios.post(process.env.REACT_APP_USERS_API_URL!, payload, { headers });
             if (response.status === 201) {
                 message.success('El usuario fue registrado exitosamente!');
-                form.resetFields();        
+                form.resetFields();
             } else {
-                if (response.status === 403) {
-                    message.error('No estás autorizado para realizar esta acción.');
-            }}
+                message.error('No estás autorizado para realizar esta acción.');
+            }
         } catch (error) {
-            message.error('Error de red o servidor');
-            console.error('Registro del error:', error);
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        message.error('No tienes permiso para realizar esta acción.');
+                    } else if (error.response.status === 400) {
+                        message.error('Una cuenta ya se registró con ese correo electrónico.');
+                    } else {
+                        message.error(`Error: ${error.response.data.message || 'Error de servidor'}`);
+                    }
+                } else {
+                    message.error('Error de red o servidor, por favor verifica tu conexión.');
+                }
+            } else {
+                message.error('Un error inesperado ha ocurrido.');
+            }
+            console.error('Error while registering user:', error);
         }
     };
 
@@ -139,7 +145,7 @@ const RegisterUser: React.FC = () => {
                 <Form.Item name="role" label="Tipo de usuario" rules={[{ required: true }]}>
                     <Radio.Group onChange={handleUserTypeChange}>
                         <Radio value="admin">Administrador</Radio>
-                        <Radio value="player">Jugador</Radio>
+                        <Radio value="student">Jugador</Radio>
                     </Radio.Group>
                 </Form.Item>
 
@@ -169,7 +175,7 @@ const RegisterUser: React.FC = () => {
                     <Input.Password />
                 </Form.Item>
                 <Form.Item name="birthDate" label="Fecha de nacimiento" rules={[{ required: true }]}>
-                    <DatePicker />
+                    <DatePicker format="YYYY-MM-DD" />
                 </Form.Item>
                 <Form.Item name="phone" label="Teléfono" rules={[
                     { required: true },
@@ -183,7 +189,7 @@ const RegisterUser: React.FC = () => {
                     <Input />
                 </Form.Item>
 
-                {userType === 'player' && (
+                {userType === 'student' && (
                     <>
 
                         <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
