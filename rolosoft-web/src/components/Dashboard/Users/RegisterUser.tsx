@@ -112,8 +112,7 @@ const RegisterUser: React.FC = () => {
         }
 
         try {
-            console.log('Sending payload:', payload);
-            const response = await axios.post(process.env.REACT_APP_CREATE_USER_API_URL!, payload, { headers });
+            const response = await axios.post(process.env.REACT_APP_USERS_API_URL!, payload, { headers });
             if (response.status === 201) {
                 message.success('El usuario fue registrado exitosamente!');
                 form.resetFields();
