@@ -81,23 +81,24 @@ const RegisterUser: React.FC = () => {
     const [form] = Form.useForm<UserFormValues>();
     const [userType, setUserType] = useState<string>('');
     const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+    const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
 
     const handleUserTypeChange = (e: RadioChangeEvent) => {
         setUserType(e.target.value);
         if (e.target.value === 'student') {
             fetchSchools();
+            fetchTeams();
         }
     };
 
     const fetchSchools = async () => {
         const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('No token found, please login.');
+            return;
+        }
         const headers = { Authorization: token };
         try {
-            if (!token) {
-                message.error('No token found, please login.');
-                return;
-            }
-
             const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
             if (response.data.success && response.data.data.length > 0) {
                 setSchools(response.data.data.map((school: any) => ({
@@ -112,17 +113,17 @@ const RegisterUser: React.FC = () => {
             message.error('Failed to load schools');
         }
     };
-
+    
     const fetchTeams = async () => {
         const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('No token found, please login.');
+            return;
+        }
         const headers = { Authorization: token };
         try {
-            if (!token) {
-                message.error('No token found, please login.');
-                return;
-            }
-    
-            const response = await axios.get(`${process.env.REACT_APP_TEAMS_API_URL}`, { headers });
+            const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
+            
             if (response.data.success && response.data.data.length > 0) {
                 setTeams(response.data.data.map((team: any) => ({
                     id: team.id,
@@ -135,8 +136,7 @@ const RegisterUser: React.FC = () => {
             console.error('Failed to load teams:', error);
             message.error('Failed to load teams');
         }
-    };
-        
+    };    
 
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
@@ -296,9 +296,12 @@ const RegisterUser: React.FC = () => {
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
-                            <Input />
+                            <Select placeholder="Select a team" allowClear>
+                                {teams.map(team => (
+                                    <Option key={team.id} value={team.id}>{team.name}</Option>
+                                ))}
+                            </Select>
                         </Form.Item>
-
                     </>
                 )}
 
