@@ -1,8 +1,17 @@
-import { Button, Table, Modal, message } from "antd";
+import { Button, Table, Modal, message, Descriptions } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import RegisterUser from './RegisterUser';
+
+type Address = {
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
 
 type User = {
   id: string;
@@ -14,13 +23,14 @@ type User = {
   gender: string;
   role: string;
   CURP: string;
+  address: Address;
 };
 
 function Users() {
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [dataSource, setDataSource] = useState<User[]>([]);
 
   useEffect(() => {
@@ -64,15 +74,17 @@ function Users() {
       title: "Actions",
       render: (record: User) => (
         <>
-          {/*<EditOutlined onClick={() => onEditUser(record)} />*/}
-          <DeleteOutlined
-            onClick={() => onDeleteUser(record)}
-            style={{ color: "red", marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={() => onViewUser(record)} />
+          <DeleteOutlined onClick={() => onDeleteUser(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
+
+  const onViewUser = (record: User) => {
+    setIsViewing(true);
+    setViewingUser(record);
+  };
 
   const onAddUser = () => {
     setIsRegistering(true);
@@ -106,29 +118,37 @@ function Users() {
     });
   };
 
-
-  const onEditUser = (record: User) => {
-    setIsEditing(true);
-    setEditingUser({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingUser(null);
-  };
-
   return (
     <div className="App">
       <header className="App-header">
         <Button onClick={onAddUser}>Add New User</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="Edit User"
-          open={isEditing}
-          okText="Save"
-          onCancel={resetEditing}
-          onOk={resetEditing}
+          title="User Details"
+          visible={isViewing}
+          onOk={() => setIsViewing(false)}
+          onCancel={() => setIsViewing(false)}
+          width='80%'
         >
+          {viewingUser && (
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="First Name">{viewingUser.firstName}</Descriptions.Item>
+              <Descriptions.Item label="Last Name">{viewingUser.lastName}</Descriptions.Item>
+              <Descriptions.Item label="Email">{viewingUser.email}</Descriptions.Item>
+              <Descriptions.Item label="Phone">{viewingUser.phone}</Descriptions.Item>
+              <Descriptions.Item label="Role">{viewingUser.role}</Descriptions.Item>
+              <Descriptions.Item label="CURP">{viewingUser.CURP}</Descriptions.Item>
+              <Descriptions.Item label="Birth Date">{viewingUser.birthDate}</Descriptions.Item>
+              <Descriptions.Item label="Gender">{viewingUser.gender}</Descriptions.Item>
+              {/* Address details */}
+              <Descriptions.Item label="Address 1">{viewingUser.address.address1}</Descriptions.Item>
+              <Descriptions.Item label="Address 2">{viewingUser.address.address2}</Descriptions.Item>
+              <Descriptions.Item label="City">{viewingUser.address.city}</Descriptions.Item>
+              <Descriptions.Item label="State">{viewingUser.address.state}</Descriptions.Item>
+              <Descriptions.Item label="Postal Code">{viewingUser.address.postalCode}</Descriptions.Item>
+              <Descriptions.Item label="Country">{viewingUser.address.country}</Descriptions.Item>
+            </Descriptions>
+          )}
         </Modal>
         <Modal
           title="Register New User"

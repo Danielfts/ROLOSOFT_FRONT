@@ -29,6 +29,15 @@ const formItemLayout = {
     wrapperCol: { span: 14 },
 };
 
+interface Address {
+    address1: string;
+    address2: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+}
+
 interface BaseUser {
     firstName: string;
     lastName: string;
@@ -38,6 +47,7 @@ interface BaseUser {
     gender: string;
     phone: string;
     CURP: string;
+    address: Address;
 }
 
 interface AdminUser extends BaseUser {
@@ -70,10 +80,63 @@ type UserFormValues = Omit<BaseUser, 'role' | 'birthDate'> & {
 const RegisterUser: React.FC = () => {
     const [form] = Form.useForm<UserFormValues>();
     const [userType, setUserType] = useState<string>('');
+    const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+    const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
 
     const handleUserTypeChange = (e: RadioChangeEvent) => {
         setUserType(e.target.value);
+        if (e.target.value === 'student') {
+            fetchSchools();
+            fetchTeams();
+        }
     };
+
+    const fetchSchools = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('No token found, please login.');
+            return;
+        }
+        const headers = { Authorization: token };
+        try {
+            const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
+            if (response.data.success && response.data.data.length > 0) {
+                setSchools(response.data.data.map((school: any) => ({
+                    id: school.id,
+                    name: school.name
+                })));
+            } else {
+                message.error('No schools available or data missing');
+            }
+        } catch (error) {
+            console.error('Failed to load schools:', error);
+            message.error('Failed to load schools');
+        }
+    };
+    
+    const fetchTeams = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('No token found, please login.');
+            return;
+        }
+        const headers = { Authorization: token };
+        try {
+            const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
+            
+            if (response.data.success && response.data.data.length > 0) {
+                setTeams(response.data.data.map((team: any) => ({
+                    id: team.id,
+                    name: team.name
+                })));
+            } else {
+                message.error('No teams available or data missing');
+            }
+        } catch (error) {
+            console.error('Failed to load teams:', error);
+            message.error('Failed to load teams');
+        }
+    };    
 
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
@@ -135,7 +198,7 @@ const RegisterUser: React.FC = () => {
             } else {
                 message.error('Un error inesperado ha ocurrido.');
             }
-            console.error('Error while registering user:', error);
+            console.error('Error al registar usuario:', error);
         }
     };
 
@@ -188,6 +251,24 @@ const RegisterUser: React.FC = () => {
                 ]}>
                     <Input />
                 </Form.Item>
+                <Form.Item name="address1" label="Calle y Numero" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="country" label="Pais" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="postalCode" label="Codigo Postal" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
 
                 {userType === 'student' && (
                     <>
@@ -200,12 +281,14 @@ const RegisterUser: React.FC = () => {
                             { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
-                            <Select>
-                                <Option value="colegioA">Colegio A</Option>
-                                <Option value="colegioB">Colegio B</Option>
+                        <Form.Item name="school" label="School" rules={[{ required: true }]}>
+                            <Select placeholder="Select a school" allowClear>
+                                {schools.map(school => (
+                                    <Option key={school.id} value={school.id}>{school.name}</Option>
+                                ))}
                             </Select>
                         </Form.Item>
+
                         <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
@@ -213,9 +296,12 @@ const RegisterUser: React.FC = () => {
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
-                            <Input />
+                            <Select placeholder="Select a team" allowClear>
+                                {teams.map(team => (
+                                    <Option key={team.id} value={team.id}>{team.name}</Option>
+                                ))}
+                            </Select>
                         </Form.Item>
-
                     </>
                 )}
 
