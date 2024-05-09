@@ -31,7 +31,7 @@ const formItemLayout = {
 
 interface Address {
     address1: string;
-    address2?: string;
+    address2: string;
     city: string;
     state: string;
     postalCode: string;
@@ -90,25 +90,54 @@ const RegisterUser: React.FC = () => {
     };
 
     const fetchSchools = async () => {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: token };
         try {
-            const response = await axios.get(`${process.env.REACT_APP_SCHOOLS_API_URL}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            if (response.data.success && response.data.data) {
+            if (!token) {
+                message.error('No token found, please login.');
+                return;
+            }
+
+            const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
+            if (response.data.success && response.data.data.length > 0) {
                 setSchools(response.data.data.map((school: any) => ({
                     id: school.id,
-                    name: school.name,
-                    address: school.address // If you want to use address details elsewhere
+                    name: school.name
                 })));
             } else {
-                message.error('No schools available');
+                message.error('No schools available or data missing');
             }
         } catch (error) {
             console.error('Failed to load schools:', error);
             message.error('Failed to load schools');
         }
     };
+
+    const fetchTeams = async () => {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: token };
+        try {
+            if (!token) {
+                message.error('No token found, please login.');
+                return;
+            }
     
+            const response = await axios.get(`${process.env.REACT_APP_TEAMS_API_URL}`, { headers });
+            if (response.data.success && response.data.data.length > 0) {
+                setTeams(response.data.data.map((team: any) => ({
+                    id: team.id,
+                    name: team.name
+                })));
+            } else {
+                message.error('No teams available or data missing');
+            }
+        } catch (error) {
+            console.error('Failed to load teams:', error);
+            message.error('Failed to load teams');
+        }
+    };
+        
+
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: token };
@@ -169,7 +198,7 @@ const RegisterUser: React.FC = () => {
             } else {
                 message.error('Un error inesperado ha ocurrido.');
             }
-            console.error('Error while registering user:', error);
+            console.error('Error al registar usuario:', error);
         }
     };
 
@@ -252,13 +281,14 @@ const RegisterUser: React.FC = () => {
                             { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
-                            <Select placeholder="Elige una Escuela">
+                        <Form.Item name="school" label="School" rules={[{ required: true }]}>
+                            <Select placeholder="Select a school" allowClear>
                                 {schools.map(school => (
                                     <Option key={school.id} value={school.id}>{school.name}</Option>
                                 ))}
                             </Select>
                         </Form.Item>
+
                         <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
