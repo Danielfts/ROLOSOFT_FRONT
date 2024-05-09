@@ -29,6 +29,15 @@ const formItemLayout = {
     wrapperCol: { span: 14 },
 };
 
+interface Address {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+}
+
 interface BaseUser {
     firstName: string;
     lastName: string;
@@ -38,6 +47,7 @@ interface BaseUser {
     gender: string;
     phone: string;
     CURP: string;
+    address: Address;
 }
 
 interface AdminUser extends BaseUser {
@@ -70,11 +80,35 @@ type UserFormValues = Omit<BaseUser, 'role' | 'birthDate'> & {
 const RegisterUser: React.FC = () => {
     const [form] = Form.useForm<UserFormValues>();
     const [userType, setUserType] = useState<string>('');
+    const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
 
     const handleUserTypeChange = (e: RadioChangeEvent) => {
         setUserType(e.target.value);
+        if (e.target.value === 'student') {
+            fetchSchools();
+        }
     };
 
+    const fetchSchools = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_SCHOOLS_API_URL}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.data.success && response.data.data) {
+                setSchools(response.data.data.map((school: any) => ({
+                    id: school.id,
+                    name: school.name,
+                    address: school.address // If you want to use address details elsewhere
+                })));
+            } else {
+                message.error('No schools available');
+            }
+        } catch (error) {
+            console.error('Failed to load schools:', error);
+            message.error('Failed to load schools');
+        }
+    };
+    
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: token };
@@ -188,6 +222,24 @@ const RegisterUser: React.FC = () => {
                 ]}>
                     <Input />
                 </Form.Item>
+                <Form.Item name="address1" label="Calle y Numero" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="country" label="Pais" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="postalCode" label="Codigo Postal" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
 
                 {userType === 'student' && (
                     <>
@@ -201,9 +253,10 @@ const RegisterUser: React.FC = () => {
                             <Input />
                         </Form.Item>
                         <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
-                            <Select>
-                                <Option value="colegioA">Colegio A</Option>
-                                <Option value="colegioB">Colegio B</Option>
+                            <Select placeholder="Elige una Escuela">
+                                {schools.map(school => (
+                                    <Option key={school.id} value={school.id}>{school.name}</Option>
+                                ))}
                             </Select>
                         </Form.Item>
                         <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
