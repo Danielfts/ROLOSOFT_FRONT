@@ -50,23 +50,21 @@ function Users() {
     }
   };
 
-
   const columns = [
-    { key: "1", title: "ID", dataIndex: "id" },
-    { key: "2", title: "First Name", dataIndex: "firstName" },
-    { key: "3", title: "Last Name", dataIndex: "lastName" },
-    { key: "4", title: "Email", dataIndex: "email" },
-    { key: "5", title: "Phone", dataIndex: "phone" },
-    { key: "6", title: "Birth Date", dataIndex: "birthDate" },
-    { key: "7", title: "Gender", dataIndex: "gender" },
-    { key: "8", title: "Role", dataIndex: "role" },
-    { key: "9", title: "CURP", dataIndex: "CURP" },
+    { key: "2", title: "First Name", dataIndex: "firstName", sorter: (a: User, b: User) => a.firstName.localeCompare(b.firstName) },
+    { key: "3", title: "Last Name", dataIndex: "lastName", sorter: (a: User, b: User) => a.lastName.localeCompare(b.lastName) },
+    { key: "4", title: "Email", dataIndex: "email", sorter: (a: User, b: User) => a.email.localeCompare(b.email) },
+    { key: "5", title: "Phone", dataIndex: "phone", sorter: (a: User, b: User) => a.phone.localeCompare(b.phone) },
+    { key: "6", title: "Birth Date", dataIndex: "birthDate", sorter: (a: User, b: User) => a.birthDate.localeCompare(b.birthDate) },
+    { key: "7", title: "Gender", dataIndex: "gender", sorter: (a: User, b: User) => a.gender.localeCompare(b.gender) },
+    { key: "8", title: "Role", dataIndex: "role", sorter: (a: User, b: User) => a.role.localeCompare(b.role) },
+    { key: "9", title: "CURP", dataIndex: "CURP", sorter: (a: User, b: User) => a.CURP.localeCompare(b.CURP) },
     {
       key: "10",
       title: "Actions",
       render: (record: User) => (
         <>
-          <EditOutlined onClick={() => onEditUser(record)} />
+          {/*<EditOutlined onClick={() => onEditUser(record)} />*/}
           <DeleteOutlined
             onClick={() => onDeleteUser(record)}
             style={{ color: "red", marginLeft: 12 }}
@@ -136,7 +134,10 @@ function Users() {
           title="Register New User"
           open={isRegistering}
           footer={null}
-          onCancel={() => setIsRegistering(false)}
+          onCancel={() => {
+            setIsRegistering(false);
+            fetchUsers();
+          }}
           width='80%'
         >
           <RegisterUser />
