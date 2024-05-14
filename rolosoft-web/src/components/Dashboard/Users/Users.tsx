@@ -1,7 +1,7 @@
 import { Button, Table, Modal, message, Descriptions } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import RegisterUser from './RegisterUser';
 
 type Address = {
@@ -42,7 +42,7 @@ function Users() {
     const headers = { Authorization: token };
     try {
       if (!token) {
-        message.error('No token found, please login.');
+        message.error('No se encontró ningun token, por favor inicie sesión');
         return;
       }
       const response = await axios.get(process.env.REACT_APP_USERS_API_URL!, { headers });
@@ -51,27 +51,27 @@ function Users() {
         setDataSource(response.data.data);
 
       } else {
-        console.error('Failed to fetch users with status:', response.status);
-        message.error('Error fetching users with unexpected status.');
+        console.error('Fallo al obtener usuarios con estatus: ', response.status);
+        message.error('Error al obtener usuarios con error inesperado: ');
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-      message.error('Error fetching users');
+      console.error('Fallo al obtener usuarios:', error);
+      message.error('Error al obtener usuarios');
     }
   };
 
   const columns = [
-    { key: "2", title: "First Name", dataIndex: "firstName", sorter: (a: User, b: User) => a.firstName.localeCompare(b.firstName) },
-    { key: "3", title: "Last Name", dataIndex: "lastName", sorter: (a: User, b: User) => a.lastName.localeCompare(b.lastName) },
+    { key: "2", title: "Nombres", dataIndex: "firstName", sorter: (a: User, b: User) => a.firstName.localeCompare(b.firstName) },
+    { key: "3", title: "Apellidos", dataIndex: "lastName", sorter: (a: User, b: User) => a.lastName.localeCompare(b.lastName) },
     { key: "4", title: "Email", dataIndex: "email", sorter: (a: User, b: User) => a.email.localeCompare(b.email) },
-    { key: "5", title: "Phone", dataIndex: "phone", sorter: (a: User, b: User) => a.phone.localeCompare(b.phone) },
-    { key: "6", title: "Birth Date", dataIndex: "birthDate", sorter: (a: User, b: User) => a.birthDate.localeCompare(b.birthDate) },
-    { key: "7", title: "Gender", dataIndex: "gender", sorter: (a: User, b: User) => a.gender.localeCompare(b.gender) },
-    { key: "8", title: "Role", dataIndex: "role", sorter: (a: User, b: User) => a.role.localeCompare(b.role) },
+    { key: "5", title: "Teléfono", dataIndex: "phone", sorter: (a: User, b: User) => a.phone.localeCompare(b.phone) },
+    { key: "6", title: "Fecha de nacimiento", dataIndex: "birthDate", sorter: (a: User, b: User) => a.birthDate.localeCompare(b.birthDate) },
+    { key: "7", title: "Género", dataIndex: "gender", sorter: (a: User, b: User) => a.gender.localeCompare(b.gender) },
+    { key: "8", title: "Rol", dataIndex: "role", sorter: (a: User, b: User) => a.role.localeCompare(b.role) },
     { key: "9", title: "CURP", dataIndex: "CURP", sorter: (a: User, b: User) => a.CURP.localeCompare(b.CURP) },
     {
       key: "10",
-      title: "Actions",
+      title: "Acciones",
       render: (record: User) => (
         <>
           <EyeOutlined onClick={() => onViewUser(record)} />
@@ -92,14 +92,14 @@ function Users() {
 
   const onDeleteUser = (record: User) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this user?",
+      title: "Estas seguro que desea eliminar a este usuario?",
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
           if (!token) {
-            message.error('No token found, please login.');
+            message.error('No se encontró ningun token, por favor inicie sesión');
             return;
           }
           const headers = { Authorization: token }
@@ -107,12 +107,12 @@ function Users() {
 
           if (response.status === 200) {
             setDataSource((prev) => prev.filter((user) => user.id !== record.id));
-            message.success("User deleted successfully!");
+            message.success("Usuario eliminado exitosamente!");
           } else {
-            message.error('Failed to delete user');
+            message.error('Fallo al eliminar usuario');
           }
         } catch (error) {
-          message.error('Failed to delete user: ' + error);
+          message.error('Fallo al eliminar usuario: ' + error);
         }
       },
     });
@@ -121,37 +121,37 @@ function Users() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddUser}>Add New User</Button>
+        <Button onClick={onAddUser}>Registrar Nuevo Usuario</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="User Details"
-          visible={isViewing}
+          title="Detalles de usuario"
+          open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
           width='80%'
         >
           {viewingUser && (
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="First Name">{viewingUser.firstName}</Descriptions.Item>
-              <Descriptions.Item label="Last Name">{viewingUser.lastName}</Descriptions.Item>
+              <Descriptions.Item label="Nombres">{viewingUser.firstName}</Descriptions.Item>
+              <Descriptions.Item label="Apellidos">{viewingUser.lastName}</Descriptions.Item>
               <Descriptions.Item label="Email">{viewingUser.email}</Descriptions.Item>
-              <Descriptions.Item label="Phone">{viewingUser.phone}</Descriptions.Item>
-              <Descriptions.Item label="Role">{viewingUser.role}</Descriptions.Item>
+              <Descriptions.Item label="Teléfono">{viewingUser.phone}</Descriptions.Item>
+              <Descriptions.Item label="Rol">{viewingUser.role}</Descriptions.Item>
               <Descriptions.Item label="CURP">{viewingUser.CURP}</Descriptions.Item>
-              <Descriptions.Item label="Birth Date">{viewingUser.birthDate}</Descriptions.Item>
-              <Descriptions.Item label="Gender">{viewingUser.gender}</Descriptions.Item>
+              <Descriptions.Item label="Fecha de nacimiento">{viewingUser.birthDate}</Descriptions.Item>
+              <Descriptions.Item label="Género">{viewingUser.gender}</Descriptions.Item>
               {/* Address details */}
-              <Descriptions.Item label="Address 1">{viewingUser.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Address 2">{viewingUser.address.address2}</Descriptions.Item>
-              <Descriptions.Item label="City">{viewingUser.address.city}</Descriptions.Item>
-              <Descriptions.Item label="State">{viewingUser.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Postal Code">{viewingUser.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="Country">{viewingUser.address.country}</Descriptions.Item>
+              <Descriptions.Item label="Calle y Número">{viewingUser.address.address1}</Descriptions.Item>
+              <Descriptions.Item label="Colonia">{viewingUser.address.address2}</Descriptions.Item>
+              <Descriptions.Item label="Ciudad">{viewingUser.address.city}</Descriptions.Item>
+              <Descriptions.Item label="Estado">{viewingUser.address.state}</Descriptions.Item>
+              <Descriptions.Item label="Código Postal">{viewingUser.address.postalCode}</Descriptions.Item>
+              <Descriptions.Item label="País">{viewingUser.address.country}</Descriptions.Item>
             </Descriptions>
           )}
         </Modal>
         <Modal
-          title="Register New User"
+          title="Registrar Nuevo Usuario"
           open={isRegistering}
           footer={null}
           onCancel={() => {

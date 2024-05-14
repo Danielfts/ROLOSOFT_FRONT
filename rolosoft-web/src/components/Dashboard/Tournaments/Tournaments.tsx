@@ -1,169 +1,154 @@
-import { Button, Table, Modal, Input, DatePicker } from "antd";
-import { useState } from "react";
-import { EditOutlined, DeleteOutlined, SettingOutlined } from "@ant-design/icons";
+import { Button, Table, Modal, message, Descriptions } from "antd";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { DeleteOutlined, EyeOutlined, SettingOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
-import moment from "moment";
+import RegisterTournament from './RegisterTournament';
 
-// Define a type for tournament data
+type Address = {
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
+
 type Tournament = {
   id: number;
   name: string;
-  beginDate: moment.Moment;
-  endDate: moment.Moment;
+  startDate: string;
+  endDate: string;
+  address: Address;
 };
 
 function Tournaments() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingTournament, setEditingTournament] = useState<Tournament | null>(null);
-  const [dataSource, setDataSource] = useState<Tournament[]>([
-    {
-      id: 1,
-      name: "Tournament A",
-      beginDate: moment(),
-      endDate: moment().add(10, 'days'),
-    },
-    {
-      id: 2,
-      name: "Tournament B",
-      beginDate: moment(),
-      endDate: moment().add(20, 'days'),
-    },
-  ]);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingTournament, setViewingTournament] = useState<Tournament | null>(null);
+  const [dataSource, setDataSource] = useState<Tournament[]>([]);
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const fetchTournaments = async () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+    try {
+      if (!token) {
+        message.error('No se encontró ningun token, por favor inicie sesión');
+        return;
+      }
+      const response = await axios.get(process.env.REACT_APP_TOURNAMENTS_API_URL!, { headers });
+
+      if (response.status === 200 && response.data.success) {
+        setDataSource(response.data.data);
+      } else {
+        console.error('Failed to fetch tournaments with status:', response.status);
+        message.error('Error fetching tournaments with unexpected status.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch tournaments:', error);
+      message.error('Error fetching tournaments');
+    }
+  };
 
   const navigate = useNavigate();
 
   const columns = [
-    {
-      key: "1",
-      title: "ID",
-      dataIndex: "id",
-      sorter: (a: Tournament, b: Tournament) => a.id - b.id,
-    },
-    {
-      key: "2",
-      title: "Name",
-      dataIndex: "name",
-      sorter: (a: Tournament, b: Tournament) => a.name.localeCompare(b.name),
-    },
-    {
-      key: "3",
-      title: "Begin Date",
-      dataIndex: "beginDate",
-      render: (beginDate: moment.Moment) => beginDate.format("YYYY-MM-DD"),
-      sorter: (a: Tournament, b: Tournament) => a.beginDate.valueOf() - b.beginDate.valueOf(),
-    },
+    { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: Tournament, b: Tournament) => a.name.localeCompare(b.name) },
+    { key: "2", title: "Fecha de inicio", dataIndex: "startDate", sorter: (a: Tournament, b: Tournament) => a.startDate.localeCompare(b.startDate) },
+    { key: "3", title: "Fecha de fin", dataIndex: "endDate", sorter: (a: Tournament, b: Tournament) => a.endDate.localeCompare(b.endDate) },
     {
       key: "4",
-      title: "End Date",
-      dataIndex: "endDate",
-      render: (endDate: moment.Moment) => endDate.format("YYYY-MM-DD"),
-      sorter: (a: Tournament, b: Tournament) => a.endDate.valueOf() - b.endDate.valueOf(),
-    },
-    {
-      key: "5",
       title: "Actions",
       render: (record: Tournament) => (
         <>
-          <EditOutlined
-            onClick={() => {
-              onEditTournament(record);
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => {
-              onDeleteTournament(record);
-            }}
-            style={{ color: "red", marginLeft: 12 }}
-          />
-          <SettingOutlined
-            onClick={() => administrateTournament(record.id)}
-            style={{ marginLeft: 12 }}
+          <EyeOutlined onClick={() => onViewTournament(record)} />
+          <DeleteOutlined onClick={() => onDeleteTournament(record)} style={{ color: "red", marginLeft: 12 }} />
+          <SettingOutlined onClick={() => administrateTournament(record.id)} style={{ marginLeft: 12 }}
           />
         </>
       ),
     },
   ];
 
+  const onViewTournament = (record: Tournament) => {
+    setIsViewing(true);
+    setViewingTournament(record);
+  };
+  
+  const administrateTournament = (id: number) => {
+    navigate(`/adminPanel`);
+  };
 
   const onAddTournament = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newTournament: Tournament = {
-      id: randomNumber,
-      name: "Tournament " + randomNumber,
-      beginDate: moment(),
-      endDate: moment().add(30, 'days'),
-    };
-    setDataSource((prev) => [...prev, newTournament]);
+    setIsRegistering(true);
   };
 
   const onDeleteTournament = (record: Tournament) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this tournament?",
-      okText: "Yes",
+      title: "Esta seguro que desea elimianar este torneo?",
+      okText: "Si",
       okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((tournament) => tournament.id !== record.id));
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const headers = { Authorization: token }
+          const response = await axios.delete(`${process.env.REACT_APP_TOURNAMENTS_API_URL}/${record.id}`, { headers });
+
+          if (response.status === 200) {
+            setDataSource((prev) => prev.filter((tournament) => tournament.id !== record.id));
+            message.success("Torneo eliminado exitosamente!");
+          } else {
+            message.error('Failed to delete tournament');
+          }
+        } catch (error) {
+          message.error('Failed to delete tournament: ' + error);
+        }
       },
     });
-  };
-
-  const onEditTournament = (record: Tournament) => {
-    setIsEditing(true);
-    setEditingTournament({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingTournament(null);
-  };
-
-  const administrateTournament = (id: number) => {
-    navigate(`/adminPanel`);
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddTournament}>Add New Tournament</Button>
+        <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="Edit Tournament"
-          visible={isEditing}
-          okText="Save"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((tournament) =>
-                tournament.id === editingTournament?.id ? editingTournament : tournament
-              )
-            );
-            resetEditing();
-          }}
+          title="Detalles del torneo"
+          open={isViewing}
+          onOk={() => setIsViewing(false)}
+          onCancel={() => setIsViewing(false)}
+          width='80%'
         >
-          <Input
-            value={editingTournament?.name}
-            onChange={(e) =>
-              setEditingTournament((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
-            }
-          />
-          <DatePicker
-            value={editingTournament?.beginDate}
-            onChange={(date) =>
-              setEditingTournament((prev) =>
-                prev ? { ...prev, beginDate: date } : null
-              )
-            }
-          />
-          <DatePicker
-            value={editingTournament?.endDate}
-            onChange={(date) =>
-              setEditingTournament((prev) =>
-                prev ? { ...prev, endDate: date } : null
-              )
-            }
-          />
+          {viewingTournament && (
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="Nombre">{viewingTournament.name}</Descriptions.Item>
+              <Descriptions.Item label="Fecha inicio">{viewingTournament.startDate}</Descriptions.Item>
+              <Descriptions.Item label="Fecha fin">{viewingTournament.endDate}</Descriptions.Item>
+              {/* Address details */}
+              <Descriptions.Item label="Calle y Número">{viewingTournament.address.address1}</Descriptions.Item>
+              <Descriptions.Item label="Colonia">{viewingTournament.address.address2}</Descriptions.Item>
+              <Descriptions.Item label="Ciudad">{viewingTournament.address.city}</Descriptions.Item>
+              <Descriptions.Item label="Estado">{viewingTournament.address.state}</Descriptions.Item>
+              <Descriptions.Item label="Código Postal">{viewingTournament.address.postalCode}</Descriptions.Item>
+              <Descriptions.Item label="País">{viewingTournament.address.country}</Descriptions.Item>
+            </Descriptions>
+          )}
+        </Modal>
+        <Modal
+          title="Registrar Nuevo Torneo"
+          open={isRegistering}
+          footer={null}
+          onCancel={() => {
+            setIsRegistering(false);
+            fetchTournaments();
+          }}
+          width='80%'
+        >
+          <RegisterTournament />
         </Modal>
       </header>
     </div>
