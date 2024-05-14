@@ -1,7 +1,8 @@
 import { Button, Table, Modal, message, Descriptions } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined, SettingOutlined } from "@ant-design/icons";
+import { useNavigate } from 'react-router-dom';
 import RegisterTournament from './RegisterTournament';
 
 type Address = {
@@ -14,7 +15,7 @@ type Address = {
 };
 
 type Tournament = {
-  id: string;
+  id: number;
   name: string;
   startDate: string;
   endDate: string;
@@ -36,7 +37,7 @@ function Tournaments() {
     const headers = { Authorization: token };
     try {
       if (!token) {
-        message.error('No token found, please login.');
+        message.error('No se encontró ningun token, por favor inicie sesión');
         return;
       }
       const response = await axios.get(process.env.REACT_APP_TOURNAMENTS_API_URL!, { headers });
@@ -53,10 +54,12 @@ function Tournaments() {
     }
   };
 
+  const navigate = useNavigate();
+
   const columns = [
-    { key: "1", title: "Name", dataIndex: "name", sorter: (a: Tournament, b: Tournament) => a.name.localeCompare(b.name) },
-    { key: "2", title: "Start Date", dataIndex: "startDate", sorter: (a: Tournament, b: Tournament) => a.startDate.localeCompare(b.startDate) },
-    { key: "3", title: "End Date", dataIndex: "endDate", sorter: (a: Tournament, b: Tournament) => a.endDate.localeCompare(b.endDate) },
+    { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: Tournament, b: Tournament) => a.name.localeCompare(b.name) },
+    { key: "2", title: "Fecha de inicio", dataIndex: "startDate", sorter: (a: Tournament, b: Tournament) => a.startDate.localeCompare(b.startDate) },
+    { key: "3", title: "Fecha de fin", dataIndex: "endDate", sorter: (a: Tournament, b: Tournament) => a.endDate.localeCompare(b.endDate) },
     {
       key: "4",
       title: "Actions",
@@ -64,6 +67,8 @@ function Tournaments() {
         <>
           <EyeOutlined onClick={() => onViewTournament(record)} />
           <DeleteOutlined onClick={() => onDeleteTournament(record)} style={{ color: "red", marginLeft: 12 }} />
+          <SettingOutlined onClick={() => administrateTournament(record.id)} style={{ marginLeft: 12 }}
+          />
         </>
       ),
     },
@@ -73,6 +78,10 @@ function Tournaments() {
     setIsViewing(true);
     setViewingTournament(record);
   };
+  
+  const administrateTournament = (id: number) => {
+    navigate(`/adminPanel`);
+  };
 
   const onAddTournament = () => {
     setIsRegistering(true);
@@ -80,18 +89,18 @@ function Tournaments() {
 
   const onDeleteTournament = (record: Tournament) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this tournament?",
-      okText: "Yes",
+      title: "Esta seguro que desea elimianar este torneo?",
+      okText: "Si",
       okType: "danger",
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
-          const headers = { Authorization: `Bearer ${token}` }
+          const headers = { Authorization: token }
           const response = await axios.delete(`${process.env.REACT_APP_TOURNAMENTS_API_URL}/${record.id}`, { headers });
 
           if (response.status === 200) {
             setDataSource((prev) => prev.filter((tournament) => tournament.id !== record.id));
-            message.success("Tournament deleted successfully!");
+            message.success("Torneo eliminado exitosamente!");
           } else {
             message.error('Failed to delete tournament');
           }
@@ -105,32 +114,32 @@ function Tournaments() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddTournament}>Add New Tournament</Button>
+        <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="Tournament Details"
-          visible={isViewing}
+          title="Detalles del torneo"
+          open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
           width='80%'
         >
           {viewingTournament && (
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="Name">{viewingTournament.name}</Descriptions.Item>
-              <Descriptions.Item label="Start Date">{viewingTournament.startDate}</Descriptions.Item>
-              <Descriptions.Item label="End Date">{viewingTournament.endDate}</Descriptions.Item>
+              <Descriptions.Item label="Nombre">{viewingTournament.name}</Descriptions.Item>
+              <Descriptions.Item label="Fecha inicio">{viewingTournament.startDate}</Descriptions.Item>
+              <Descriptions.Item label="Fecha fin">{viewingTournament.endDate}</Descriptions.Item>
               {/* Address details */}
-              <Descriptions.Item label="Address 1">{viewingTournament.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Address 2">{viewingTournament.address.address2}</Descriptions.Item>
-              <Descriptions.Item label="City">{viewingTournament.address.city}</Descriptions.Item>
-              <Descriptions.Item label="State">{viewingTournament.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Postal Code">{viewingTournament.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="Country">{viewingTournament.address.country}</Descriptions.Item>
+              <Descriptions.Item label="Calle y Número">{viewingTournament.address.address1}</Descriptions.Item>
+              <Descriptions.Item label="Colonia">{viewingTournament.address.address2}</Descriptions.Item>
+              <Descriptions.Item label="Ciudad">{viewingTournament.address.city}</Descriptions.Item>
+              <Descriptions.Item label="Estado">{viewingTournament.address.state}</Descriptions.Item>
+              <Descriptions.Item label="Código Postal">{viewingTournament.address.postalCode}</Descriptions.Item>
+              <Descriptions.Item label="País">{viewingTournament.address.country}</Descriptions.Item>
             </Descriptions>
           )}
         </Modal>
         <Modal
-          title="Register New Tournament"
+          title="Registrar Nuevo Torneo"
           open={isRegistering}
           footer={null}
           onCancel={() => {

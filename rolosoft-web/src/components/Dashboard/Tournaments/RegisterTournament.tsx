@@ -59,7 +59,7 @@ const RegisterTournament: React.FC = () => {
         try {
             const response = await axios.post(process.env.REACT_APP_TOURNAMENTS_API_URL!, payload, { headers });
             if (response.status === 201) {
-                message.success('Tournament registered successfully!');
+                message.success('Torneo Regsitrado Exitosamente!');
                 form.resetFields();
             } else {
                 message.error('Failed to register tournament.');
@@ -73,32 +73,32 @@ const RegisterTournament: React.FC = () => {
     return (
         <div style={formContainerStyle}>
             <Form form={form} onFinish={handleSubmit} style={formStyle} layout="vertical">
-                <Form.Item name="name" label="Tournament Name" rules={[{ required: true }]}>
+                <Form.Item name="name" label="Nombre del torneo" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="dates" label="Start and End Date" rules={[{ required: true }]}>
+                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]}>
                     <RangePicker format="YYYY-MM-DD" />
                 </Form.Item>
-                <Form.Item name="address1" label="Address Line 1" rules={[{ required: true }]}>
+                <Form.Item name="address1" label="Calle y Número" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="address2" label="Address Line 2">
+                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="city" label="City" rules={[{ required: true }]}>
+                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="state" label="State" rules={[{ required: true }]}>
+                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="postalCode" label="Postal Code" rules={[{ required: true }]}>
+                <Form.Item name="postalCode" label="Código Postal" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="country" label="Country" rules={[{ required: true }]}>
+                <Form.Item name="country" label="País" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
                 <Form.Item>
-                    <Button type="primary" htmlType="submit">Register Tournament</Button>
+                    <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>
             </Form>
         </div>

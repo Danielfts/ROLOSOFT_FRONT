@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Radio, Button, Select, DatePicker, message, RadioChangeEvent } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
@@ -67,9 +67,15 @@ interface StudentUser extends BaseUser {
     student: StudentDetails;
 }
 
-type UserFormValues = Omit<BaseUser, 'role' | 'birthDate'> & {
+type UserFormValues = Omit<BaseUser, 'role' | 'birthDate' | 'address'> & {
     birthDate: moment.Moment;
     userType: string;
+    address1: string;
+    address2: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
     school?: string;
     fieldPosition?: string;
     shirtNumber?: number;
@@ -77,8 +83,31 @@ type UserFormValues = Omit<BaseUser, 'role' | 'birthDate'> & {
     IMSS?: string;
 };
 
+const AddressFields: React.FC = () => (
+    <>
+        <Form.Item name="address1" label="Calle y Numero" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+        <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+        <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+        <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+        <Form.Item name="country" label="Pais" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+        <Form.Item name="postalCode" label="Codigo Postal" rules={[{ required: true }]}>
+            <Input />
+        </Form.Item>
+    </>
+);
+
 const RegisterUser: React.FC = () => {
-    const [form] = Form.useForm<UserFormValues>();
+    const [form] = Form.useForm();
     const [userType, setUserType] = useState<string>('');
     const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
     const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
@@ -94,7 +123,7 @@ const RegisterUser: React.FC = () => {
     const fetchSchools = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            message.error('No token found, please login.');
+            message.error('No se encontró ningun token, por favor inicie sesión');
             return;
         }
         const headers = { Authorization: token };
@@ -113,17 +142,17 @@ const RegisterUser: React.FC = () => {
             message.error('Failed to load schools');
         }
     };
-    
+
     const fetchTeams = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            message.error('No token found, please login.');
+            message.error('No se encontró ningun token, por favor inicie sesión');
             return;
         }
         const headers = { Authorization: token };
         try {
             const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
-            
+
             if (response.data.success && response.data.data.length > 0) {
                 setTeams(response.data.data.map((team: any) => ({
                     id: team.id,
@@ -136,13 +165,22 @@ const RegisterUser: React.FC = () => {
             console.error('Failed to load teams:', error);
             message.error('Failed to load teams');
         }
-    };    
+    };
 
     const handleSubmit = async (values: UserFormValues) => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: token };
         const formattedBirthDate = values.birthDate.format('YYYY-MM-DD');
-        const { birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
+        const { address1, address2, city, state, postalCode, country, birthDate, school, fieldPosition, shirtNumber, team, IMSS, gender, ...rest } = values;
+
+        const address: Address = {
+            address1,
+            address2,
+            city,
+            state,
+            postalCode,
+            country
+        };
 
         let payload: AdminUser | StudentUser;
 
@@ -159,6 +197,7 @@ const RegisterUser: React.FC = () => {
                 ...rest,
                 birthDate: formattedBirthDate,
                 gender,
+                address,
                 role: "student",
                 CURP: rest.CURP,
                 student: studentDetails,
@@ -169,6 +208,7 @@ const RegisterUser: React.FC = () => {
                 ...rest,
                 birthDate: formattedBirthDate,
                 gender,
+                address,
                 role: "admin",
                 CURP: rest.CURP,
             } as AdminUser;
@@ -185,12 +225,13 @@ const RegisterUser: React.FC = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response) {
+                    const errorMessage = error.response.data.message;
                     if (error.response.status === 403) {
                         message.error('No tienes permiso para realizar esta acción.');
                     } else if (error.response.status === 400) {
-                        message.error('Una cuenta ya se registró con ese correo electrónico.');
+                        message.error(`Error: ${errorMessage || 'Error de servidor'}`);
                     } else {
-                        message.error(`Error: ${error.response.data.message || 'Error de servidor'}`);
+                        message.error(`Error: ${errorMessage || 'Error de servidor'}`);
                     }
                 } else {
                     message.error('Error de red o servidor, por favor verifica tu conexión.');
@@ -198,7 +239,7 @@ const RegisterUser: React.FC = () => {
             } else {
                 message.error('Un error inesperado ha ocurrido.');
             }
-            console.error('Error al registar usuario:', error);
+            console.error('Error al registrar usuario:', error);
         }
     };
 
@@ -251,38 +292,16 @@ const RegisterUser: React.FC = () => {
                 ]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="address1" label="Calle y Numero" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="country" label="Pais" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="postalCode" label="Codigo Postal" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
+
+                <AddressFields />
 
                 {userType === 'student' && (
                     <>
-
                         <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="parentCURP" label="CURP del padre, madre o tutor" rules={[
-                            { required: true },
-                            { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="school" label="School" rules={[{ required: true }]}>
-                            <Select placeholder="Select a school" allowClear>
+                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
+                            <Select placeholder="Seleccione una Escuela" allowClear>
                                 {schools.map(school => (
                                     <Option key={school.id} value={school.id}>{school.name}</Option>
                                 ))}
@@ -296,7 +315,7 @@ const RegisterUser: React.FC = () => {
                             <Input type="number" />
                         </Form.Item>
                         <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
-                            <Select placeholder="Select a team" allowClear>
+                            <Select placeholder="Seleccione un Equipo" allowClear>
                                 {teams.map(team => (
                                     <Option key={team.id} value={team.id}>{team.name}</Option>
                                 ))}
