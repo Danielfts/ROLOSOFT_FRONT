@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import Users from './Users/Users';
+import Schools from './Schools/Schools';
 import Tournaments from './Tournaments/Tournaments';
 
 const { Header, Sider, Content } = Layout;
@@ -18,7 +19,9 @@ const Dashboard: React.FC = () => {
       case '1':
         return <Users />;
       case '2':
-        return <Tournaments />;
+        return <Schools />;
+      case '3':
+          return <Tournaments />;
       default:
         return <div>Selecciona una accion</div>;
     }
@@ -41,10 +44,17 @@ const Dashboard: React.FC = () => {
             },
             {
               key: '2',
-              icon: <TrophyOutlined />,
-              label: 'Copas',
+              icon: <TeamOutlined />,
+              label: 'Escuelas',
               onClick: () => setSelectedMenu('2'),
             },
+            {
+              key: '3',
+              icon: <TrophyOutlined />,
+              label: 'Torneos',
+              onClick: () => setSelectedMenu('3'),
+            },
+            
           ]}
         />
       </Sider>
