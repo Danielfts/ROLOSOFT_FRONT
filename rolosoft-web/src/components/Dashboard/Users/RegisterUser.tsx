@@ -229,7 +229,13 @@ const RegisterUser: React.FC = () => {
                     if (error.response.status === 403) {
                         message.error('No tienes permiso para realizar esta acción.');
                     } else if (error.response.status === 400) {
-                        message.error(`Error: ${errorMessage || 'Error de servidor'}`);
+                        if (errorMessage === 'CURP already exists') {
+                            message.error('Una cuenta ya se registró con ese CURP');
+                        } else if (errorMessage === 'email already exists') {
+                            message.error('Una cuenta ya se registró con ese correo electrónico');
+                        } else {
+                            message.error(`Error: ${errorMessage || 'Error de servidor'}`);
+                        }
                     } else {
                         message.error(`Error: ${errorMessage || 'Error de servidor'}`);
                     }
@@ -239,7 +245,7 @@ const RegisterUser: React.FC = () => {
             } else {
                 message.error('Un error inesperado ha ocurrido.');
             }
-            console.error('Error al registrar usuario:', error);
+            console.error('Error al registar usuario:', error);
         }
     };
 
