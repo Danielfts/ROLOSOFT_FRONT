@@ -1,8 +1,10 @@
-import { Button, Table, Modal, Input } from "antd";
-import { useState } from "react";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Button, Table, Modal, Input, message, Descriptions } from "antd";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { useNavigate } from 'react-router-dom';
+import RegisterTeam from './RegisterTeam';
 
-// Define a type for team data
 type Team = {
   id: number;
   name: string;
@@ -10,128 +12,116 @@ type Team = {
 };
 
 function Teams() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
-  const [dataSource, setDataSource] = useState<Team[]>([
-    {
-      id: 1,
-      name: "Team Alpha",
-      address: "1234 Alpha St",
-    },
-    {
-      id: 2,
-      name: "Team Beta",
-      address: "5678 Beta Ave",
-    },
-  ]);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingTeam, setViewingTeam] = useState<Team | null>(null);
+  const [dataSource, setDataSource] = useState<Team[]>([]);
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  const fetchTeams = async () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+    try {
+      if (!token) {
+        message.error('No se encontró ningun token, por favor inicie sesión');
+        return;
+      }
+      const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
+
+      if (response.status === 200 && response.data.success) {
+        setDataSource(response.data.data);
+      } else {
+        console.error('Failed to fetch teams with status:', response.status);
+        message.error('Error fetching teams with unexpected status.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch teams:', error);
+      message.error('Error fetching teams');
+    }
+  };
+
+  const navigate = useNavigate();
 
   const columns = [
-    {
-      key: "1",
-      title: "ID",
-      dataIndex: "id",
-      sorter: (a: Team, b: Team) => a.id - b.id,
-    },
+    { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: Team, b: Team) => a.name.localeCompare(b.name) },
     {
       key: "2",
-      title: "Team",
-      dataIndex: "name",
-      sorter: (a: Team, b: Team) => a.name.localeCompare(b.name),
-    },
-    {
-      key: "3",
-      title: "Address",
-      dataIndex: "address",
-    },
-    {
-      key: "4",
       title: "Actions",
       render: (record: Team) => (
         <>
-          <EditOutlined
-            onClick={() => {
-              onEditTeam(record);
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => {
-              onDeleteTeam(record);
-            }}
-            style={{ color: "red", marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={() => onViewTeam(record)} />
+          <DeleteOutlined onClick={() => onDeleteTeam(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
 
+  const onViewTeam = (record: Team) => {
+    setIsViewing(true);
+    setViewingTeam(record);
+  };
+
   const onAddTeam = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newTeam: Team = {
-      id: randomNumber,
-      name: "Team " + randomNumber,
-      address: "New Address " + randomNumber,
-    };
-    setDataSource((prev) => [...prev, newTeam]);
+    setIsRegistering(true);
   };
 
   const onDeleteTeam = (record: Team) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this team?",
-      okText: "Yes",
+      title: "Esta seguro que desea elimianar este equipo?",
+      okText: "Si",
       okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((team) => team.id !== record.id));
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const headers = { Authorization: token }
+          const response = await axios.delete(`${process.env.REACT_APP_TEAMS_API_URL}/${record.id}`, { headers });
+
+          if (response.status === 200) {
+            setDataSource((prev) => prev.filter((team) => team.id !== record.id));
+            message.success("Equipo eliminado exitosamente!");
+          } else {
+            message.error('Failed to delete team');
+          }
+        } catch (error) {
+          message.error('Failed to delete team: ' + error);
+        }
       },
     });
-  };
-
-  const onEditTeam = (record: Team) => {
-    setIsEditing(true);
-    setEditingTeam({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingTeam(null);
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddTeam}>Add New Team</Button>
+        <Button onClick={onAddTeam}>Registrar Nuevo Equipo</Button>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
-          title="Edit Team"
-          visible={isEditing}
-          okText="Save"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((team) =>
-                team.id === editingTeam?.id ? editingTeam : team
-              )
-            );
-            resetEditing();
-          }}
+          title="Detalles del equipo"
+          open={isViewing}
+          onOk={() => setIsViewing(false)}
+          onCancel={() => setIsViewing(false)}
+          width='80%'
         >
-          <Input
-            placeholder="Team Name"
-            value={editingTeam?.name}
-            onChange={(e) =>
-              setEditingTeam((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            placeholder="Address"
-            value={editingTeam?.address}
-            onChange={(e) =>
-              setEditingTeam((prev) =>
-                prev ? { ...prev, address: e.target.value } : null
-              )
-            }
-          />
+          {viewingTeam && (
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="Nombre">{viewingTeam.name}</Descriptions.Item>
+              <Descriptions.Item label="Dirección">{viewingTeam.address}</Descriptions.Item>
+            </Descriptions>
+          )}
+        </Modal>
+        <Modal
+          title="Registrar Nuevo Equipo"
+          open={isRegistering}
+          footer={null}
+          onCancel={() => {
+            setIsRegistering(false);
+            fetchTeams();
+          }}
+          width='80%'
+        >
+          <RegisterTeam />
         </Modal>
       </header>
     </div>

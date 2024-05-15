@@ -63,7 +63,6 @@ function Schools() {
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
           <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
-          <SettingOutlined onClick={() => administrateSchool(record.id)} style={{ marginLeft: 12 }} />
         </>
       ),
     },
@@ -72,10 +71,6 @@ function Schools() {
   const onViewSchool = (record: School) => {
     setIsViewing(true);
     setViewingSchool(record);
-  };
-  
-  const administrateSchool = (id: number) => {
-    navigate(`/adminPanel`);
   };
 
   const onAddSchool = () => {
