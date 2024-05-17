@@ -50,13 +50,13 @@ const RegisterPhase: React.FC<RegisterPhaseProps> = ({ onClose }) => {
                     name="name"
                     rules={[{ required: true, message: "Please input the phase name" }]}
                 >
-                    <Input placeholder="Phase Name" />
+                    <Input placeholder="Nombre de la Fase" />
                 </Form.Item>
                 <Form.Item
                     name="dates"
                     rules={[{ required: true, message: "Please select the dates" }]}
                 >
-                    <RangePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+                    <RangePicker placeholder={['Fecha Inicio', 'Fecha Fin']} format="YYYY-MM-DD" style={{ width: "100%" }} />
                 </Form.Item>
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">

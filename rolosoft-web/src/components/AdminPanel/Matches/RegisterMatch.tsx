@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Form, Select, Button, message, DatePicker } from "antd";
 import axios from "axios";
-import moment from "moment";
 
 const { RangePicker } = DatePicker;
 
 type Team = {
+    id: string;
+    name: string;
+};
+
+type Phase = {
     id: string;
     name: string;
 };
@@ -17,8 +21,10 @@ type RegisterMatchProps = {
 const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
     const [form] = Form.useForm();
     const [teams, setTeams] = useState<Team[]>([]);
+    const [phases, setPhases] = useState<Phase[]>([]);
     const [teamA, setTeamA] = useState<string | null>(null);
     const [teamB, setTeamB] = useState<string | null>(null);
+    const [phase, setPhase] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -31,7 +37,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
             }
             try {
                 const response = await axios.get(
-                    `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/teams`,
+                    `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`,
                     { headers }
                 );
                 if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
@@ -44,7 +50,31 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
             }
         };
 
+        const fetchPhases = async () => {
+            const token = localStorage.getItem("token");
+            const headers = { Authorization: token };
+            const tournamentId = localStorage.getItem("selectedTournamentId");
+            if (!tournamentId) {
+                message.error("No tournament ID found");
+                return;
+            }
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases`,
+                    { headers }
+                );
+                if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
+                    setPhases(response.data.data);
+                } else {
+                    message.error("Failed to fetch phases");
+                }
+            } catch (error) {
+                message.error("Error fetching phases");
+            }
+        };
+
         fetchTeams();
+        fetchPhases();
     }, []);
 
     const handleSubmit = async (values: any) => {
@@ -52,8 +82,8 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
         const headers = { Authorization: token };
         const tournamentId = localStorage.getItem("selectedTournamentId");
         const payload = {
-            startDate: values.startDate.toISOString(),
-            endDate: values.endDate.toISOString(),
+            startDate: values.dates[0].toISOString(),
+            endDate: values.dates[1].toISOString(),
             teamA: {
                 id: values.teamA,
             },
@@ -64,7 +94,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/matches`,
+                `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases/${values.phase}/matches`,
                 payload,
                 { headers }
             );
@@ -74,6 +104,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 form.resetFields();
                 setTeamA(null);
                 setTeamB(null);
+                setPhase(null);
             } else {
                 message.error("Fallo al registrar partido");
             }
@@ -85,6 +116,22 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
     return (
         <div>
             <Form form={form} onFinish={handleSubmit} layout="vertical">
+                <Form.Item
+                    name="phase"
+                    rules={[{ required: true, message: "Seleccione Fase" }]}
+                >
+                    <Select
+                        placeholder="Seleccione Fase"
+                        onChange={(value) => setPhase(value as string)}
+                    >
+                        {phases.map((phase) => (
+                            <Select.Option key={phase.id} value={phase.id}>
+                                {phase.name}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+
                 <Form.Item
                     name="teamA"
                     rules={[{ required: true, message: "Seleccione Equipo A" }]}
@@ -117,11 +164,11 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                     </Select>
                 </Form.Item>
 
-                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]} >
-                    <RangePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+                <Form.Item name="dates" rules={[{ required: true, message: 'Please select the dates' }]}>
+                    <RangePicker showTime placeholder={['Fecha Inicio', 'Fecha Fin']} format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
                 </Form.Item>
 
-                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
+                <Form.Item>
                     <Button type="primary" htmlType="submit">
                         Registrar Partido
                     </Button>
