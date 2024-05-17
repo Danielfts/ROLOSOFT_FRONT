@@ -121,7 +121,8 @@ function Users() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddUser}>Registrar Nuevo Usuario</Button>
+        <Button type="primary" onClick={onAddUser}>Registrar Nuevo Usuario</Button>
+        <div style={{ margin: "2%" }}></div>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
           title="Detalles de usuario"

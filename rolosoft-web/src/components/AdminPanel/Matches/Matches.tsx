@@ -3,6 +3,7 @@ import axios from "axios";
 import { Table, Button, Modal, message, Descriptions } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import RegisterMatch from "./RegisterMatch";
+import RegisterPhase from "./RegisterPhase";
 
 type Team = {
   id: string;
@@ -18,14 +19,26 @@ type Match = {
   goals: string;
 };
 
+type Phase = {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+};
+
 const Matches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [phases, setPhases] = useState<Phase[]>([]);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingMatch, setViewingMatch] = useState<Match | null>(null);
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [isRegisteringMatch, setIsRegisteringMatch] = useState<boolean>(false);
+  const [isRegisteringPhase, setIsRegisteringPhase] = useState<boolean>(false);
+  const [isViewingPhase, setIsViewingPhase] = useState<boolean>(false);
+  const [viewingPhase, setViewingPhase] = useState<Phase | null>(null);
 
   useEffect(() => {
     fetchMatches();
+    fetchPhases();
   }, []);
 
   const fetchMatches = async () => {
@@ -52,30 +65,134 @@ const Matches = () => {
     }
   };
 
-  const columns = [
-    { key: "1", title: "Team A", dataIndex: ["teamA", "name"] },
-    { key: "2", title: "Team B", dataIndex: ["teamB", "name"] },
-    { key: "3", title: "Start Date", dataIndex: "startDate" },
-    { key: "4", title: "Goals", dataIndex: "goals" },
+  const fetchPhases = async () => {
+    const tournamentId = localStorage.getItem("selectedTournamentId");
+    if (!tournamentId) {
+      message.error("No tournament ID found");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: token };
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases`,
+        { headers }
+      );
+      if (response.status === 200 && response.data.success) {
+        setPhases(response.data.data);
+      } else {
+        message.error("Failed to fetch phases");
+      }
+    } catch (error) {
+      message.error("Error fetching phases");
+    }
+  };
+
+  const matchColumns = [
+    {
+      key: "1",
+      title: "Equipo A",
+      dataIndex: ["teamA", "name"],
+      sorter: (a: Match, b: Match) => a.teamA.name.localeCompare(b.teamA.name),
+    },
+    {
+      key: "2",
+      title: "Equipo B",
+      dataIndex: ["teamB", "name"],
+      sorter: (a: Match, b: Match) => a.teamB.name.localeCompare(b.teamB.name),
+    },
+    {
+      key: "3",
+      title: "Fecha Inicio",
+      dataIndex: "startDate",
+      sorter: (a: Match, b: Match) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    },
+    {
+      key: "4",
+      title: "Goles",
+      dataIndex: "goals",
+      sorter: (a: Match, b: Match) => a.goals.localeCompare(b.goals),
+    },
     {
       key: "5",
-      title: "Actions",
+      title: "Acciones",
       render: (record: Match) => (
         <>
           <EyeOutlined onClick={() => onViewMatch(record)} />
-          <DeleteOutlined
-            onClick={() => onDeleteMatch(record)}
-            style={{ color: "red", marginLeft: 12 }}
-          />
+          <DeleteOutlined onClick={() => onDeleteMatch(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
 
+  const phaseColumns = [
+    {
+        key: "1",
+        title: "Fase",
+        dataIndex: "name",
+        sorter: (a: Phase, b: Phase) => a.name.localeCompare(b.name),
+    },
+    {
+        key: "2",
+        title: "Fecha Inicio",
+        dataIndex: "startDate",
+        sorter: (a: Phase, b: Phase) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    },
+    {
+        key: "3",
+        title: "Fecha Final",
+        dataIndex: "endDate",
+        sorter: (a: Phase, b: Phase) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
+    },
+    {
+        key: "4",
+        title: "Acciones",
+        render: (record: Phase) => (
+            <>
+                <EyeOutlined onClick={() => onViewPhase(record)} />
+                <DeleteOutlined onClick={() => onDeletePhase(record)} style={{ color: "red", marginLeft: 12 }} />
+            </>
+        ),
+    },
+];
+
+  const onViewPhase = (record: Phase) => {
+    setIsViewingPhase(true);
+    setViewingPhase(record);
+  };
+
   const onViewMatch = (record: Match) => {
     setIsViewing(true);
     setViewingMatch(record);
   };
+
+  const onDeletePhase = (record: Phase) => {
+    Modal.confirm({
+        title: "Estas seguro que desea eliminar esta fase?",
+        okText: "Yes",
+        okType: "danger",
+        onOk: async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const headers = { Authorization: token };
+                const response = await axios.delete(
+                    `${process.env.REACT_APP_BASE_URL}/phases/${record.id}`,
+                    { headers }
+                );
+
+                if (response.status === 200) {
+                    setPhases((prev) => prev.filter((phase) => phase.id !== record.id));
+                    message.success("Fase eliminada exitosamente!");
+                } else {
+                    message.error("Failed to delete phase");
+                }
+            } catch (error) {
+                message.error("Failed to delete phase: " + error);
+            }
+        },
+    });
+};
 
   const onDeleteMatch = (record: Match) => {
     Modal.confirm({
@@ -93,7 +210,7 @@ const Matches = () => {
 
           if (response.status === 200) {
             setMatches((prev) => prev.filter((match) => match.id !== record.id));
-            message.success("Match deleted successfully!");
+            message.success("Partido eliminado exitosmente!");
           } else {
             message.error("Failed to delete match");
           }
@@ -105,15 +222,24 @@ const Matches = () => {
   };
 
   const onRegisterMatch = () => {
-    setIsRegistering(true);
+    setIsRegisteringMatch(true);
+  };
+
+  const onRegisterPhase = () => {
+    setIsRegisteringPhase(true);
   };
 
   return (
     <div>
-      <Button onClick={onRegisterMatch}>Register New Match</Button>
-      <Table columns={columns} dataSource={matches} rowKey="id" />
+      <Button type="primary" onClick={onRegisterPhase}>Registrar Nueva Fase</Button>
+      <div style={{ margin: "2%" }}></div>
+      <Table columns={phaseColumns} dataSource={phases} rowKey="id" pagination={false} />
+      <div style={{ margin: "5%" }}></div>
+      <Button type="primary" onClick={onRegisterMatch}>Registrar Nuevo Partido</Button>
+      <div style={{ margin: "2%" }}></div>
+      <Table columns={matchColumns} dataSource={matches} rowKey="id" />
       <Modal
-        title="Match Details"
+        title="Detalles del Partido"
         open={isViewing}
         onCancel={() => setIsViewing(false)}
         footer={null}
@@ -121,32 +247,61 @@ const Matches = () => {
       >
         {viewingMatch && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Team A">
+            <Descriptions.Item label="Equipo A">
               {viewingMatch.teamA.name}
             </Descriptions.Item>
-            <Descriptions.Item label="Team B">
+            <Descriptions.Item label="Equipo B">
               {viewingMatch.teamB.name}
             </Descriptions.Item>
-            <Descriptions.Item label="Start Date">
+            <Descriptions.Item label="Fecha Inicio">
               {viewingMatch.startDate}
             </Descriptions.Item>
-            <Descriptions.Item label="End Date">
+            <Descriptions.Item label="Fecha Fin">
               {viewingMatch.endDate}
             </Descriptions.Item>
-            <Descriptions.Item label="Goals">{viewingMatch.goals}</Descriptions.Item>
+            <Descriptions.Item label="Goles">{viewingMatch.goals}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
       <Modal
-        title="Register New Match"
-        open={isRegistering}
+        title="Detalles de la Fase"
+        open={isViewingPhase}
+        onCancel={() => setIsViewingPhase(false)}
         footer={null}
-        onCancel={() => setIsRegistering(false)}
+        width={500}
+      >
+        {viewingPhase && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Nombre de la Fase">{viewingPhase.name}</Descriptions.Item>
+            <Descriptions.Item label="Fecha de Inicio">{viewingPhase.startDate}</Descriptions.Item>
+            <Descriptions.Item label="Fecha de Fin">{viewingPhase.endDate}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
+      <Modal
+        title="Registrar Nueva Fase"
+        open={isRegisteringPhase}
+        footer={null}
+        onCancel={() => setIsRegisteringPhase(false)}
+        width={500}
+      >
+        <RegisterPhase
+          onClose={() => {
+            setIsRegisteringPhase(false);
+            fetchPhases();
+          }}
+        />
+      </Modal>
+      <Modal
+        title="Registrar Nuevo Partido"
+        open={isRegisteringMatch}
+        footer={null}
+        onCancel={() => setIsRegisteringMatch(false)}
         width={500}
       >
         <RegisterMatch
           onClose={() => {
-            setIsRegistering(false);
+            setIsRegisteringMatch(false);
             fetchMatches();
           }}
         />

@@ -62,8 +62,9 @@ const RegisterTournament: React.FC<RegisterTournamentProps> = ({ onClose }) => {
                 <Form.Item name="name" rules={[{ required: true }]}>
                     <Input placeholder="Nombre del torneo" />
                 </Form.Item>
-                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]} >
-                    <RangePicker format="YYYY-MM-DD" style={{ width: '100%' }}  />
+                <Form.Item name="dates" rules={[{ required: true }]} >
+                    <RangePicker placeholder={['Fecha Inicio', 'Fecha Fin']} format="YYYY-MM-DD" style={{ width: '100%' }
+                }  />
                 </Form.Item>
                 <Form.Item name="address1" rules={[{ required: true }]}>
                     <Input placeholder="Calle y Número" />
@@ -83,7 +84,7 @@ const RegisterTournament: React.FC<RegisterTournamentProps> = ({ onClose }) => {
                 <Form.Item name="country" rules={[{ required: true }]}>
                     <Input placeholder="País" />
                 </Form.Item>
-                <Form.Item>
+                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>
             </Form>

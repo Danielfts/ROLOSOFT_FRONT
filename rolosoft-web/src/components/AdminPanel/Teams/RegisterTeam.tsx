@@ -121,8 +121,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             ))}
           </Select>
         </Form.Item>
-
-        <Form.Item name="students" rules={[{ required: true, message: 'Seleccione al menos un Jugador' }]}>
+        <Form.Item name="students" rules={[{ required: false, message: 'Seleccione al menos un Jugador' }]}>
           <Select
             placeholder="Seleccione un Jugador"
             onChange={(studentId) => handleStudentSelect(studentId as string)}
@@ -135,7 +134,6 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             ))}
           </Select>
         </Form.Item>
-
         <div>
           <h4>Jugadores Seleccionados:</h4>
           {selectedStudents.map(student => (
@@ -144,10 +142,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             </div>
           ))}
         </div>
-
-        
-
-        <Form.Item>
+        <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
           <Button type="primary" htmlType="submit">
             Registrar Equipo
           </Button>
