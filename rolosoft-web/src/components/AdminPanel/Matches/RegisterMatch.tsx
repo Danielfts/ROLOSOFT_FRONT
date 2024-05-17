@@ -69,13 +69,13 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 { headers }
             );
             if (response.status === 201) {
-                message.success("Match registered successfully!");
+                message.success("Partido registrado exitosamente!");
                 onClose();
                 form.resetFields();
                 setTeamA(null);
                 setTeamB(null);
             } else {
-                message.error("Failed to register match");
+                message.error("Fallo al registrar partido");
             }
         } catch (error) {
             message.error("Error registering match");
@@ -87,10 +87,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
             <Form form={form} onFinish={handleSubmit} layout="vertical">
                 <Form.Item
                     name="teamA"
-                    rules={[{ required: true, message: "Select Team A" }]}
+                    rules={[{ required: true, message: "Seleccione Equipo A" }]}
                 >
                     <Select
-                        placeholder="Select Team A"
+                        placeholder="Seleccione Equipo A"
                         onChange={(value) => setTeamA(value as string)}
                     >
                         {teams.map((team) => (
@@ -103,10 +103,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
 
                 <Form.Item
                     name="teamB"
-                    rules={[{ required: true, message: "Select Team B" }]}
+                    rules={[{ required: true, message: "Seleccione Equipo B" }]}
                 >
                     <Select
-                        placeholder="Select Team B"
+                        placeholder="Seleccione Equipo B"
                         onChange={(value) => setTeamB(value as string)}
                     >
                         {teams.map((team) => (

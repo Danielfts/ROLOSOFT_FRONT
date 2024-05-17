@@ -115,8 +115,8 @@ function Tournaments() {
     <div className="App">
       <header className="App-header">
         <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
-        <Table
-          columns={columns}
+        <div style={{ margin: "2%" }}></div>
+        <Table columns={columns}
           dataSource={dataSource}
           onRow={(record) => ({
             onClick: () => administrateTournament(record.id),

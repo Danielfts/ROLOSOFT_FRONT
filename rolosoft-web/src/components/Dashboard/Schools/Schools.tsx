@@ -102,6 +102,7 @@ function Schools() {
     <div className="App">
       <header className="App-header">
         <Button onClick={onAddSchool}>Registrar Nueva Escuela</Button>
+        <div style={{ margin: "2%" }}></div>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
           title="Detalles de la escuela"

@@ -54,7 +54,7 @@ const Teams = () => {
   const onDeleteSchool = (record: School) => {
     Modal.confirm({
       title: "Esta seguro que desea eliminar a este equipo?",
-      okText: "Yes",
+      okText: "Si",
       okType: "danger",
       onOk: async () => {
         try {
@@ -102,6 +102,7 @@ const Teams = () => {
   return (
     <div>
       <Button onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
+      <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
       <Modal
         title="Detalles del Equipo"
