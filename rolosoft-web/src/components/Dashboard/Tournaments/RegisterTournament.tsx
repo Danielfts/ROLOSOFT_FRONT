@@ -83,7 +83,7 @@ const RegisterTournament: React.FC<RegisterTournamentProps> = ({ onClose }) => {
                 <Form.Item name="country" rules={[{ required: true }]}>
                     <Input placeholder="País" />
                 </Form.Item>
-                <Form.Item>
+                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>
             </Form>

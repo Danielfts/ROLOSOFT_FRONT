@@ -76,8 +76,18 @@ const Teams = () => {
   };
 
   const columns = [
-    { key: "1", title: "Nombre", dataIndex: "name" },
-    { key: "2", title: "Sponsor", dataIndex: "sponsor" },
+    {
+      key: "1",
+      title: "Nombre",
+      dataIndex: "name",
+      sorter: (a: School, b: School) => a.name.localeCompare(b.name),
+    },
+    {
+      key: "2",
+      title: "Sponsor",
+      dataIndex: "sponsor",
+      sorter: (a: School, b: School) => a.sponsor.localeCompare(b.sponsor),
+    },
     {
       key: "3",
       title: "Acciones",
@@ -90,6 +100,7 @@ const Teams = () => {
     },
   ];
 
+
   const onViewSchool = (record: School) => {
     setIsViewing(true);
     setViewingSchool(record);
@@ -101,7 +112,7 @@ const Teams = () => {
 
   return (
     <div>
-      <Button onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
+      <Button type="primary" onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
       <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
       <Modal
@@ -124,17 +135,17 @@ const Teams = () => {
         )}
       </Modal>
       <Modal
-          title="Registrar Nuevo Equipo"
-          open={isRegistering}
-          footer={null}
-          onCancel={() => setIsRegistering(false)}
-          width={500}
-        >
-          <RegisterTeam onClose={() => {
-            setIsRegistering(false);
-            fetchSchools();
-          }} />
-        </Modal>
+        title="Registrar Nuevo Equipo"
+        open={isRegistering}
+        footer={null}
+        onCancel={() => setIsRegistering(false)}
+        width={500}
+      >
+        <RegisterTeam onClose={() => {
+          setIsRegistering(false);
+          fetchSchools();
+        }} />
+      </Modal>
     </div>
   );
 };

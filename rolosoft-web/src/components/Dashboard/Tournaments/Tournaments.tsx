@@ -114,7 +114,7 @@ function Tournaments() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
+        <Button type="primary" onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
         <div style={{ margin: "2%" }}></div>
         <Table columns={columns}
           dataSource={dataSource}

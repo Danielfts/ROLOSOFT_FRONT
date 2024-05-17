@@ -163,7 +163,8 @@ function ScoreTable() {
   return (
     <div className="App">
       <header className="App-header">
-        <Button onClick={onAddTeam}>Agregar Nuevo Equipo</Button>
+        <Button type="primary" onClick={onAddTeam}>Agregar Nuevo Equipo</Button>
+        <div style={{ margin: "2%" }}></div>
         <Table columns={columns} dataSource={dataSource} />
         <Modal
           title="Editar Equipo"

@@ -58,9 +58,9 @@ const RegisterPhase: React.FC<RegisterPhaseProps> = ({ onClose }) => {
                 >
                     <RangePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
                 </Form.Item>
-                <Form.Item>
+                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">
-                        Register Phase
+                        Registrar Fase
                     </Button>
                 </Form.Item>
             </Form>
