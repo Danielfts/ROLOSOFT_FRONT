@@ -168,7 +168,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                     <RangePicker showTime placeholder={['Fecha Inicio', 'Fecha Fin']} format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
                 </Form.Item>
 
-                <Form.Item>
+                <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">
                         Registrar Partido
                     </Button>

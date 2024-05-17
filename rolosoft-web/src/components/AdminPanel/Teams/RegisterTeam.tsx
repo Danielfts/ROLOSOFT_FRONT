@@ -121,7 +121,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="students" rules={[{ required: true, message: 'Seleccione al menos un Jugador' }]}>
+        <Form.Item name="students" rules={[{ required: false, message: 'Seleccione al menos un Jugador' }]}>
           <Select
             placeholder="Seleccione un Jugador"
             onChange={(studentId) => handleStudentSelect(studentId as string)}
