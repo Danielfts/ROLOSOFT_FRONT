@@ -80,9 +80,10 @@ function Tournaments() {
   };
   
   const administrateTournament = (id: number) => {
+    localStorage.setItem('selectedTournamentId', id.toString());
     navigate(`/adminPanel`);
   };
-
+  
   const onAddTournament = () => {
     setIsRegistering(true);
   };
@@ -128,7 +129,6 @@ function Tournaments() {
               <Descriptions.Item label="Nombre">{viewingTournament.name}</Descriptions.Item>
               <Descriptions.Item label="Fecha inicio">{viewingTournament.startDate}</Descriptions.Item>
               <Descriptions.Item label="Fecha fin">{viewingTournament.endDate}</Descriptions.Item>
-              {/* Address details */}
               <Descriptions.Item label="Calle y Número">{viewingTournament.address.address1}</Descriptions.Item>
               <Descriptions.Item label="Colonia">{viewingTournament.address.address2}</Descriptions.Item>
               <Descriptions.Item label="Ciudad">{viewingTournament.address.city}</Descriptions.Item>
@@ -142,13 +142,13 @@ function Tournaments() {
           title="Registrar Nuevo Torneo"
           open={isRegistering}
           footer={null}
-          onCancel={() => {
-            setIsRegistering(false);
-            fetchTournaments();
-          }}
+          onCancel={() => setIsRegistering(false)}
           width='80%'
         >
-          <RegisterTournament />
+          <RegisterTournament onClose={() => {
+            setIsRegistering(false);
+            fetchTournaments(); // Refresh the tournaments list
+          }} />
         </Modal>
       </header>
     </div>

@@ -35,12 +35,16 @@ interface TournamentFormValues {
     country: string;
 }
 
-const RegisterTournament: React.FC = () => {
+interface RegisterTournamentProps {
+    onClose: () => void;
+}
+
+const RegisterTournament: React.FC<RegisterTournamentProps> = ({ onClose }) => {
     const [form] = Form.useForm<TournamentFormValues>();
 
     const handleSubmit = async (values: TournamentFormValues) => {
         const token = localStorage.getItem('token');
-        const headers = { Authorization: token};
+        const headers = { Authorization: token };
         const { name, dates, address1, address2, city, state, postalCode, country } = values;
         const payload = {
             name,
@@ -59,8 +63,9 @@ const RegisterTournament: React.FC = () => {
         try {
             const response = await axios.post(process.env.REACT_APP_TOURNAMENTS_API_URL!, payload, { headers });
             if (response.status === 201) {
-                message.success('Torneo Regsitrado Exitosamente!');
+                message.success('Torneo Registrado Exitosamente!');
                 form.resetFields();
+                onClose(); // Close the modal and refresh the tournaments list
             } else {
                 message.error('Failed to register tournament.');
             }

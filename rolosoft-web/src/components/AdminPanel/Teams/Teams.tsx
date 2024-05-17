@@ -1,131 +1,138 @@
-import { Button, Table, Modal, Input, message, Descriptions } from "antd";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { useNavigate } from 'react-router-dom';
+import { Table, Button, Modal, message, Descriptions } from "antd";
+import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
 
-type Team = {
-  id: number;
-  name: string;
-  address: string;
+type Address = {
+  address1: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 };
 
-function Teams() {
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+type School = {
+  id: string;
+  name: string;
+  address: Address;
+  sponsor: string;
+};
+
+const Teams = () => {
+  const [schools, setSchools] = useState<School[]>([]);
   const [isViewing, setIsViewing] = useState<boolean>(false);
-  const [viewingTeam, setViewingTeam] = useState<Team | null>(null);
-  const [dataSource, setDataSource] = useState<Team[]>([]);
+  const [viewingSchool, setViewingSchool] = useState<School | null>(null);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchTeams();
+    fetchSchools();
   }, []);
 
-  const fetchTeams = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    try {
-      if (!token) {
-        message.error('No se encontró ningun token, por favor inicie sesión');
-        return;
-      }
-      const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
+  const fetchSchools = async () => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    if (!tournamentId) {
+      message.error('No tournament ID found');
+      return;
+    }
 
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: token };
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
       if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
+        setSchools(response.data.data);
       } else {
-        console.error('Failed to fetch teams with status:', response.status);
-        message.error('Error fetching teams with unexpected status.');
+        message.error('Failed to fetch schools');
       }
     } catch (error) {
-      console.error('Failed to fetch teams:', error);
-      message.error('Error fetching teams');
+      message.error('Error fetching schools');
     }
   };
 
-  const navigate = useNavigate();
-
-  const columns = [
-    { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: Team, b: Team) => a.name.localeCompare(b.name) },
-    {
-      key: "2",
-      title: "Actions",
-      render: (record: Team) => (
-        <>
-          <EyeOutlined onClick={() => onViewTeam(record)} />
-          <DeleteOutlined onClick={() => onDeleteTeam(record)} style={{ color: "red", marginLeft: 12 }} />
-        </>
-      ),
-    },
-  ];
-
-  const onViewTeam = (record: Team) => {
-    setIsViewing(true);
-    setViewingTeam(record);
-  };
-
-  const onAddTeam = () => {
-    setIsRegistering(true);
-  };
-
-  const onDeleteTeam = (record: Team) => {
+  const onDeleteSchool = (record: School) => {
     Modal.confirm({
-      title: "Esta seguro que desea elimianar este equipo?",
-      okText: "Si",
+      title: "Are you sure you want to delete this school?",
+      okText: "Yes",
       okType: "danger",
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
-          const headers = { Authorization: token }
-          const response = await axios.delete(`${process.env.REACT_APP_TEAMS_API_URL}/${record.id}`, { headers });
+          const headers = { Authorization: token };
+          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
 
           if (response.status === 200) {
-            setDataSource((prev) => prev.filter((team) => team.id !== record.id));
-            message.success("Equipo eliminado exitosamente!");
+            setSchools((prev) => prev.filter((school) => school.id !== record.id));
+            message.success("School deleted successfully!");
           } else {
-            message.error('Failed to delete team');
+            message.error('Failed to delete school');
           }
         } catch (error) {
-          message.error('Failed to delete team: ' + error);
+          message.error('Failed to delete school: ' + error);
         }
       },
     });
   };
 
+  const columns = [
+    { key: "1", title: "School Name", dataIndex: "name" },
+    { key: "2", title: "Sponsor", dataIndex: "sponsor" },
+    {
+      key: "3",
+      title: "Actions",
+      render: (record: School) => (
+        <>
+          <EyeOutlined onClick={() => onViewSchool(record)} />
+          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
+        </>
+      ),
+    },
+  ];
+
+  const onViewSchool = (record: School) => {
+    setIsViewing(true);
+    setViewingSchool(record);
+  };
+
+  const onRegisterTeam = () => {
+    setIsRegistering(true);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <Button onClick={onAddTeam}>Registrar Nuevo Equipo</Button>
-        <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Detalles del equipo"
-          open={isViewing}
-          onOk={() => setIsViewing(false)}
-          onCancel={() => setIsViewing(false)}
-          width='80%'
-        >
-          {viewingTeam && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nombre">{viewingTeam.name}</Descriptions.Item>
-              <Descriptions.Item label="Dirección">{viewingTeam.address}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
-        <Modal
-          title="Registrar Nuevo Equipo"
-          open={isRegistering}
-          footer={null}
-          onCancel={() => {
-            setIsRegistering(false);
-            fetchTeams();
-          }}
-          width='80%'
-        >
-          <RegisterTeam />
-        </Modal>
-      </header>
+    <div>
+      <Button onClick={onRegisterTeam}>Register New Team</Button>
+      <Table columns={columns} dataSource={schools} rowKey="id" />
+
+      <Modal
+        title="School Details"
+        visible={isViewing}
+        onCancel={() => setIsViewing(false)}
+        footer={null}
+        width='80%'
+      >
+        {viewingSchool && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
+            <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
+
+      <RegisterTeam
+        visible={isRegistering}
+        onClose={() => {
+          setIsRegistering(false);
+          fetchSchools();
+        }}
+      />
     </div>
   );
-}
+};
 
 export default Teams;

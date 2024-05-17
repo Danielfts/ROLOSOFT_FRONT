@@ -55,10 +55,8 @@ interface AdminUser extends BaseUser {
 }
 
 interface StudentDetails {
-    school: string;
     fieldPosition: string;
     shirtNumber: number;
-    team: string;
     IMSS: string;
 }
 
@@ -114,57 +112,6 @@ const RegisterUser: React.FC = () => {
 
     const handleUserTypeChange = (e: RadioChangeEvent) => {
         setUserType(e.target.value);
-        if (e.target.value === 'student') {
-            fetchSchools();
-            fetchTeams();
-        }
-    };
-
-    const fetchSchools = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            message.error('No se encontró ningun token, por favor inicie sesión');
-            return;
-        }
-        const headers = { Authorization: token };
-        try {
-            const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
-            if (response.data.success && response.data.data.length > 0) {
-                setSchools(response.data.data.map((school: any) => ({
-                    id: school.id,
-                    name: school.name
-                })));
-            } else {
-                message.error('No schools available or data missing');
-            }
-        } catch (error) {
-            console.error('Failed to load schools:', error);
-            message.error('Failed to load schools');
-        }
-    };
-
-    const fetchTeams = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            message.error('No se encontró ningun token, por favor inicie sesión');
-            return;
-        }
-        const headers = { Authorization: token };
-        try {
-            const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
-
-            if (response.data.success && response.data.data.length > 0) {
-                setTeams(response.data.data.map((team: any) => ({
-                    id: team.id,
-                    name: team.name
-                })));
-            } else {
-                message.error('No teams available or data missing');
-            }
-        } catch (error) {
-            console.error('Failed to load teams:', error);
-            message.error('Failed to load teams');
-        }
     };
 
     const handleSubmit = async (values: UserFormValues) => {
@@ -186,10 +133,8 @@ const RegisterUser: React.FC = () => {
 
         if (userType === 'student') {
             const studentDetails: StudentDetails = {
-                school: school!,
                 fieldPosition: fieldPosition!,
                 shirtNumber: shirtNumber!,
-                team: team!,
                 IMSS: IMSS!,
             };
 
@@ -306,30 +251,14 @@ const RegisterUser: React.FC = () => {
                         <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
-                            <Select placeholder="Seleccione una Escuela" allowClear>
-                                {schools.map(school => (
-                                    <Option key={school.id} value={school.id}>{school.name}</Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-
                         <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
                         <Form.Item name="shirtNumber" label="Número de playera" rules={[{ required: true }]}>
                             <Input type="number" />
                         </Form.Item>
-                        <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
-                            <Select placeholder="Seleccione un Equipo" allowClear>
-                                {teams.map(team => (
-                                    <Option key={team.id} value={team.id}>{team.name}</Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
                     </>
                 )}
-
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>

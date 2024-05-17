@@ -1,9 +1,9 @@
 import { Button, Table, Modal, message, Descriptions } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { DeleteOutlined, EyeOutlined, SettingOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
-import RegisterSchool from './RegisterSchools';
+import RegisterSchools from './RegisterSchools';
 
 type Address = {
   address1: string;
@@ -135,7 +135,10 @@ function Schools() {
           }}
           width='80%'
         >
-          <RegisterSchool />
+          <RegisterSchools onClose={() => {
+            setIsRegistering(false);
+            fetchSchools();
+          }} />
         </Modal>
       </header>
     </div>
