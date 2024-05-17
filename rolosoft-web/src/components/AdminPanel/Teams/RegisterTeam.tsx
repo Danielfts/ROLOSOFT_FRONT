@@ -1,6 +1,6 @@
-import { Modal, Select, Button, message, Input } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Form, Select, Button, message, Input } from 'antd';
+import axios from 'axios';
 
 type School = {
   id: string;
@@ -13,11 +13,11 @@ type Student = {
 };
 
 type RegisterTeamProps = {
-  visible: boolean;
   onClose: () => void;
 };
 
-const RegisterTeam: React.FC<RegisterTeamProps> = ({ visible, onClose }) => {
+const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
+  const [form] = Form.useForm();
   const [schools, setSchools] = useState<School[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
@@ -74,7 +74,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ visible, onClose }) => {
     setSelectedStudents(selectedStudents.filter(s => s.id !== studentId));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: any) => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: token };
     const tournamentId = localStorage.getItem('selectedTournamentId');
@@ -82,19 +82,19 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ visible, onClose }) => {
       school: {
         id: selectedSchool,
       },
-      sponsor,
+      sponsor: values.sponsor,
       students: selectedStudents.map(s => s.id),
     };
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools`, payload, { headers });
       if (response.status === 201) {
-        message.success('Team registered successfully!');
+        message.success('Equipo registrado exitosamente!');
         onClose();
         // Reset the form
+        form.resetFields();
         setSelectedSchool(null);
         setSelectedStudents([]);
-        setSponsor("");
       } else {
         message.error('Failed to register team');
       }
@@ -104,61 +104,56 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal
-      title="Register New Team"
-      visible={visible}
-      onCancel={onClose}
-      footer={null}
-      width='80%'
-    >
-      <Select
-        placeholder="Select a School"
-        onChange={(schoolId) => {
-          setSelectedSchool(schoolId as string);
-          fetchStudents(schoolId as string);
-        }}
-        style={{ width: '100%', marginBottom: '1rem' }}
-      >
-        {schools.map(school => (
-          <Select.Option key={school.id} value={school.id}>
-            {school.name}
-          </Select.Option>
-        ))}
-      </Select>
+    <div>
+      <Form form={form} onFinish={handleSubmit} layout="vertical">
+        <Form.Item name="school" rules={[{ required: true, message: 'Seleccione una Escuela' }]}>
+          <Select
+            placeholder="Seleccione una Escuela"
+            onChange={(schoolId) => {
+              setSelectedSchool(schoolId as string);
+              fetchStudents(schoolId as string);
+            }}
+          >
+            {schools.map(school => (
+              <Select.Option key={school.id} value={school.id}>
+                {school.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-      <Select
-        placeholder="Select Students"
-        onChange={(studentId) => handleStudentSelect(studentId as string)}
-        style={{ width: '100%', marginBottom: '1rem' }}
-        mode="multiple"
-      >
-        {students.map(student => (
-          <Select.Option key={student.id} value={student.id}>
-            {student.name}
-          </Select.Option>
-        ))}
-      </Select>
+        <Form.Item name="students" rules={[{ required: true, message: 'Seleccione al menos un Jugador' }]}>
+          <Select
+            placeholder="Seleccione un Jugador"
+            onChange={(studentId) => handleStudentSelect(studentId as string)}
+            mode="multiple"
+          >
+            {students.map(student => (
+              <Select.Option key={student.id} value={student.id}>
+                {student.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-      <div>
-        <h4>Selected Students:</h4>
-        {selectedStudents.map(student => (
-          <div key={student.id}>
-            {student.name} <Button onClick={() => handleStudentRemove(student.id)}>Remove</Button>
-          </div>
-        ))}
-      </div>
+        <div>
+          <h4>Jugadores Seleccionados:</h4>
+          {selectedStudents.map(student => (
+            <div key={student.id}>
+              {student.name} <Button onClick={() => handleStudentRemove(student.id)}>Remove</Button>
+            </div>
+          ))}
+        </div>
 
-      <Input
-        placeholder="Sponsor Name"
-        value={sponsor}
-        onChange={(e) => setSponsor(e.target.value)}
-        style={{ width: '100%', marginTop: '1rem' }}
-      />
+        
 
-      <Button type="primary" onClick={handleSubmit} style={{ marginTop: '1rem' }}>
-        Register Team
-      </Button>
-    </Modal>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Registrar Equipo
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 

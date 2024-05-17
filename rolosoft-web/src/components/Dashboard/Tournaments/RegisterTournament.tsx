@@ -5,25 +5,6 @@ import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 
-const formContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f0f2f5',
-    padding: '5%',
-};
-
-const formStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '500px',
-    padding: '2rem',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    backgroundColor: '#fff',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-};
-
 interface TournamentFormValues {
     name: string;
     dates: [moment.Moment, moment.Moment];
@@ -76,31 +57,31 @@ const RegisterTournament: React.FC<RegisterTournamentProps> = ({ onClose }) => {
     };
 
     return (
-        <div style={formContainerStyle}>
-            <Form form={form} onFinish={handleSubmit} style={formStyle} layout="vertical">
-                <Form.Item name="name" label="Nombre del torneo" rules={[{ required: true }]}>
-                    <Input />
+        <div>
+            <Form form={form} onFinish={handleSubmit} layout="vertical">
+                <Form.Item name="name" rules={[{ required: true }]}>
+                    <Input placeholder="Nombre del torneo" />
                 </Form.Item>
-                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]}>
-                    <RangePicker format="YYYY-MM-DD" />
+                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]} >
+                    <RangePicker format="YYYY-MM-DD" style={{ width: '100%' }}  />
                 </Form.Item>
-                <Form.Item name="address1" label="Calle y Número" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="address1" rules={[{ required: true }]}>
+                    <Input placeholder="Calle y Número" />
                 </Form.Item>
-                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="address2" rules={[{ required: true }]}>
+                    <Input placeholder="Colonia" />
                 </Form.Item>
-                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="city" rules={[{ required: true }]}>
+                    <Input placeholder="Ciudad" />
                 </Form.Item>
-                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="state" rules={[{ required: true }]}>
+                    <Input placeholder="Estado" />
                 </Form.Item>
-                <Form.Item name="postalCode" label="Código Postal" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="postalCode" rules={[{ required: true }]}>
+                    <Input placeholder="Código Postal" />
                 </Form.Item>
-                <Form.Item name="country" label="País" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="country" rules={[{ required: true }]}>
+                    <Input placeholder="País" />
                 </Form.Item>
                 <Form.Item>
                     <Button type="primary" htmlType="submit">Registrar</Button>

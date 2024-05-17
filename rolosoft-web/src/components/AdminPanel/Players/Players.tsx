@@ -1,159 +1,127 @@
-import { Button, Table, Modal, Input } from "antd";
-import { useState } from "react";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Table, Button, Modal, message, Descriptions } from "antd";
+import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 
-// Define a type for contact data
-type Contact = {
-  id: number;
-  name: string;
-  email: string;
-  address: string;
+type Address = {
+  address1: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 };
 
-function Players() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingContact, setEditingContact] = useState<Contact | null>(null);
-  const [dataSource, setDataSource] = useState<Contact[]>([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      address: "1234 Main St",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      address: "5678 Market Ave",
-    },
-  ]);
+type School = {
+  id: string;
+  name: string;
+  address: Address;
+  sponsor: string;
+};
+
+const Players = () => {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingSchool, setViewingSchool] = useState<School | null>(null);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchSchools();
+  }, []);
+
+  const fetchSchools = async () => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    if (!tournamentId) {
+      message.error('No tournament ID found');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: token };
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
+      if (response.status === 200 && response.data.success) {
+        setSchools(response.data.data);
+      } else {
+        message.error('Failed to fetch schools');
+      }
+    } catch (error) {
+      message.error('Error fetching schools');
+    }
+  };
+
+  const onDeleteSchool = (record: School) => {
+    Modal.confirm({
+      title: "Esta seguro que desea eliminar a este equipo?",
+      okText: "Yes",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const headers = { Authorization: token };
+          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
+
+          if (response.status === 200) {
+            setSchools((prev) => prev.filter((school) => school.id !== record.id));
+            message.success("Equipo eliminado exitosamente!");
+          } else {
+            message.error('Failed to delete school');
+          }
+        } catch (error) {
+          message.error('Failed to delete school: ' + error);
+        }
+      },
+    });
+  };
 
   const columns = [
-    {
-      key: "1",
-      title: "ID",
-      dataIndex: "id",
-      sorter: (a: Contact, b: Contact) => a.id - b.id,
-    },
-    {
-      key: "2",
-      title: "Name",
-      dataIndex: "name",
-      sorter: (a: Contact, b: Contact) => a.name.localeCompare(b.name),
-    },
+    { key: "1", title: "Nombre", dataIndex: "name" },
+    { key: "2", title: "Sponsor", dataIndex: "sponsor" },
     {
       key: "3",
-      title: "Email",
-      dataIndex: "email",
-    },
-    {
-      key: "4",
-      title: "Address",
-      dataIndex: "address",
-    },
-    {
-      key: "5",
-      title: "Actions",
-      render: (record: Contact) => (
+      title: "Acciones",
+      render: (record: School) => (
         <>
-          <EditOutlined
-            onClick={() => {
-              onEditContact(record);
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => {
-              onDeleteContact(record);
-            }}
-            style={{ color: "red", marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={() => onViewSchool(record)} />
+          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
 
-  const onAddContact = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newContact: Contact = {
-      id: randomNumber,
-      name: "Contact " + randomNumber,
-      email: "contact" + randomNumber + "@example.com",
-      address: "New Address " + randomNumber,
-    };
-    setDataSource((prev) => [...prev, newContact]);
+  const onViewSchool = (record: School) => {
+    setIsViewing(true);
+    setViewingSchool(record);
   };
 
-  const onDeleteContact = (record: Contact) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this contact?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((contact) => contact.id !== record.id));
-      },
-    });
-  };
-
-  const onEditContact = (record: Contact) => {
-    setIsEditing(true);
-    setEditingContact({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingContact(null);
+  const onRegisterTeam = () => {
+    setIsRegistering(true);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <Button onClick={onAddContact}>Add New Contact</Button>
-        <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Edit Contact"
-          visible={isEditing}
-          okText="Save"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((contact) =>
-                contact.id === editingContact?.id ? editingContact : contact
-              )
-            );
-            resetEditing();
-          }}
-        >
-          <Input
-            placeholder="Name"
-            value={editingContact?.name}
-            onChange={(e) =>
-              setEditingContact((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            placeholder="Email"
-            value={editingContact?.email}
-            onChange={(e) =>
-              setEditingContact((prev) =>
-                prev ? { ...prev, email: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            placeholder="Address"
-            value={editingContact?.address}
-            onChange={(e) =>
-              setEditingContact((prev) =>
-                prev ? { ...prev, address: e.target.value } : null
-              )
-            }
-          />
-        </Modal>
-      </header>
+    <div>
+      <Table columns={columns} dataSource={schools} rowKey="id" />
+      <Modal
+        title="Detalles del Equipo"
+        open={isViewing}
+        onCancel={() => setIsViewing(false)}
+        footer={null}
+        width={500}
+      >
+        {viewingSchool && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Nombre de la Escuela">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
+            <Descriptions.Item label="Dirección">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </div>
   );
-}
+};
 
 export default Players;

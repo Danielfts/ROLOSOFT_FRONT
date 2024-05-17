@@ -2,7 +2,6 @@ import { Button, Table, Modal, message, Descriptions } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { useNavigate } from 'react-router-dom';
 import RegisterSchools from './RegisterSchools';
 
 type Address = {
@@ -52,13 +51,11 @@ function Schools() {
     }
   };
 
-  const navigate = useNavigate();
-
   const columns = [
     { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: School, b: School) => a.name.localeCompare(b.name) },
     {
       key: "2",
-      title: "Actions",
+      title: "Acciones",
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
@@ -111,7 +108,7 @@ function Schools() {
           open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
-          width='80%'
+          width={500}
         >
           {viewingSchool && (
             <Descriptions bordered column={1}>
@@ -133,7 +130,7 @@ function Schools() {
             setIsRegistering(false);
             fetchSchools();
           }}
-          width='80%'
+          width={500}
         >
           <RegisterSchools onClose={() => {
             setIsRegistering(false);

@@ -53,7 +53,7 @@ const Teams = () => {
 
   const onDeleteSchool = (record: School) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this school?",
+      title: "Esta seguro que desea eliminar a este equipo?",
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
@@ -64,7 +64,7 @@ const Teams = () => {
 
           if (response.status === 200) {
             setSchools((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("School deleted successfully!");
+            message.success("Equipo eliminado exitosamente!");
           } else {
             message.error('Failed to delete school');
           }
@@ -76,11 +76,11 @@ const Teams = () => {
   };
 
   const columns = [
-    { key: "1", title: "School Name", dataIndex: "name" },
+    { key: "1", title: "Nombre", dataIndex: "name" },
     { key: "2", title: "Sponsor", dataIndex: "sponsor" },
     {
       key: "3",
-      title: "Actions",
+      title: "Acciones",
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
@@ -101,36 +101,39 @@ const Teams = () => {
 
   return (
     <div>
-      <Button onClick={onRegisterTeam}>Register New Team</Button>
+      <Button onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
       <Table columns={columns} dataSource={schools} rowKey="id" />
-
       <Modal
-        title="School Details"
-        visible={isViewing}
+        title="Detalles del Equipo"
+        open={isViewing}
         onCancel={() => setIsViewing(false)}
         footer={null}
-        width='80%'
+        width={500}
       >
         {viewingSchool && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Nombre de la Escuela">{viewingSchool.name}</Descriptions.Item>
             <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-            <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
-            <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
-            <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
-            <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
-            <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
+            <Descriptions.Item label="Dirección">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
-
-      <RegisterTeam
-        visible={isRegistering}
-        onClose={() => {
-          setIsRegistering(false);
-          fetchSchools();
-        }}
-      />
+      <Modal
+          title="Registrar Nuevo Equipo"
+          open={isRegistering}
+          footer={null}
+          onCancel={() => setIsRegistering(false)}
+          width={500}
+        >
+          <RegisterTeam onClose={() => {
+            setIsRegistering(false);
+            fetchSchools();
+          }} />
+        </Modal>
     </div>
   );
 };

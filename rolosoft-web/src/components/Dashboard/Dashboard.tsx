@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, CalendarOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import Users from './Users/Users';
 import Schools from './Schools/Schools';
@@ -8,11 +8,20 @@ import Tournaments from './Tournaments/Tournaments';
 const { Header, Sider, Content } = Layout;
 
 const Dashboard: React.FC = () => {
+  // Initialize state with localStorage value or default to '1'
+  const [selectedMenu, setSelectedMenu] = useState(() => {
+    const savedMenu = localStorage.getItem('selectedMenu');
+    return savedMenu ? savedMenu : '1';
+  });
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState('1');
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  useEffect(() => {
+    localStorage.setItem('selectedMenu', selectedMenu);
+  }, [selectedMenu]);
 
   const renderContent = () => {
     switch (selectedMenu) {
@@ -21,9 +30,9 @@ const Dashboard: React.FC = () => {
       case '2':
         return <Schools />;
       case '3':
-          return <Tournaments />;
+        return <Tournaments />;
       default:
-        return <div>Selecciona una accion</div>;
+        return <div>Selecciona una acción</div>;
     }
   };
 
@@ -34,7 +43,7 @@ const Dashboard: React.FC = () => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['1']}
+          selectedKeys={[selectedMenu]}  // Use selectedKeys instead of defaultSelectedKeys
           items={[
             {
               key: '1',
@@ -54,7 +63,6 @@ const Dashboard: React.FC = () => {
               label: 'Torneos',
               onClick: () => setSelectedMenu('3'),
             },
-            
           ]}
         />
       </Sider>

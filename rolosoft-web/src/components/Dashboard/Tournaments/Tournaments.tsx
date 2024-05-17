@@ -62,13 +62,12 @@ function Tournaments() {
     { key: "3", title: "Fecha de fin", dataIndex: "endDate", sorter: (a: Tournament, b: Tournament) => a.endDate.localeCompare(b.endDate) },
     {
       key: "4",
-      title: "Actions",
+      title: "Acciones",
       render: (record: Tournament) => (
         <>
-          <EyeOutlined onClick={() => onViewTournament(record)} />
-          <DeleteOutlined onClick={() => onDeleteTournament(record)} style={{ color: "red", marginLeft: 12 }} />
-          <SettingOutlined onClick={() => administrateTournament(record.id)} style={{ marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={(e) => { e.stopPropagation(); onViewTournament(record); }} />
+          <DeleteOutlined onClick={(e) => { e.stopPropagation(); onDeleteTournament(record); }} style={{ color: "red", marginLeft: 12 }} />
+          <SettingOutlined onClick={(e) => { e.stopPropagation(); administrateTournament(record.id); }} style={{ marginLeft: 12 }} />
         </>
       ),
     },
@@ -78,12 +77,12 @@ function Tournaments() {
     setIsViewing(true);
     setViewingTournament(record);
   };
-  
+
   const administrateTournament = (id: number) => {
     localStorage.setItem('selectedTournamentId', id.toString());
     navigate(`/adminPanel`);
   };
-  
+
   const onAddTournament = () => {
     setIsRegistering(true);
   };
@@ -116,13 +115,19 @@ function Tournaments() {
     <div className="App">
       <header className="App-header">
         <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
-        <Table columns={columns} dataSource={dataSource} />
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          onRow={(record) => ({
+            onClick: () => administrateTournament(record.id),
+          })}
+        />
         <Modal
           title="Detalles del torneo"
           open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
-          width='80%'
+          width={500}
         >
           {viewingTournament && (
             <Descriptions bordered column={1}>
@@ -143,11 +148,11 @@ function Tournaments() {
           open={isRegistering}
           footer={null}
           onCancel={() => setIsRegistering(false)}
-          width='80%'
+          width={500}
         >
           <RegisterTournament onClose={() => {
             setIsRegistering(false);
-            fetchTournaments(); // Refresh the tournaments list
+            fetchTournaments();
           }} />
         </Modal>
       </header>
