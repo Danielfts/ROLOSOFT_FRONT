@@ -128,7 +128,7 @@ function Users() {
           open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
-          width='80%'
+          width={500}
         >
           {viewingUser && (
             <Descriptions bordered column={1}>
@@ -158,7 +158,7 @@ function Users() {
             setIsRegistering(false);
             fetchUsers();
           }}
-          width='80%'
+          width={500}
         >
           <RegisterUser />
         </Modal>

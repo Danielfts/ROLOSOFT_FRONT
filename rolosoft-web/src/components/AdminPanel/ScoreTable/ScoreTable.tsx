@@ -167,7 +167,7 @@ function ScoreTable() {
         <Table columns={columns} dataSource={dataSource} />
         <Modal
           title="Editar Equipo"
-          visible={isEditing}
+          open={isEditing}
           okText="Guardar"
           onCancel={resetEditing}
           onOk={() => {

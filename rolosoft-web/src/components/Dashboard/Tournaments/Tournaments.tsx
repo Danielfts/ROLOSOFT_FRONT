@@ -62,13 +62,12 @@ function Tournaments() {
     { key: "3", title: "Fecha de fin", dataIndex: "endDate", sorter: (a: Tournament, b: Tournament) => a.endDate.localeCompare(b.endDate) },
     {
       key: "4",
-      title: "Actions",
+      title: "Acciones",
       render: (record: Tournament) => (
         <>
-          <EyeOutlined onClick={() => onViewTournament(record)} />
-          <DeleteOutlined onClick={() => onDeleteTournament(record)} style={{ color: "red", marginLeft: 12 }} />
-          <SettingOutlined onClick={() => administrateTournament(record.id)} style={{ marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={(e) => { e.stopPropagation(); onViewTournament(record); }} />
+          <DeleteOutlined onClick={(e) => { e.stopPropagation(); onDeleteTournament(record); }} style={{ color: "red", marginLeft: 12 }} />
+          <SettingOutlined onClick={(e) => { e.stopPropagation(); administrateTournament(record.id); }} style={{ marginLeft: 12 }} />
         </>
       ),
     },
@@ -78,8 +77,9 @@ function Tournaments() {
     setIsViewing(true);
     setViewingTournament(record);
   };
-  
+
   const administrateTournament = (id: number) => {
+    localStorage.setItem('selectedTournamentId', id.toString());
     navigate(`/adminPanel`);
   };
 
@@ -115,20 +115,25 @@ function Tournaments() {
     <div className="App">
       <header className="App-header">
         <Button onClick={onAddTournament}>Registrar Nuevo Torneo</Button>
-        <Table columns={columns} dataSource={dataSource} />
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          onRow={(record) => ({
+            onClick: () => administrateTournament(record.id),
+          })}
+        />
         <Modal
           title="Detalles del torneo"
           open={isViewing}
           onOk={() => setIsViewing(false)}
           onCancel={() => setIsViewing(false)}
-          width='80%'
+          width={500}
         >
           {viewingTournament && (
             <Descriptions bordered column={1}>
               <Descriptions.Item label="Nombre">{viewingTournament.name}</Descriptions.Item>
               <Descriptions.Item label="Fecha inicio">{viewingTournament.startDate}</Descriptions.Item>
               <Descriptions.Item label="Fecha fin">{viewingTournament.endDate}</Descriptions.Item>
-              {/* Address details */}
               <Descriptions.Item label="Calle y Número">{viewingTournament.address.address1}</Descriptions.Item>
               <Descriptions.Item label="Colonia">{viewingTournament.address.address2}</Descriptions.Item>
               <Descriptions.Item label="Ciudad">{viewingTournament.address.city}</Descriptions.Item>
@@ -142,13 +147,13 @@ function Tournaments() {
           title="Registrar Nuevo Torneo"
           open={isRegistering}
           footer={null}
-          onCancel={() => {
+          onCancel={() => setIsRegistering(false)}
+          width={500}
+        >
+          <RegisterTournament onClose={() => {
             setIsRegistering(false);
             fetchTournaments();
-          }}
-          width='80%'
-        >
-          <RegisterTournament />
+          }} />
         </Modal>
       </header>
     </div>

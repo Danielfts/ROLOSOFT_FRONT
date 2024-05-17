@@ -1,67 +1,70 @@
-import { Button, Table, Modal, Input, DatePicker } from "antd";
-import { useState } from "react";
-import moment from "moment";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Table, Button, Modal, message, Descriptions } from "antd";
+import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import RegisterMatch from "./RegisterMatch";
 
-type Match = {
-  id: number;
-  team1: string;
-  team2: string;
-  matchDate: moment.Moment;
+type Team = {
+  id: string;
+  name: string;
 };
 
-function Matches() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
-  const [dataSource, setDataSource] = useState<Match[]>([
-    {
-      id: 1,
-      team1: "FC Barcelona",
-      team2: "Real Madrid",
-      matchDate: moment().add(1, 'days'),
-    },
-    {
-      id: 2,
-      team1: "Manchester United",
-      team2: "Liverpool FC",
-      matchDate: moment().add(2, 'days'),
-    },
-  ]);
+type Match = {
+  id: string;
+  teamA: Team;
+  teamB: Team;
+  startDate: string;
+  endDate: string;
+  goals: string;
+};
+
+const Matches = () => {
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingMatch, setViewingMatch] = useState<Match | null>(null);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchMatches();
+  }, []);
+
+  const fetchMatches = async () => {
+    const tournamentId = localStorage.getItem("selectedTournamentId");
+    if (!tournamentId) {
+      message.error("No tournament ID found");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: token };
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/matches`,
+        { headers }
+      );
+      if (response.status === 200 && response.data.success) {
+        setMatches(response.data.data);
+      } else {
+        message.error("Failed to fetch matches");
+      }
+    } catch (error) {
+      message.error("Error fetching matches");
+    }
+  };
 
   const columns = [
+    { key: "1", title: "Team A", dataIndex: ["teamA", "name"] },
+    { key: "2", title: "Team B", dataIndex: ["teamB", "name"] },
+    { key: "3", title: "Start Date", dataIndex: "startDate" },
+    { key: "4", title: "Goals", dataIndex: "goals" },
     {
-      key: "1",
-      title: "Equipo 1",
-      dataIndex: "team1",
-      sorter: (a: Match, b: Match) => a.team1.localeCompare(b.team1),
-    },
-    {
-      key: "2",
-      title: "Equipo 2",
-      dataIndex: "team2",
-      sorter: (a: Match, b: Match) => a.team2.localeCompare(b.team2),
-    },
-    {
-      key: "3",
-      title: "Fecha del partido",
-      dataIndex: "matchDate",
-      render: (matchDate: moment.Moment) => matchDate.format("YYYY-MM-DD"),
-      sorter: (a: Match, b: Match) => a.matchDate.valueOf() - b.matchDate.valueOf(),
-    },
-    {
-      key: "4",
+      key: "5",
       title: "Actions",
       render: (record: Match) => (
         <>
-          <EditOutlined
-            onClick={() => {
-              onEditMatch(record);
-            }}
-          />
+          <EyeOutlined onClick={() => onViewMatch(record)} />
           <DeleteOutlined
-            onClick={() => {
-              onDeleteMatch(record);
-            }}
+            onClick={() => onDeleteMatch(record)}
             style={{ color: "red", marginLeft: 12 }}
           />
         </>
@@ -69,87 +72,87 @@ function Matches() {
     },
   ];
 
-  const onAddMatch = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newMatch: Match = {
-      id: randomNumber,
-      team1: "Team " + randomNumber,
-      team2: "Team " + (randomNumber + 1),
-      matchDate: moment().add(3, 'days'),
-    };
-    setDataSource((prev) => [...prev, newMatch]);
+  const onViewMatch = (record: Match) => {
+    setIsViewing(true);
+    setViewingMatch(record);
   };
 
   const onDeleteMatch = (record: Match) => {
     Modal.confirm({
-      title: "¿Estás seguro de que quieres eliminar este partido?",
-      okText: "Sí",
+      title: "Are you sure you want to delete this match?",
+      okText: "Yes",
       okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((match) => match.id !== record.id));
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const headers = { Authorization: token };
+          const response = await axios.delete(
+            `${process.env.REACT_APP_BASE_URL}/matches/${record.id}`,
+            { headers }
+          );
+
+          if (response.status === 200) {
+            setMatches((prev) => prev.filter((match) => match.id !== record.id));
+            message.success("Match deleted successfully!");
+          } else {
+            message.error("Failed to delete match");
+          }
+        } catch (error) {
+          message.error("Failed to delete match: " + error);
+        }
       },
     });
   };
 
-  const onEditMatch = (record: Match) => {
-    setIsEditing(true);
-    setEditingMatch({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingMatch(null);
+  const onRegisterMatch = () => {
+    setIsRegistering(true);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <Button onClick={onAddMatch}>Agregar Nuevo Partido</Button>
-        <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Editar Partido"
-          visible={isEditing}
-          okText="Guardar"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((match) =>
-                match.id === editingMatch?.id ? editingMatch : match
-              )
-            );
-            resetEditing();
+    <div>
+      <Button onClick={onRegisterMatch}>Register New Match</Button>
+      <Table columns={columns} dataSource={matches} rowKey="id" />
+      <Modal
+        title="Match Details"
+        open={isViewing}
+        onCancel={() => setIsViewing(false)}
+        footer={null}
+        width={500}
+      >
+        {viewingMatch && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Team A">
+              {viewingMatch.teamA.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Team B">
+              {viewingMatch.teamB.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Start Date">
+              {viewingMatch.startDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="End Date">
+              {viewingMatch.endDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="Goals">{viewingMatch.goals}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
+      <Modal
+        title="Register New Match"
+        open={isRegistering}
+        footer={null}
+        onCancel={() => setIsRegistering(false)}
+        width={500}
+      >
+        <RegisterMatch
+          onClose={() => {
+            setIsRegistering(false);
+            fetchMatches();
           }}
-        >
-          <Input
-            placeholder="Equipo 1"
-            value={editingMatch?.team1}
-            onChange={(e) =>
-              setEditingMatch((prev) =>
-                prev ? { ...prev, team1: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            placeholder="Equipo 2"
-            value={editingMatch?.team2}
-            onChange={(e) =>
-              setEditingMatch((prev) =>
-                prev ? { ...prev, team2: e.target.value } : null
-              )
-            }
-          />
-          <DatePicker
-            value={editingMatch?.matchDate}
-            onChange={(date) =>
-              setEditingMatch((prev) =>
-                prev ? { ...prev, matchDate: date } : null
-              )
-            }
-          />
-        </Modal>
-      </header>
+        />
+      </Modal>
     </div>
   );
-}
+};
 
 export default Matches;

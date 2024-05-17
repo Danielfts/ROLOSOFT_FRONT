@@ -1,108 +1,160 @@
-import React from 'react';
-import { Form, Input, DatePicker, Button, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Select, Button, message, Input } from 'antd';
 import axios from 'axios';
-import moment from 'moment';
 
-const { RangePicker } = DatePicker;
-
-const formContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f0f2f5',
-    padding: '5%',
+type School = {
+  id: string;
+  name: string;
 };
 
-const formStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '500px',
-    padding: '2rem',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    backgroundColor: '#fff',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+type Student = {
+  id: string;
+  name: string;
 };
 
-interface TournamentFormValues {
-    name: string;
-    dates: [moment.Moment, moment.Moment];
-    address1: string;
-    address2: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-}
+type RegisterTeamProps = {
+  onClose: () => void;
+};
 
-const RegisterTeam: React.FC = () => {
-    const [form] = Form.useForm<TournamentFormValues>();
+const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
+  const [form] = Form.useForm();
+  const [schools, setSchools] = useState<School[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+  const [sponsor, setSponsor] = useState("");
+  const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
 
-    const handleSubmit = async (values: TournamentFormValues) => {
-        const token = localStorage.getItem('token');
-        const headers = { Authorization: token};
-        const { name, dates, address1, address2, city, state, postalCode, country } = values;
-        const payload = {
-            name,
-            startDate: dates[0].format('YYYY-MM-DD'),
-            endDate: dates[1].format('YYYY-MM-DD'),
-            address: {
-                address1,
-                address2,
-                city,
-                state,
-                postalCode,
-                country,
-            },
-        };
-
-        try {
-            const response = await axios.post(process.env.REACT_APP_TOURNAMENTS_API_URL!, payload, { headers });
-            if (response.status === 201) {
-                message.success('Torneo Regsitrado Exitosamente!');
-                form.resetFields();
-            } else {
-                message.error('Failed to register tournament.');
-            }
-        } catch (error) {
-            message.error('An error occurred while registering the tournament.');
-            console.error('Registration error:', error);
+  useEffect(() => {
+    const fetchSchools = async () => {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: token };
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      if (!tournamentId) {
+        message.error('No tournament ID found');
+        return;
+      }
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=false`, { headers });
+        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
+          setSchools(response.data.data);
+        } else {
+          message.error('Failed to fetch schools');
         }
+      } catch (error) {
+        message.error('Error fetching schools');
+      }
     };
 
-    return (
-        <div style={formContainerStyle}>
-            <Form form={form} onFinish={handleSubmit} style={formStyle} layout="vertical">
-                <Form.Item name="name" label="Nombre del torneo" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="dates" label="Fecha de inicio y fin" rules={[{ required: true }]}>
-                    <RangePicker format="YYYY-MM-DD" />
-                </Form.Item>
-                <Form.Item name="address1" label="Calle y Número" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="postalCode" label="Código Postal" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item name="country" label="País" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item>
-                    <Button type="primary" htmlType="submit">Registrar</Button>
-                </Form.Item>
-            </Form>
+    fetchSchools();
+  }, []);
+
+  const fetchStudents = async (schoolId: string) => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/schools/${schoolId}/students`, { headers });
+      if (response.status === 200 && Array.isArray(response.data)) {
+        setStudents(response.data);
+      } else {
+        message.error('Failed to fetch students');
+      }
+    } catch (error) {
+      message.error('Error fetching students');
+    }
+  };
+
+  const handleStudentSelect = (studentId: string) => {
+    const student = students.find(s => s.id === studentId);
+    if (student && !selectedStudents.some(s => s.id === studentId)) {
+      setSelectedStudents([...selectedStudents, student]);
+    }
+  };
+
+  const handleStudentRemove = (studentId: string) => {
+    setSelectedStudents(selectedStudents.filter(s => s.id !== studentId));
+  };
+
+  const handleSubmit = async (values: any) => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    const payload = {
+      school: {
+        id: selectedSchool,
+      },
+      sponsor: values.sponsor,
+      students: selectedStudents.map(s => s.id),
+    };
+
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools`, payload, { headers });
+      if (response.status === 201) {
+        message.success('Equipo registrado exitosamente!');
+        onClose();
+        // Reset the form
+        form.resetFields();
+        setSelectedSchool(null);
+        setSelectedStudents([]);
+      } else {
+        message.error('Failed to register team');
+      }
+    } catch (error) {
+      message.error('Error registering team');
+    }
+  };
+
+  return (
+    <div>
+      <Form form={form} onFinish={handleSubmit} layout="vertical">
+        <Form.Item name="school" rules={[{ required: true, message: 'Seleccione una Escuela' }]}>
+          <Select
+            placeholder="Seleccione una Escuela"
+            onChange={(schoolId) => {
+              setSelectedSchool(schoolId as string);
+              fetchStudents(schoolId as string);
+            }}
+          >
+            {schools.map(school => (
+              <Select.Option key={school.id} value={school.id}>
+                {school.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item name="students" rules={[{ required: true, message: 'Seleccione al menos un Jugador' }]}>
+          <Select
+            placeholder="Seleccione un Jugador"
+            onChange={(studentId) => handleStudentSelect(studentId as string)}
+            mode="multiple"
+          >
+            {students.map(student => (
+              <Select.Option key={student.id} value={student.id}>
+                {student.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <div>
+          <h4>Jugadores Seleccionados:</h4>
+          {selectedStudents.map(student => (
+            <div key={student.id}>
+              {student.name} <Button onClick={() => handleStudentRemove(student.id)}>Remove</Button>
+            </div>
+          ))}
         </div>
-    );
+
+        
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Registrar Equipo
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  );
 };
 
 export default RegisterTeam;

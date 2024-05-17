@@ -49,7 +49,7 @@ function GoalsTable() {
     },
     {
       key: "4",
-      title: "Actions",
+      title: "Acciones",
       render: (record: Player) => (
         <>
           <EditOutlined
@@ -107,7 +107,7 @@ function GoalsTable() {
         <Table columns={columns} dataSource={dataSource} />
         <Modal
           title="Editar Jugador"
-          visible={isEditing}
+          open={isEditing}
           okText="Guardar"
           onCancel={resetEditing}
           onOk={() => {

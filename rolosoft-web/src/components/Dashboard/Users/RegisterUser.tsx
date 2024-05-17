@@ -5,30 +5,6 @@ import moment from 'moment';
 
 const { Option } = Select;
 
-const formContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    backgroundColor: '#f0f2f5',
-    padding: '20%',
-};
-
-const formStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '100vh',
-    padding: '10vh',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    backgroundColor: '#fff',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-};
-
-const formItemLayout = {
-    labelCol: { span: 10 },
-    wrapperCol: { span: 14 },
-};
-
 interface Address {
     address1: string;
     address2: string;
@@ -55,10 +31,8 @@ interface AdminUser extends BaseUser {
 }
 
 interface StudentDetails {
-    school: string;
     fieldPosition: string;
     shirtNumber: number;
-    team: string;
     IMSS: string;
 }
 
@@ -85,23 +59,23 @@ type UserFormValues = Omit<BaseUser, 'role' | 'birthDate' | 'address'> & {
 
 const AddressFields: React.FC = () => (
     <>
-        <Form.Item name="address1" label="Calle y Numero" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="address1" rules={[{ required: true }]}>
+            <Input placeholder="Calle y Numero" />
         </Form.Item>
-        <Form.Item name="address2" label="Colonia" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="address2" rules={[{ required: true }]}>
+            <Input placeholder="Colonia" />
         </Form.Item>
-        <Form.Item name="city" label="Ciudad" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="city" rules={[{ required: true }]}>
+            <Input placeholder="Ciudad" />
         </Form.Item>
-        <Form.Item name="state" label="Estado" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="state" rules={[{ required: true }]}>
+            <Input placeholder="Estado" />
         </Form.Item>
-        <Form.Item name="country" label="Pais" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="country" rules={[{ required: true }]}>
+            <Input placeholder="Pais" />
         </Form.Item>
-        <Form.Item name="postalCode" label="Codigo Postal" rules={[{ required: true }]}>
-            <Input />
+        <Form.Item name="postalCode" rules={[{ required: true }]}>
+            <Input placeholder="Codigo Postal" />
         </Form.Item>
     </>
 );
@@ -114,57 +88,6 @@ const RegisterUser: React.FC = () => {
 
     const handleUserTypeChange = (e: RadioChangeEvent) => {
         setUserType(e.target.value);
-        if (e.target.value === 'student') {
-            fetchSchools();
-            fetchTeams();
-        }
-    };
-
-    const fetchSchools = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            message.error('No se encontró ningun token, por favor inicie sesión');
-            return;
-        }
-        const headers = { Authorization: token };
-        try {
-            const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
-            if (response.data.success && response.data.data.length > 0) {
-                setSchools(response.data.data.map((school: any) => ({
-                    id: school.id,
-                    name: school.name
-                })));
-            } else {
-                message.error('No schools available or data missing');
-            }
-        } catch (error) {
-            console.error('Failed to load schools:', error);
-            message.error('Failed to load schools');
-        }
-    };
-
-    const fetchTeams = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            message.error('No se encontró ningun token, por favor inicie sesión');
-            return;
-        }
-        const headers = { Authorization: token };
-        try {
-            const response = await axios.get(process.env.REACT_APP_TEAMS_API_URL!, { headers });
-
-            if (response.data.success && response.data.data.length > 0) {
-                setTeams(response.data.data.map((team: any) => ({
-                    id: team.id,
-                    name: team.name
-                })));
-            } else {
-                message.error('No teams available or data missing');
-            }
-        } catch (error) {
-            console.error('Failed to load teams:', error);
-            message.error('Failed to load teams');
-        }
     };
 
     const handleSubmit = async (values: UserFormValues) => {
@@ -186,10 +109,8 @@ const RegisterUser: React.FC = () => {
 
         if (userType === 'student') {
             const studentDetails: StudentDetails = {
-                school: school!,
                 fieldPosition: fieldPosition!,
                 shirtNumber: shirtNumber!,
-                team: team!,
                 IMSS: IMSS!,
             };
 
@@ -250,16 +171,16 @@ const RegisterUser: React.FC = () => {
     };
 
     return (
-        <div style={formContainerStyle}>
-            <Form {...formItemLayout} form={form} onFinish={handleSubmit} style={formStyle} layout="horizontal">
-                <Form.Item name="role" label="Tipo de usuario" rules={[{ required: true }]}>
+        <div>
+            <Form form={form} onFinish={handleSubmit} layout="horizontal">
+                <Form.Item name="role" rules={[{ required: true }]}>
                     <Radio.Group onChange={handleUserTypeChange}>
                         <Radio value="admin">Administrador</Radio>
                         <Radio value="student">Jugador</Radio>
                     </Radio.Group>
                 </Form.Item>
 
-                <Form.Item name="gender" label="Género" rules={[{ required: true }]}>
+                <Form.Item name="gender" rules={[{ required: true }]}>
                     <Radio.Group>
                         <Radio value="MALE">Masculino</Radio>
                         <Radio value="FEMALE">Feminino</Radio>
@@ -267,69 +188,53 @@ const RegisterUser: React.FC = () => {
                 </Form.Item>
 
                 {/* Common fields */}
-                <Form.Item name="firstName" label="Nombres" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="firstName" rules={[{ required: true }]}>
+                    <Input placeholder="Nombres" />
                 </Form.Item>
 
-                <Form.Item name="lastName" label="Apellidos" rules={[{ required: true }]}>
-                    <Input />
+                <Form.Item name="lastName" rules={[{ required: true }]}>
+                    <Input placeholder="Apellidos" />
                 </Form.Item>
 
-                <Form.Item name="email" label="Email" rules={[
+                <Form.Item name="email" rules={[
                     { required: true, type: 'email' },
                     { type: 'email', message: 'Por favor ingrese un email válido' }
                 ]}>
-                    <Input />
+                    <Input placeholder="Email" />
                 </Form.Item>
-                <Form.Item name="password" label="Contraseña" rules={[{ required: true, min: 8 }]}>
-                    <Input.Password />
+                <Form.Item name="password" rules={[{ required: true, min: 8 }]}>
+                    <Input.Password placeholder="Contraseña" />
                 </Form.Item>
-                <Form.Item name="birthDate" label="Fecha de nacimiento" rules={[{ required: true }]}>
-                    <DatePicker format="YYYY-MM-DD" />
+                <Form.Item name="birthDate" rules={[{ required: true }]}>
+                    <DatePicker placeholder="Fecha de nacimiento" format="YYYY-MM-DD" style={{ width: '100%' }} />
                 </Form.Item>
-                <Form.Item name="phone" label="Teléfono" rules={[
+                <Form.Item name="phone" rules={[
                     { required: true },
                     { pattern: /^\+?\d{10}$/, message: 'Por favor ingresa un número de teléfono válido' },]}>
-                    <Input />
+                    <Input placeholder="Teléfono" />
                 </Form.Item>
-                <Form.Item name="CURP" label="CURP" rules={[
+                <Form.Item name="CURP" rules={[
                     { required: true },
-                    { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CUPRP valido' }
+                    { pattern: /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/, message: 'Por favor ingrese un CURP válido' }
                 ]}>
-                    <Input />
+                    <Input placeholder="CURP" />
                 </Form.Item>
 
                 <AddressFields />
 
                 {userType === 'student' && (
                     <>
-                        <Form.Item name="IMSS" label="No. de IMMS" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="IMSS" rules={[{ required: true }]}>
+                            <Input placeholder="No. de IMMS" />
                         </Form.Item>
-                        <Form.Item name="school" label="Escuela" rules={[{ required: true }]}>
-                            <Select placeholder="Seleccione una Escuela" allowClear>
-                                {schools.map(school => (
-                                    <Option key={school.id} value={school.id}>{school.name}</Option>
-                                ))}
-                            </Select>
+                        <Form.Item name="fieldPosition" rules={[{ required: true }]}>
+                            <Input placeholder="Posición de campo" />
                         </Form.Item>
-
-                        <Form.Item name="fieldPosition" label="Posición de campo" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="shirtNumber" label="Número de playera" rules={[{ required: true }]}>
-                            <Input type="number" />
-                        </Form.Item>
-                        <Form.Item name="team" label="Equipo" rules={[{ required: true }]}>
-                            <Select placeholder="Seleccione un Equipo" allowClear>
-                                {teams.map(team => (
-                                    <Option key={team.id} value={team.id}>{team.name}</Option>
-                                ))}
-                            </Select>
+                        <Form.Item name="shirtNumber" rules={[{ required: true }]}>
+                            <Input type="number" placeholder="Número de playera" />
                         </Form.Item>
                     </>
                 )}
-
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">Registrar</Button>
                 </Form.Item>

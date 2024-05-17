@@ -1,141 +1,141 @@
-import { Button, Table, Modal, Input } from "antd";
-import { useState } from "react";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Table, Button, Modal, message, Descriptions } from "antd";
+import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import RegisterTeam from './RegisterTeam';
 
-// Define a type for team data
-type Team = {
-  id: number;
-  name: string;
-  address: string;
+type Address = {
+  address1: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 };
 
-function Teams() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
-  const [dataSource, setDataSource] = useState<Team[]>([
-    {
-      id: 1,
-      name: "Team Alpha",
-      address: "1234 Alpha St",
-    },
-    {
-      id: 2,
-      name: "Team Beta",
-      address: "5678 Beta Ave",
-    },
-  ]);
+type School = {
+  id: string;
+  name: string;
+  address: Address;
+  sponsor: string;
+};
+
+const Teams = () => {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [isViewing, setIsViewing] = useState<boolean>(false);
+  const [viewingSchool, setViewingSchool] = useState<School | null>(null);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchSchools();
+  }, []);
+
+  const fetchSchools = async () => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    if (!tournamentId) {
+      message.error('No tournament ID found');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: token };
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
+      if (response.status === 200 && response.data.success) {
+        setSchools(response.data.data);
+      } else {
+        message.error('Failed to fetch schools');
+      }
+    } catch (error) {
+      message.error('Error fetching schools');
+    }
+  };
+
+  const onDeleteSchool = (record: School) => {
+    Modal.confirm({
+      title: "Esta seguro que desea eliminar a este equipo?",
+      okText: "Yes",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const headers = { Authorization: token };
+          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
+
+          if (response.status === 200) {
+            setSchools((prev) => prev.filter((school) => school.id !== record.id));
+            message.success("Equipo eliminado exitosamente!");
+          } else {
+            message.error('Failed to delete school');
+          }
+        } catch (error) {
+          message.error('Failed to delete school: ' + error);
+        }
+      },
+    });
+  };
 
   const columns = [
-    {
-      key: "1",
-      title: "ID",
-      dataIndex: "id",
-      sorter: (a: Team, b: Team) => a.id - b.id,
-    },
-    {
-      key: "2",
-      title: "Team",
-      dataIndex: "name",
-      sorter: (a: Team, b: Team) => a.name.localeCompare(b.name),
-    },
+    { key: "1", title: "Nombre", dataIndex: "name" },
+    { key: "2", title: "Sponsor", dataIndex: "sponsor" },
     {
       key: "3",
-      title: "Address",
-      dataIndex: "address",
-    },
-    {
-      key: "4",
-      title: "Actions",
-      render: (record: Team) => (
+      title: "Acciones",
+      render: (record: School) => (
         <>
-          <EditOutlined
-            onClick={() => {
-              onEditTeam(record);
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => {
-              onDeleteTeam(record);
-            }}
-            style={{ color: "red", marginLeft: 12 }}
-          />
+          <EyeOutlined onClick={() => onViewSchool(record)} />
+          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
 
-  const onAddTeam = () => {
-    const randomNumber = Math.floor(Math.random() * 1000);
-    const newTeam: Team = {
-      id: randomNumber,
-      name: "Team " + randomNumber,
-      address: "New Address " + randomNumber,
-    };
-    setDataSource((prev) => [...prev, newTeam]);
+  const onViewSchool = (record: School) => {
+    setIsViewing(true);
+    setViewingSchool(record);
   };
 
-  const onDeleteTeam = (record: Team) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this team?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((team) => team.id !== record.id));
-      },
-    });
-  };
-
-  const onEditTeam = (record: Team) => {
-    setIsEditing(true);
-    setEditingTeam({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingTeam(null);
+  const onRegisterTeam = () => {
+    setIsRegistering(true);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <Button onClick={onAddTeam}>Add New Team</Button>
-        <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Edit Team"
-          visible={isEditing}
-          okText="Save"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((team) =>
-                team.id === editingTeam?.id ? editingTeam : team
-              )
-            );
-            resetEditing();
-          }}
+    <div>
+      <Button onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
+      <Table columns={columns} dataSource={schools} rowKey="id" />
+      <Modal
+        title="Detalles del Equipo"
+        open={isViewing}
+        onCancel={() => setIsViewing(false)}
+        footer={null}
+        width={500}
+      >
+        {viewingSchool && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Nombre de la Escuela">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
+            <Descriptions.Item label="Dirección">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
+      <Modal
+          title="Registrar Nuevo Equipo"
+          open={isRegistering}
+          footer={null}
+          onCancel={() => setIsRegistering(false)}
+          width={500}
         >
-          <Input
-            placeholder="Team Name"
-            value={editingTeam?.name}
-            onChange={(e) =>
-              setEditingTeam((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
-            }
-          />
-          <Input
-            placeholder="Address"
-            value={editingTeam?.address}
-            onChange={(e) =>
-              setEditingTeam((prev) =>
-                prev ? { ...prev, address: e.target.value } : null
-              )
-            }
-          />
+          <RegisterTeam onClose={() => {
+            setIsRegistering(false);
+            fetchSchools();
+          }} />
         </Modal>
-      </header>
     </div>
   );
-}
+};
 
 export default Teams;
