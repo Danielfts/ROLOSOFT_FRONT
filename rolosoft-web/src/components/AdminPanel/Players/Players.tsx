@@ -1,127 +1,145 @@
-import { useEffect, useState } from "react";
+import { Button, Table, Modal, message, Descriptions } from "antd";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, Button, Modal, message, Descriptions } from "antd";
-import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 
 type Address = {
   address1: string;
-  address2: string | null;
+  address2: string;
   city: string;
   state: string;
   postalCode: string;
   country: string;
 };
 
-type School = {
+type Player = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  team: string;
+  email: string;
+  phone: string;
+  birthDate: string;
+  gender: string;
+  role: string;
+  curp: string;
   address: Address;
-  sponsor: string;
 };
 
-const Players = () => {
-  const [schools, setSchools] = useState<School[]>([]);
+function Players() {
   const [isViewing, setIsViewing] = useState<boolean>(false);
-  const [viewingSchool, setViewingSchool] = useState<School | null>(null);
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [viewingPlayer, setViewingPlayer] = useState<Player | null>(null);
+  const [dataSource, setDataSource] = useState<Player[]>([]);
 
   useEffect(() => {
-    fetchSchools();
+    fetchPlayers();
   }, []);
 
-  const fetchSchools = async () => {
+  const fetchPlayers = async () => {
     const tournamentId = localStorage.getItem('selectedTournamentId');
     if (!tournamentId) {
       message.error('No tournament ID found');
       return;
     }
 
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+
     try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: token };
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/players?registered=true`, { headers });
       if (response.status === 200 && response.data.success) {
-        setSchools(response.data.data);
+        setDataSource(response.data.data);
       } else {
-        message.error('Failed to fetch schools');
+        message.error('Failed to fetch players');
       }
     } catch (error) {
-      message.error('Error fetching schools');
+      message.error('Error fetching players');
     }
   };
 
-  const onDeleteSchool = (record: School) => {
+  const columns = [
+    { key: "1", title: "Nombres", dataIndex: "firstName", sorter: (a: Player, b: Player) => a.firstName.localeCompare(b.firstName) },
+    { key: "2", title: "Apellidos", dataIndex: "lastName", sorter: (a: Player, b: Player) => a.lastName.localeCompare(b.lastName) },
+    { key: "3", title: "Equipo", dataIndex: "team", sorter: (a: Player, b: Player) => a.team.localeCompare(b.team) },
+    { key: "3", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
+    { key: "4", title: "Teléfono", dataIndex: "phone", sorter: (a: Player, b: Player) => a.phone.localeCompare(b.phone) },
+    { key: "5", title: "Fecha de nacimiento", dataIndex: "birthDate", sorter: (a: Player, b: Player) => a.birthDate.localeCompare(b.birthDate) },
+    { key: "6", title: "Género", dataIndex: "gender", sorter: (a: Player, b: Player) => a.gender.localeCompare(b.gender) },
+    { key: "7", title: "Rol", dataIndex: "role", sorter: (a: Player, b: Player) => a.role.localeCompare(b.role) },
+    { key: "8", title: "CURP", dataIndex: "curp", sorter: (a: Player, b: Player) => a.curp.localeCompare(b.curp) },
+    {
+      key: "9",
+      title: "Acciones",
+      render: (record: Player) => (
+        <>
+          <EyeOutlined onClick={() => onViewPlayer(record)} />
+          <DeleteOutlined onClick={() => onDeletePlayer(record)} style={{ color: "red", marginLeft: 12 }} />
+        </>
+      ),
+    },
+  ];
+
+  const onViewPlayer = (record: Player) => {
+    setIsViewing(true);
+    setViewingPlayer(record);
+  };
+
+  const onDeletePlayer = (record: Player) => {
     Modal.confirm({
-      title: "Esta seguro que desea eliminar a este equipo?",
+      title: "Estas seguro que desea eliminar a este jugador?",
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
           const headers = { Authorization: token };
-          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
+          const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/players/${record.id}`, { headers });
 
           if (response.status === 200) {
-            setSchools((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("Equipo eliminado exitosamente!");
+            setDataSource((prev) => prev.filter((player) => player.id !== record.id));
+            message.success("Jugador eliminado exitosamente!");
           } else {
-            message.error('Failed to delete school');
+            message.error('Fallo al eliminar jugador');
           }
         } catch (error) {
-          message.error('Failed to delete school: ' + error);
+          message.error('Fallo al eliminar jugador: ' + error);
         }
       },
     });
   };
 
-  const columns = [
-    { key: "1", title: "Nombre", dataIndex: "name" },
-    { key: "2", title: "Sponsor", dataIndex: "sponsor" },
-    {
-      key: "3",
-      title: "Acciones",
-      render: (record: School) => (
-        <>
-          <EyeOutlined onClick={() => onViewSchool(record)} />
-          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
-        </>
-      ),
-    },
-  ];
-
-  const onViewSchool = (record: School) => {
-    setIsViewing(true);
-    setViewingSchool(record);
-  };
-
-  const onRegisterTeam = () => {
-    setIsRegistering(true);
-  };
-
   return (
     <div>
-      <Table columns={columns} dataSource={schools} rowKey="id" />
+      <Table columns={columns} dataSource={dataSource} rowKey="id" />
       <Modal
-        title="Detalles del Equipo"
+        title="Detalles del Jugador"
         open={isViewing}
+        onOk={() => setIsViewing(false)}
         onCancel={() => setIsViewing(false)}
-        footer={null}
         width={500}
       >
-        {viewingSchool && (
+        {viewingPlayer && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Nombre de la Escuela">{viewingSchool.name}</Descriptions.Item>
-            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-            <Descriptions.Item label="Dirección">{viewingSchool.address.address1}</Descriptions.Item>
-            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
-            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
-            <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
-            <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
+            <Descriptions.Item label="Nombres">{viewingPlayer.firstName}</Descriptions.Item>
+            <Descriptions.Item label="Apellidos">{viewingPlayer.lastName}</Descriptions.Item>
+            <Descriptions.Item label="Equipo">{viewingPlayer.team}</Descriptions.Item>
+            <Descriptions.Item label="Email">{viewingPlayer.email}</Descriptions.Item>
+            <Descriptions.Item label="Teléfono">{viewingPlayer.phone}</Descriptions.Item>
+            <Descriptions.Item label="Rol">{viewingPlayer.role}</Descriptions.Item>
+            <Descriptions.Item label="CURP">{viewingPlayer.curp}</Descriptions.Item>
+            <Descriptions.Item label="Fecha de nacimiento">{viewingPlayer.birthDate}</Descriptions.Item>
+            <Descriptions.Item label="Género">{viewingPlayer.gender}</Descriptions.Item>
+            <Descriptions.Item label="Calle y Número">{viewingPlayer.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="Colonia">{viewingPlayer.address.address2}</Descriptions.Item>
+            <Descriptions.Item label="Ciudad">{viewingPlayer.address.city}</Descriptions.Item>
+            <Descriptions.Item label="Estado">{viewingPlayer.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Código Postal">{viewingPlayer.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="País">{viewingPlayer.address.country}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
     </div>
   );
-};
+}
 
 export default Players;

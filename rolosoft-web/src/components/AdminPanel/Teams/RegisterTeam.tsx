@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, Button, message, Input } from 'antd';
 import axios from 'axios';
+import { DownOutlined } from '@ant-design/icons';
 
 type School = {
   id: string;
@@ -9,52 +10,58 @@ type School = {
 
 type Student = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  curp: string;
 };
 
 type RegisterTeamProps = {
   onClose: () => void;
 };
 
+const MAX_COUNT = 11;
+
 const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   const [form] = Form.useForm();
   const [schools, setSchools] = useState<School[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
-  const [sponsor, setSponsor] = useState("");
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSchools = async () => {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: token };
-      const tournamentId = localStorage.getItem('selectedTournamentId');
-      if (!tournamentId) {
-        message.error('No tournament ID found');
-        return;
-      }
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=false`, { headers });
-        if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
-          setSchools(response.data.data);
-        } else {
-          message.error('Failed to fetch schools');
-        }
-      } catch (error) {
-        message.error('Error fetching schools');
-      }
-    };
-
     fetchSchools();
+    fetchStudents();
   }, []);
 
-  const fetchStudents = async (schoolId: string) => {
+  const fetchSchools = async () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: token };
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    if (!tournamentId) {
+      message.error('No tournament ID found');
+      return;
+    }
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/schools/${schoolId}/students`, { headers });
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setStudents(response.data);
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=false`, { headers });
+      if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
+        setSchools(response.data.data);
+      } else {
+        message.error('Failed to fetch schools');
+      }
+    } catch (error) {
+      message.error('Error fetching schools');
+    }
+  };
+
+  const fetchStudents = async () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: token };
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/players?registered=false`, { headers });
+      if (response.status === 200 && Array.isArray(response.data.data)) {
+        setStudents(response.data.data);
       } else {
         message.error('Failed to fetch students');
       }
@@ -63,15 +70,18 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
     }
   };
 
-  const handleStudentSelect = (studentId: string) => {
-    const student = students.find(s => s.id === studentId);
-    if (student && !selectedStudents.some(s => s.id === studentId)) {
-      setSelectedStudents([...selectedStudents, student]);
-    }
+  const handleStudentSelect = (selectedItems: any) => {
+    console.log('Selected items:', selectedItems);
+    const newSelectedStudents = selectedItems.map((item: any) => {
+      return students.find(s => s.id === item.value);
+    }).filter(Boolean) as Student[];
+    setSelectedStudents(newSelectedStudents);
+    console.log('Selected students:', newSelectedStudents);
   };
 
   const handleStudentRemove = (studentId: string) => {
     setSelectedStudents(selectedStudents.filter(s => s.id !== studentId));
+    console.log('Selected students after removal:', selectedStudents);
   };
 
   const handleSubmit = async (values: any) => {
@@ -86,15 +96,18 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
       students: selectedStudents.map(s => s.id),
     };
 
+    console.log('Payload to be sent:', payload);
+
     try {
       const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools`, payload, { headers });
       if (response.status === 201) {
         message.success('Equipo registrado exitosamente!');
         onClose();
-        // Reset the form
         form.resetFields();
         setSelectedSchool(null);
         setSelectedStudents([]);
+        await fetchStudents(); 
+        await fetchSchools();
       } else {
         message.error('Failed to register team');
       }
@@ -103,16 +116,24 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
     }
   };
 
+  const suffix = (
+    <>
+      <span>
+        {selectedStudents.length} / {MAX_COUNT}
+      </span>
+      <DownOutlined />
+    </>
+  );
+
+  const filteredStudents = students.filter(student => !selectedStudents.some(s => s.id === student.id));
+
   return (
     <div>
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item name="school" rules={[{ required: true, message: 'Seleccione una Escuela' }]}>
           <Select
             placeholder="Seleccione una Escuela"
-            onChange={(schoolId) => {
-              setSelectedSchool(schoolId as string);
-              fetchStudents(schoolId as string);
-            }}
+            onChange={(schoolId) => setSelectedSchool(schoolId as string)}
           >
             {schools.map(school => (
               <Select.Option key={school.id} value={school.id}>
@@ -121,27 +142,33 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="students" rules={[{ required: false, message: 'Seleccione al menos un Jugador' }]}>
+
+        <Form.Item name="sponsor" rules={[{ required: true, message: 'Ingrese el nombre del Sponsor' }]}>
+          <Input placeholder="Sponsor Name" />
+        </Form.Item>
+
+        <Form.Item name="students" rules={[{ required: true, message: 'Seleccione 11 jugadores' }]}>
           <Select
-            placeholder="Seleccione un Jugador"
-            onChange={(studentId) => handleStudentSelect(studentId as string)}
+            placeholder="Seleccione jugadores"
+            onChange={handleStudentSelect}
             mode="multiple"
+            maxTagCount={MAX_COUNT}
+            value={selectedStudents.map(s => ({
+              key: s.id,
+              label: `${s.firstName} ${s.lastName} - ${s.email} - ${s.curp}`,
+              value: s.id
+            }))}
+            labelInValue
+            suffixIcon={suffix}
           >
-            {students.map(student => (
+            {filteredStudents.map(student => (
               <Select.Option key={student.id} value={student.id}>
-                {student.name}
+                {`${student.firstName} ${student.lastName} - ${student.email} - ${student.curp}`}
               </Select.Option>
             ))}
           </Select>
         </Form.Item>
-        <div>
-          <h4>Jugadores Seleccionados:</h4>
-          {selectedStudents.map(student => (
-            <div key={student.id}>
-              {student.name} <Button onClick={() => handleStudentRemove(student.id)}>Remove</Button>
-            </div>
-          ))}
-        </div>
+
         <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
           <Button type="primary" htmlType="submit">
             Registrar Equipo
