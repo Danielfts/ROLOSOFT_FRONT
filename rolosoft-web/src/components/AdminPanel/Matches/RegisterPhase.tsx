@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, message, DatePicker } from "antd";
+import { Form, Input, Button, message, DatePicker, Select } from "antd";
 import axios from "axios";
 
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 type RegisterPhaseProps = {
     onClose: () => void;
@@ -10,12 +11,35 @@ type RegisterPhaseProps = {
 
 const RegisterPhase: React.FC<RegisterPhaseProps> = ({ onClose }) => {
     const [form] = Form.useForm();
+    const [phaseOptions, setPhaseOptions] = useState<{ enum: string; name: string }[]>([]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: token };
+        const fetchPhases = async () => {
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_BASE_URL}/tournaments/phases`,
+                    { headers }
+                );
+                if (response.data.success) {
+                    setPhaseOptions(response.data.data);
+                } else {
+                    message.error("Failed to fetch phases");
+                }
+            } catch (error) {
+                message.error("Error fetching phases");
+            }
+        };
+
+        fetchPhases();
+    }, []);
 
     const handleSubmit = async (values: any) => {
         const token = localStorage.getItem("token");
         const headers = { Authorization: token };
         const tournamentId = localStorage.getItem("selectedTournamentId");
-
+        
         const payload = {
             tournament: {
                 id: tournamentId,
@@ -48,9 +72,15 @@ const RegisterPhase: React.FC<RegisterPhaseProps> = ({ onClose }) => {
             <Form form={form} onFinish={handleSubmit} layout="vertical">
                 <Form.Item
                     name="name"
-                    rules={[{ required: true, message: "Please input the phase name" }]}
+                    rules={[{ required: true, message: "Please select the phase name" }]}
                 >
-                    <Input placeholder="Nombre de la Fase" />
+                    <Select placeholder="Nombre de la Fase">
+                        {phaseOptions.map((option) => (
+                            <Option key={option.enum} value={option.enum}>
+                                {option.name}
+                            </Option>
+                        ))}
+                    </Select>
                 </Form.Item>
                 <Form.Item
                     name="dates"
