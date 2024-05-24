@@ -17,6 +17,7 @@ type Player = {
   firstName: string;
   lastName: string;
   team: string;
+  teamId: number;
   email: string;
   phone: string;
   birthDate: string;
@@ -48,7 +49,12 @@ function Players() {
     try {
       const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/players?registered=true`, { headers });
       if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
+        const playersWithTeamInfo = response.data.data.map((player: any) => ({
+          ...player,
+          teamId: player.team?.id || '',
+          team: player.team?.name || 'No team'
+        }));
+        setDataSource(playersWithTeamInfo);
       } else {
         message.error('Failed to fetch players');
       }
@@ -61,14 +67,15 @@ function Players() {
     { key: "1", title: "Nombres", dataIndex: "firstName", sorter: (a: Player, b: Player) => a.firstName.localeCompare(b.firstName) },
     { key: "2", title: "Apellidos", dataIndex: "lastName", sorter: (a: Player, b: Player) => a.lastName.localeCompare(b.lastName) },
     { key: "3", title: "Equipo", dataIndex: "team", sorter: (a: Player, b: Player) => a.team.localeCompare(b.team) },
-    { key: "3", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
-    { key: "4", title: "Teléfono", dataIndex: "phone", sorter: (a: Player, b: Player) => a.phone.localeCompare(b.phone) },
-    { key: "5", title: "Fecha de nacimiento", dataIndex: "birthDate", sorter: (a: Player, b: Player) => a.birthDate.localeCompare(b.birthDate) },
-    { key: "6", title: "Género", dataIndex: "gender", sorter: (a: Player, b: Player) => a.gender.localeCompare(b.gender) },
-    { key: "7", title: "Rol", dataIndex: "role", sorter: (a: Player, b: Player) => a.role.localeCompare(b.role) },
-    { key: "8", title: "CURP", dataIndex: "curp", sorter: (a: Player, b: Player) => a.curp.localeCompare(b.curp) },
+    { key: "4", title: "ID del Equipo", dataIndex: "teamId", sorter: (a: Player, b: Player) => a.teamId - b.teamId },
+    { key: "5", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
+    { key: "6", title: "Teléfono", dataIndex: "phone", sorter: (a: Player, b: Player) => a.phone.localeCompare(b.phone) },
+    { key: "7", title: "Fecha de nacimiento", dataIndex: "birthDate", sorter: (a: Player, b: Player) => a.birthDate.localeCompare(b.birthDate) },
+    { key: "8", title: "Género", dataIndex: "gender", sorter: (a: Player, b: Player) => a.gender.localeCompare(b.gender) },
+    { key: "9", title: "Rol", dataIndex: "role", sorter: (a: Player, b: Player) => a.role.localeCompare(b.role) },
+    { key: "10", title: "CURP", dataIndex: "curp", sorter: (a: Player, b: Player) => a.curp.localeCompare(b.curp) },
     {
-      key: "9",
+      key: "11",
       title: "Acciones",
       render: (record: Player) => (
         <>
@@ -123,6 +130,7 @@ function Players() {
             <Descriptions.Item label="Nombres">{viewingPlayer.firstName}</Descriptions.Item>
             <Descriptions.Item label="Apellidos">{viewingPlayer.lastName}</Descriptions.Item>
             <Descriptions.Item label="Equipo">{viewingPlayer.team}</Descriptions.Item>
+            <Descriptions.Item label="ID del Equipo">{viewingPlayer.teamId}</Descriptions.Item>
             <Descriptions.Item label="Email">{viewingPlayer.email}</Descriptions.Item>
             <Descriptions.Item label="Teléfono">{viewingPlayer.phone}</Descriptions.Item>
             <Descriptions.Item label="Rol">{viewingPlayer.role}</Descriptions.Item>
