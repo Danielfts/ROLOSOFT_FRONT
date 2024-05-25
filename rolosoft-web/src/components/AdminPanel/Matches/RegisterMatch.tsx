@@ -24,7 +24,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
     const [phases, setPhases] = useState<Phase[]>([]);
     const [teamA, setTeamA] = useState<string | null>(null);
     const [teamB, setTeamB] = useState<string | null>(null);
-    const [phase, setPhase] = useState<string | null>(null);
+    const [phaseName, setPhaseName] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -82,12 +82,12 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
         const headers = { Authorization: token };
         const tournamentId = localStorage.getItem("selectedTournamentId");
         const payload = {
-            startDate: values.dates[0].toISOString(),
-            endDate: values.dates[1].toISOString(),
-            teamA: {
+            startDateTime: values.dates[0].toISOString(),
+            endDateTime: values.dates[1].toISOString(),
+            schoolA: {
                 id: values.teamA,
             },
-            teamB: {
+            schoolB: {
                 id: values.teamB,
             },
         };
@@ -98,13 +98,14 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 payload,
                 { headers }
             );
+
             if (response.status === 201) {
                 message.success("Match registered successfully!");
                 onClose();
                 form.resetFields();
                 setTeamA(null);
                 setTeamB(null);
-                setPhase(null);
+                setPhaseName(null);
             } else {
                 message.error("Failed to register match");
             }
@@ -126,10 +127,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 >
                     <Select
                         placeholder="Select Phase"
-                        onChange={(value) => setPhase(value as string)}
+                        onChange={(value) => setPhaseName(value as string)}
                     >
                         {phases.map((phase) => (
-                            <Select.Option key={phase.id} value={phase.id}>
+                            <Select.Option key={phase.id} value={phase.name}>
                                 {phase.name}
                             </Select.Option>
                         ))}

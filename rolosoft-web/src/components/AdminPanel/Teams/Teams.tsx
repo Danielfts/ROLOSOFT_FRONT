@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Button, Modal, message, Descriptions } from "antd";
+import { Table, Button, Modal, message, Descriptions, List } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
 
@@ -13,11 +13,29 @@ type Address = {
   country: string;
 };
 
+type Student = {
+  CURP: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  birthDate: string;
+  gender: string;
+  role: string;
+  phone: string;
+  address: Address;
+  student: {
+    fieldPosition: string;
+    shirtNumber: number;
+    IMSS: string;
+  };
+};
+
 type School = {
   id: string;
   name: string;
   address: Address;
   sponsor: string;
+  students: Student[];
 };
 
 const Teams = () => {
@@ -53,8 +71,8 @@ const Teams = () => {
 
   const onDeleteSchool = (record: School) => {
     Modal.confirm({
-      title: "Esta seguro que desea eliminar a este equipo?",
-      okText: "Si",
+      title: "Are you sure you want to delete this school?",
+      okText: "Yes",
       okType: "danger",
       onOk: async () => {
         try {
@@ -64,7 +82,7 @@ const Teams = () => {
 
           if (response.status === 200) {
             setSchools((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("Equipo eliminado exitosamente!");
+            message.success("School deleted successfully!");
           } else {
             message.error('Failed to delete school');
           }
@@ -78,7 +96,7 @@ const Teams = () => {
   const columns = [
     {
       key: "1",
-      title: "Nombre",
+      title: "Name",
       dataIndex: "name",
       sorter: (a: School, b: School) => a.name.localeCompare(b.name),
     },
@@ -90,7 +108,7 @@ const Teams = () => {
     },
     {
       key: "3",
-      title: "Acciones",
+      title: "Actions",
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
@@ -99,7 +117,6 @@ const Teams = () => {
       ),
     },
   ];
-
 
   const onViewSchool = (record: School) => {
     setIsViewing(true);
@@ -112,30 +129,50 @@ const Teams = () => {
 
   return (
     <div>
-      <Button type="primary" onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
+      <Button type="primary" onClick={onRegisterTeam}>Register New Team</Button>
       <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
       <Modal
-        title="Detalles del Equipo"
+        title="School Details"
         open={isViewing}
         onCancel={() => setIsViewing(false)}
         footer={null}
-        width={500}
+        width={700}
       >
         {viewingSchool && (
-          <Descriptions bordered column={1}>
-            <Descriptions.Item label="Nombre de la Escuela">{viewingSchool.name}</Descriptions.Item>
-            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-            <Descriptions.Item label="Dirección">{viewingSchool.address.address1}</Descriptions.Item>
-            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
-            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
-            <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
-            <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
-          </Descriptions>
+          <div>
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
+              <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
+              <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
+              <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
+              <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
+              <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
+              <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
+            </Descriptions>
+            <List
+              header={<div>Students</div>}
+              bordered
+              dataSource={viewingSchool.students}
+              renderItem={(student) => (
+                <List.Item>
+                  <Descriptions size="small" column={1}>
+                    <Descriptions.Item label="Name">{`${student.firstName} ${student.lastName}`}</Descriptions.Item>
+                    <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
+                    <Descriptions.Item label="Birth Date">{student.birthDate}</Descriptions.Item>
+                    <Descriptions.Item label="Gender">{student.gender}</Descriptions.Item>
+                    <Descriptions.Item label="Field Position">{student.student.fieldPosition}</Descriptions.Item>
+                    <Descriptions.Item label="Shirt Number">{student.student.shirtNumber}</Descriptions.Item>
+                    <Descriptions.Item label="IMSS">{student.student.IMSS}</Descriptions.Item>
+                  </Descriptions>
+                </List.Item>
+              )}
+            />
+          </div>
         )}
       </Modal>
       <Modal
-        title="Registrar Nuevo Equipo"
+        title="Register New Team"
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
