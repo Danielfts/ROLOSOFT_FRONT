@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Button, Modal, message, Descriptions, List } from "antd";
+import { Table, Button, Modal, message, Descriptions, List, Avatar } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
+import VirtualList from 'rc-virtual-list';
 
 type Address = {
   address1: string;
@@ -14,6 +15,7 @@ type Address = {
 };
 
 type Student = {
+  id: string;
   CURP: string;
   firstName: string;
   lastName: string;
@@ -37,6 +39,8 @@ type School = {
   sponsor: string;
   students: Student[];
 };
+
+const ContainerHeight = 400;
 
 const Teams = () => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -140,35 +144,40 @@ const Teams = () => {
         width={700}
       >
         {viewingSchool && (
-          <div>
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
-              <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-              <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
-              <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
-            </Descriptions>
-            <List
-              header={<div>Students</div>}
-              bordered
-              dataSource={viewingSchool.students}
-              renderItem={(student) => (
-                <List.Item>
-                  <Descriptions size="small" column={1}>
-                    <Descriptions.Item label="Name">{`${student.firstName} ${student.lastName}`}</Descriptions.Item>
-                    <Descriptions.Item label="Email">{student.email}</Descriptions.Item>
-                    <Descriptions.Item label="Birth Date">{student.birthDate}</Descriptions.Item>
-                    <Descriptions.Item label="Gender">{student.gender}</Descriptions.Item>
-                    <Descriptions.Item label="Field Position">{student.student.fieldPosition}</Descriptions.Item>
-                    <Descriptions.Item label="Shirt Number">{student.student.shirtNumber}</Descriptions.Item>
-                    <Descriptions.Item label="IMSS">{student.student.IMSS}</Descriptions.Item>
-                  </Descriptions>
-                </List.Item>
-              )}
-            />
-          </div>
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
+            <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
+            <Descriptions.Item label="Students">
+              <List
+                dataSource={viewingSchool.students}
+                renderItem={(student: Student) => (
+                  <List.Item key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <List.Item.Meta
+                      avatar={<Avatar src="https://via.placeholder.com/40" />}
+                      title={`${student.firstName} ${student.lastName}`}
+                      description={
+                        <>
+                          <div>CURP: {student.CURP}</div>
+                          <div>Email: {student.email}</div>
+                          <div>Posición: {student.student.fieldPosition}</div>
+                          <div>Numero Camiseta: {student.student.shirtNumber}</div>
+                        </>
+                      }
+                    />
+                    <div style={{ textAlign: 'right' }}>
+                      <p></p>
+                      <p></p>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </Descriptions.Item>
+          </Descriptions>
         )}
       </Modal>
       <Modal
