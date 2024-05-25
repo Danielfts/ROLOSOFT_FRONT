@@ -100,7 +100,7 @@ const Teams = () => {
   const columns = [
     {
       key: "1",
-      title: "Name",
+      title: "Nombre",
       dataIndex: "name",
       sorter: (a: School, b: School) => a.name.localeCompare(b.name),
     },
@@ -112,7 +112,7 @@ const Teams = () => {
     },
     {
       key: "3",
-      title: "Actions",
+      title: "Acciones",
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
@@ -133,11 +133,11 @@ const Teams = () => {
 
   return (
     <div>
-      <Button type="primary" onClick={onRegisterTeam}>Register New Team</Button>
+      <Button type="primary" onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
       <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
       <Modal
-        title="School Details"
+        title="Detalles de la Escuela"
         open={isViewing}
         onCancel={() => setIsViewing(false)}
         footer={null}
@@ -145,14 +145,14 @@ const Teams = () => {
       >
         {viewingSchool && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="School Name">{viewingSchool.name}</Descriptions.Item>
+            <Descriptions.Item label="Nombre">{viewingSchool.name}</Descriptions.Item>
             <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-            <Descriptions.Item label="Address">{viewingSchool.address.address1}</Descriptions.Item>
-            <Descriptions.Item label="City">{viewingSchool.address.city}</Descriptions.Item>
-            <Descriptions.Item label="State">{viewingSchool.address.state}</Descriptions.Item>
-            <Descriptions.Item label="Postal Code">{viewingSchool.address.postalCode}</Descriptions.Item>
-            <Descriptions.Item label="Country">{viewingSchool.address.country}</Descriptions.Item>
-            <Descriptions.Item label="Students">
+            <Descriptions.Item label="Calle">{viewingSchool.address.address1}</Descriptions.Item>
+            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
+            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
+            <Descriptions.Item label="Codigo Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
+            <Descriptions.Item label="Pais">{viewingSchool.address.country}</Descriptions.Item>
+            <Descriptions.Item label="Jugadores">
               <List
                 dataSource={viewingSchool.students}
                 renderItem={(student: Student) => (

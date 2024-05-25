@@ -7,6 +7,13 @@ type Student = {
   fieldPosition: string;
   shirtNumber: number;
   IMSS: string;
+  team: {
+    school: {
+      id: string;
+      name: string;
+      number: number;
+    };
+  };
 };
 
 type Player = {
@@ -55,14 +62,13 @@ function Players() {
   const columns = [
     { key: "1", title: "Nombres", dataIndex: "firstName", sorter: (a: Player, b: Player) => a.firstName.localeCompare(b.firstName) },
     { key: "2", title: "Apellidos", dataIndex: "lastName", sorter: (a: Player, b: Player) => a.lastName.localeCompare(b.lastName) },
-    { key: "3", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
-    { key: "4", title: "Teléfono", dataIndex: "phone", sorter: (a: Player, b: Player) => a.phone.localeCompare(b.phone) },
-    { key: "5", title: "Fecha de nacimiento", dataIndex: "birthDate", sorter: (a: Player, b: Player) => a.birthDate.localeCompare(b.birthDate) },
+    { key: "3", title: "Equipo", dataIndex: ["student", "team", "school", "name"], sorter: (a: Player, b: Player) => a.student.team.school.name.localeCompare(b.student.team.school.name) },
+    { key: "4", title: "Número Equipo", dataIndex: ["student", "team", "school", "number"], sorter: (a: Player, b: Player) => a.student.team.school.number - b.student.team.school.number },
+    { key: "5", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
     { key: "6", title: "Género", dataIndex: "gender", sorter: (a: Player, b: Player) => a.gender.localeCompare(b.gender) },
-    { key: "7", title: "Rol", dataIndex: "role", sorter: (a: Player, b: Player) => a.role.localeCompare(b.role) },
-    { key: "8", title: "CURP", dataIndex: "CURP", sorter: (a: Player, b: Player) => a.CURP.localeCompare(b.CURP) },
+    { key: "7", title: "CURP", dataIndex: "CURP", sorter: (a: Player, b: Player) => a.CURP.localeCompare(b.CURP) },
     {
-      key: "9",
+      key: "8",
       title: "Acciones",
       render: (record: Player) => (
         <>
@@ -114,17 +120,10 @@ function Players() {
       >
         {viewingPlayer && (
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Nombres">{viewingPlayer.firstName}</Descriptions.Item>
-            <Descriptions.Item label="Apellidos">{viewingPlayer.lastName}</Descriptions.Item>
-            <Descriptions.Item label="Email">{viewingPlayer.email}</Descriptions.Item>
+            <Descriptions.Item label="ID Equipo">{viewingPlayer.student.team.school.id}</Descriptions.Item>
             <Descriptions.Item label="Teléfono">{viewingPlayer.phone}</Descriptions.Item>
-            <Descriptions.Item label="Rol">{viewingPlayer.role}</Descriptions.Item>
-            <Descriptions.Item label="CURP">{viewingPlayer.CURP}</Descriptions.Item>
             <Descriptions.Item label="Fecha de nacimiento">{viewingPlayer.birthDate}</Descriptions.Item>
-            <Descriptions.Item label="Género">{viewingPlayer.gender}</Descriptions.Item>
-            <Descriptions.Item label="Posición de campo">{viewingPlayer.student.fieldPosition}</Descriptions.Item>
-            <Descriptions.Item label="Número de camiseta">{viewingPlayer.student.shirtNumber}</Descriptions.Item>
-            <Descriptions.Item label="IMSS">{viewingPlayer.student.IMSS}</Descriptions.Item>
+            <Descriptions.Item label="Rol">{viewingPlayer.role}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
