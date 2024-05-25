@@ -3,7 +3,6 @@ import axios from "axios";
 import { Table, Button, Modal, message, Descriptions } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import RegisterMatch from "./RegisterMatch";
-import RegisterPhase from "./RegisterPhase";
 
 type Team = {
   id: string;
@@ -14,8 +13,8 @@ type Match = {
   id: string;
   teamA: Team;
   teamB: Team;
-  startDate: string;
-  endDate: string;
+  dateStart: string;
+  dateEnd: string;
   goals: string;
 };
 
@@ -105,14 +104,14 @@ const Matches = () => {
     {
       key: "3",
       title: "Fecha Inicio",
-      dataIndex: "startDate",
-      sorter: (a: Match, b: Match) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      dataIndex: "dateStart",
+      sorter: (a: Match, b: Match) => new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime(),
     },
     {
       key: "4",
-      title: "Goles",
-      dataIndex: "goals",
-      sorter: (a: Match, b: Match) => a.goals.localeCompare(b.goals),
+      title: "Fecha Fin",
+      dataIndex: "dateEnd",
+      sorter: (a: Match, b: Match) => new Date(a.dateEnd).getTime() - new Date(b.dateEnd).getTime(),
     },
     {
       key: "5",
@@ -231,8 +230,6 @@ const Matches = () => {
 
   return (
     <div>
-      <Button type="primary" onClick={onRegisterPhase}>Registrar Nueva Fase</Button>
-      <div style={{ margin: "2%" }}></div>
       <Table columns={phaseColumns} dataSource={phases} rowKey="id" pagination={false} />
       <div style={{ margin: "5%" }}></div>
       <Button type="primary" onClick={onRegisterMatch}>Registrar Nuevo Partido</Button>
@@ -254,12 +251,11 @@ const Matches = () => {
               {viewingMatch.teamB.name}
             </Descriptions.Item>
             <Descriptions.Item label="Fecha Inicio">
-              {viewingMatch.startDate}
+              {viewingMatch.dateStart}
             </Descriptions.Item>
             <Descriptions.Item label="Fecha Fin">
-              {viewingMatch.endDate}
+              {viewingMatch.dateEnd}
             </Descriptions.Item>
-            <Descriptions.Item label="Goles">{viewingMatch.goals}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
@@ -277,20 +273,6 @@ const Matches = () => {
             <Descriptions.Item label="Fecha de Fin">{viewingPhase.endDate}</Descriptions.Item>
           </Descriptions>
         )}
-      </Modal>
-      <Modal
-        title="Registrar Nueva Fase"
-        open={isRegisteringPhase}
-        footer={null}
-        onCancel={() => setIsRegisteringPhase(false)}
-        width={500}
-      >
-        <RegisterPhase
-          onClose={() => {
-            setIsRegisteringPhase(false);
-            fetchPhases();
-          }}
-        />
       </Modal>
       <Modal
         title="Registrar Nuevo Partido"
