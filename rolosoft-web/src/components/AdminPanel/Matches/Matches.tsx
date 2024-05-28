@@ -2,14 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Button, Modal, message, Descriptions } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { FaFutbol } from 'react-icons/fa';
 import RegisterMatch from "./RegisterMatch";
-
-type Team = {
-  id: string;
-  name: string;
-  points: number;
-  goals: Goal[];
-};
+import RegisterGoal from "./RegisterGoal";
 
 type Goal = {
   id: string;
@@ -19,13 +14,18 @@ type Goal = {
   playerNumber: number;
 };
 
+type Team = {
+  id: string;
+  name: string;
+  goals: Goal[];
+};
+
 type Match = {
   id: string;
   teamA: Team;
   teamB: Team;
   dateTimeStart: string;
   dateTimeEnd: string;
-  isPlaying: boolean;
 };
 
 type Phase = {
@@ -44,6 +44,8 @@ const Matches = () => {
   const [isRegisteringPhase, setIsRegisteringPhase] = useState<boolean>(false);
   const [isViewingPhase, setIsViewingPhase] = useState<boolean>(false);
   const [viewingPhase, setViewingPhase] = useState<Phase | null>(null);
+  const [isRegisteringGoal, setIsRegisteringGoal] = useState<boolean>(false); 
+  const [currentMatch, setCurrentMatch] = useState<Match | null>(null);
 
   useEffect(() => {
     fetchMatches();
@@ -158,13 +160,16 @@ const Matches = () => {
       title: "Acciones",
       render: (record: Match) => (
         <>
-          <EyeOutlined onClick={() => onViewMatch(record)} />
-          <DeleteOutlined onClick={() => onDeleteMatch(record)} style={{ color: "red", marginLeft: 12 }} />
+          <span onClick={() => onRegisterGoal(record)} style={{ marginRight: 12 }}>
+            <FaFutbol />
+          </span>
+          <EyeOutlined onClick={() => onViewMatch(record)} style={{ marginRight: 12 }} />
+          <DeleteOutlined onClick={() => onDeleteMatch(record)} style={{ color: "red" }} />
         </>
       ),
     },
   ];
-  
+
   const phaseColumns = [
     {
       key: "1",
@@ -268,6 +273,11 @@ const Matches = () => {
     setIsRegisteringPhase(true);
   };
 
+  const onRegisterGoal = (record: Match) => {
+    setCurrentMatch(record);
+    setIsRegisteringGoal(true);
+  };
+
   return (
     <div>
       <Table columns={phaseColumns} dataSource={phases} rowKey="id" pagination={false} />
@@ -346,6 +356,21 @@ const Matches = () => {
         <RegisterMatch
           onClose={() => {
             setIsRegisteringMatch(false);
+            fetchMatches();
+          }}
+        />
+      </Modal>
+      <Modal
+        title="Registrar Gol"
+        open={isRegisteringGoal}
+        footer={null}
+        onCancel={() => setIsRegisteringGoal(false)}
+        width={500}
+      >
+        <RegisterGoal
+          match={currentMatch}
+          onClose={() => {
+            setIsRegisteringGoal(false);
             fetchMatches();
           }}
         />
