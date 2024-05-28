@@ -81,7 +81,7 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
 
   const handleAddPlayer = async () => {
     if (!selectedPlayer || !school) {
-      message.error('Please select a player');
+      message.error('Por favor selecione un jugador');
       return;
     }
 
@@ -97,13 +97,13 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
       );
 
       if (response.status === 201) {
-        message.success('Player added successfully!');
+        message.success('Jugador agregado exitosamente!');
         onClose();
       } else {
         message.error('Failed to add player');
       }
     } catch (error) {
-      message.error('Error adding player');
+      message.error('Error al agregar jugador');
     }
   };
 
