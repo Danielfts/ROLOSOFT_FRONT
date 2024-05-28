@@ -7,15 +7,25 @@ import RegisterMatch from "./RegisterMatch";
 type Team = {
   id: string;
   name: string;
+  points: number;
+  goals: Goal[];
+};
+
+type Goal = {
+  id: string;
+  name: string;
+  lastName: string;
+  minute: number;
+  playerNumber: number;
 };
 
 type Match = {
   id: string;
   teamA: Team;
   teamB: Team;
-  dateStart: string;
-  dateEnd: string;
-  goals: string;
+  dateTimeStart: string;
+  dateTimeEnd: string;
+  isPlaying: boolean;
 };
 
 type Phase = {
@@ -97,24 +107,54 @@ const Matches = () => {
     },
     {
       key: "2",
+      title: "Goles Equipo A",
+      render: (record: Match) => (
+        record.teamA.goals.length > 0 ? (
+          record.teamA.goals.map((goal) => (
+            <div key={goal.id}>
+              {goal.name} {goal.lastName} - Minuto: {goal.minute}
+            </div>
+          ))
+        ) : (
+          <div>No goals</div>
+        )
+      ),
+    },
+    {
+      key: "3",
       title: "Equipo B",
       dataIndex: ["teamB", "name"],
       sorter: (a: Match, b: Match) => a.teamB.name.localeCompare(b.teamB.name),
     },
     {
-      key: "3",
-      title: "Fecha Inicio",
-      dataIndex: "dateStart",
-      sorter: (a: Match, b: Match) => new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime(),
-    },
-    {
       key: "4",
-      title: "Fecha Fin",
-      dataIndex: "dateEnd",
-      sorter: (a: Match, b: Match) => new Date(a.dateEnd).getTime() - new Date(b.dateEnd).getTime(),
+      title: "Goles Equipo B",
+      render: (record: Match) => (
+        record.teamB.goals.length > 0 ? (
+          record.teamB.goals.map((goal) => (
+            <div key={goal.id}>
+              {goal.name} {goal.lastName} - Minuto: {goal.minute}
+            </div>
+          ))
+        ) : (
+          <div>No goals</div>
+        )
+      ),
     },
     {
       key: "5",
+      title: "Fecha Inicio",
+      dataIndex: "dateTimeStart",
+      sorter: (a: Match, b: Match) => new Date(a.dateTimeStart).getTime() - new Date(b.dateTimeStart).getTime(),
+    },
+    {
+      key: "6",
+      title: "Fecha Fin",
+      dataIndex: "dateTimeEnd",
+      sorter: (a: Match, b: Match) => new Date(a.dateTimeEnd).getTime() - new Date(b.dateTimeEnd).getTime(),
+    },
+    {
+      key: "7",
       title: "Acciones",
       render: (record: Match) => (
         <>
@@ -124,37 +164,37 @@ const Matches = () => {
       ),
     },
   ];
-
+  
   const phaseColumns = [
     {
-        key: "1",
-        title: "Fase",
-        dataIndex: "name",
-        sorter: (a: Phase, b: Phase) => a.name.localeCompare(b.name),
+      key: "1",
+      title: "Fase",
+      dataIndex: "name",
+      sorter: (a: Phase, b: Phase) => a.name.localeCompare(b.name),
     },
     {
-        key: "2",
-        title: "Fecha Inicio",
-        dataIndex: "startDate",
-        sorter: (a: Phase, b: Phase) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      key: "2",
+      title: "Fecha Inicio",
+      dataIndex: "startDate",
+      sorter: (a: Phase, b: Phase) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
     },
     {
-        key: "3",
-        title: "Fecha Final",
-        dataIndex: "endDate",
-        sorter: (a: Phase, b: Phase) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
+      key: "3",
+      title: "Fecha Final",
+      dataIndex: "endDate",
+      sorter: (a: Phase, b: Phase) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
     },
     {
-        key: "4",
-        title: "Acciones",
-        render: (record: Phase) => (
-            <>
-                <EyeOutlined onClick={() => onViewPhase(record)} />
-                <DeleteOutlined onClick={() => onDeletePhase(record)} style={{ color: "red", marginLeft: 12 }} />
-            </>
-        ),
+      key: "4",
+      title: "Acciones",
+      render: (record: Phase) => (
+        <>
+          <EyeOutlined onClick={() => onViewPhase(record)} />
+          <DeleteOutlined onClick={() => onDeletePhase(record)} style={{ color: "red", marginLeft: 12 }} />
+        </>
+      ),
     },
-];
+  ];
 
   const onViewPhase = (record: Phase) => {
     setIsViewingPhase(true);
@@ -168,30 +208,30 @@ const Matches = () => {
 
   const onDeletePhase = (record: Phase) => {
     Modal.confirm({
-        title: "Estas seguro que desea eliminar esta fase?",
-        okText: "Yes",
-        okType: "danger",
-        onOk: async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const headers = { Authorization: token };
-                const response = await axios.delete(
-                    `${process.env.REACT_APP_BASE_URL}/phases/${record.id}`,
-                    { headers }
-                );
+      title: "Estas seguro que desea eliminar esta fase?",
+      okText: "Yes",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const headers = { Authorization: token };
+          const response = await axios.delete(
+            `${process.env.REACT_APP_BASE_URL}/phases/${record.id}`,
+            { headers }
+          );
 
-                if (response.status === 200) {
-                    setPhases((prev) => prev.filter((phase) => phase.id !== record.id));
-                    message.success("Fase eliminada exitosamente!");
-                } else {
-                    message.error("Failed to delete phase");
-                }
-            } catch (error) {
-                message.error("Failed to delete phase: " + error);
-            }
-        },
+          if (response.status === 200) {
+            setPhases((prev) => prev.filter((phase) => phase.id !== record.id));
+            message.success("Fase eliminada exitosamente!");
+          } else {
+            message.error("Failed to delete phase");
+          }
+        } catch (error) {
+          message.error("Failed to delete phase: " + error);
+        }
+      },
     });
-};
+  };
 
   const onDeleteMatch = (record: Match) => {
     Modal.confirm({
@@ -247,14 +287,36 @@ const Matches = () => {
             <Descriptions.Item label="Equipo A">
               {viewingMatch.teamA.name}
             </Descriptions.Item>
+            <Descriptions.Item label="Goles del Equipo A">
+              {viewingMatch.teamA.goals.length > 0 ? (
+                viewingMatch.teamA.goals.map((goal) => (
+                  <div key={goal.id}>
+                    {goal.name} {goal.lastName} - Minuto: {goal.minute}
+                  </div>
+                ))
+              ) : (
+                <div>No goals</div>
+              )}
+            </Descriptions.Item>
             <Descriptions.Item label="Equipo B">
               {viewingMatch.teamB.name}
             </Descriptions.Item>
+            <Descriptions.Item label="Goles del Equipo B">
+              {viewingMatch.teamB.goals.length > 0 ? (
+                viewingMatch.teamB.goals.map((goal) => (
+                  <div key={goal.id}>
+                    {goal.name} {goal.lastName} - Minuto: {goal.minute}
+                  </div>
+                ))
+              ) : (
+                <div>No goals</div>
+              )}
+            </Descriptions.Item>
             <Descriptions.Item label="Fecha Inicio">
-              {viewingMatch.dateStart}
+              {viewingMatch.dateTimeStart}
             </Descriptions.Item>
             <Descriptions.Item label="Fecha Fin">
-              {viewingMatch.dateEnd}
+              {viewingMatch.dateTimeEnd}
             </Descriptions.Item>
           </Descriptions>
         )}
