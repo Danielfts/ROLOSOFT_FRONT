@@ -63,7 +63,7 @@ function Players() {
     { key: "1", title: "Nombres", dataIndex: "firstName", sorter: (a: Player, b: Player) => a.firstName.localeCompare(b.firstName) },
     { key: "2", title: "Apellidos", dataIndex: "lastName", sorter: (a: Player, b: Player) => a.lastName.localeCompare(b.lastName) },
     { key: "3", title: "Equipo", dataIndex: ["student", "team", "school", "name"], sorter: (a: Player, b: Player) => a.student.team.school.name.localeCompare(b.student.team.school.name) },
-    { key: "4", title: "Número Equipo", dataIndex: ["student", "team", "school", "number"], sorter: (a: Player, b: Player) => a.student.team.school.number - b.student.team.school.number },
+    { key: "4", title: "Número Escuela", dataIndex: ["student", "team", "school", "number"], sorter: (a: Player, b: Player) => a.student.team.school.number - b.student.team.school.number },
     { key: "5", title: "Email", dataIndex: "email", sorter: (a: Player, b: Player) => a.email.localeCompare(b.email) },
     { key: "6", title: "Género", dataIndex: "gender", sorter: (a: Player, b: Player) => a.gender.localeCompare(b.gender) },
     { key: "7", title: "CURP", dataIndex: "CURP", sorter: (a: Player, b: Player) => a.CURP.localeCompare(b.CURP) },
@@ -120,6 +120,13 @@ function Players() {
       >
         {viewingPlayer && (
           <Descriptions bordered column={1}>
+            <Descriptions.Item label="Nombres">{viewingPlayer.firstName}</Descriptions.Item>
+            <Descriptions.Item label="Apellidos">{viewingPlayer.lastName}</Descriptions.Item>
+            <Descriptions.Item label="Equipo">{viewingPlayer.student.team.school.name}</Descriptions.Item>
+            <Descriptions.Item label="Número Equipo">{viewingPlayer.student.team.school.number}</Descriptions.Item>
+            <Descriptions.Item label="Email">{viewingPlayer.email}</Descriptions.Item>
+            <Descriptions.Item label="Género">{viewingPlayer.gender}</Descriptions.Item>
+            <Descriptions.Item label="CURP">{viewingPlayer.CURP}</Descriptions.Item>
             <Descriptions.Item label="ID Equipo">{viewingPlayer.student.team.school.id}</Descriptions.Item>
             <Descriptions.Item label="Teléfono">{viewingPlayer.phone}</Descriptions.Item>
             <Descriptions.Item label="Fecha de nacimiento">{viewingPlayer.birthDate}</Descriptions.Item>
