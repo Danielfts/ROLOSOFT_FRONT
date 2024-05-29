@@ -13,7 +13,7 @@ type Address = {
 
 type Student = {
   id: string;
-  curp: string;
+  CURP: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -123,7 +123,7 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
                     title={`${student.firstName} ${student.lastName}`}
                     description={
                       <>
-                        <div>CURP: {student.curp}</div>
+                        <div>CURP: {student.CURP}</div>
                         <div>Email: {student.email}</div>
                         <div>Posición: {student.student.fieldPosition}</div>
                         <div>Numero Camiseta: {student.student.shirtNumber}</div>
@@ -143,7 +143,7 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
                 >
                   {students.map(student => (
                     <Select.Option key={student.id} value={student.id}>
-                      {`${student.firstName} ${student.lastName} - ${student.email} - ${student.curp}`}
+                      {`${student.firstName} ${student.lastName} - ${student.email} - ${student.CURP}`}
                     </Select.Option>
                   ))}
                 </Select>

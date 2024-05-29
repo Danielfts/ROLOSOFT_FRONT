@@ -16,7 +16,7 @@ type Address = {
 
 type Student = {
   id: string;
-  curp: string;
+  CURP: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -63,6 +63,7 @@ const Teams = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: token };
       const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
+      console.log('Fetched schools:', response.data.data); 
       if (response.status === 200 && response.data.success) {
         setSchools(response.data.data);
       } else {
@@ -168,7 +169,7 @@ const Teams = () => {
                       title={`${student.firstName} ${student.lastName}`}
                       description={
                         <>
-                          <div>CURP: {student.curp}</div>
+                          <div>CURP: {student.CURP}</div>
                           <div>Email: {student.email}</div>
                           <div>Posición: {student.student.fieldPosition}</div>
                           <div>Numero Camiseta: {student.student.shirtNumber}</div>

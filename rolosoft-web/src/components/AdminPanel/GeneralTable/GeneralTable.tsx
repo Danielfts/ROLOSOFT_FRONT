@@ -1,7 +1,7 @@
-import { Button, Table, Modal, message, Image, InputNumber } from "antd";
+import { Button, Table, Modal, message, Image, InputNumber, Tooltip } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 
 type TeamStanding = {
   team: string;
@@ -57,65 +57,121 @@ function GeneralTable() {
     },
     {
       key: "2",
+      title: "Escudo",
+      dataIndex: "photoUrl",
+      render: (photoUrl: string) => (
+        <Image width={50} src={photoUrl} />
+      ),
+    },
+    {
+      key: "3",
       title: "Equipo",
       dataIndex: "team",
       sorter: (a: TeamStanding, b: TeamStanding) => a.team.localeCompare(b.team),
     },
     {
-      key: "3",
-      title: "Victorias",
-      dataIndex: "victories",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.victories - b.victories,
-    },
-    {
       key: "4",
-      title: "Empates",
-      dataIndex: "draws",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.draws - b.draws,
-    },
-    {
-      key: "5",
-      title: "Derrotas",
-      dataIndex: "defeats",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.defeats - b.defeats,
-    },
-    {
-      key: "6",
-      title: "Puntos",
+      title: (
+        <div>
+          PT
+          <Tooltip title="Número de puntos">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
       dataIndex: "points",
       sorter: (a: TeamStanding, b: TeamStanding) => a.points - b.points,
     },
     {
-      key: "7",
-      title: "GF",
-      dataIndex: "goalsFor",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsFor - b.goalsFor,
-    },
-    {
-      key: "8",
-      title: "GC",
-      dataIndex: "goalsAgainst",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsAgainst - b.goalsAgainst,
-    },
-    {
-      key: "9",
-      title: "Diferencia de goles",
+      key: "5",
+      title: (
+        <div>
+          DF
+          <Tooltip title="Diferencia de goles">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
       dataIndex: "goalDifference",
       sorter: (a: TeamStanding, b: TeamStanding) => a.goalDifference - b.goalDifference,
     },
     {
-      key: "10",
-      title: "Juegos jugados",
+      key: "6",
+      title: (
+        <div>
+          JJ
+          <Tooltip title="Juegos jugados">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
       dataIndex: "gamesPlayed",
       sorter: (a: TeamStanding, b: TeamStanding) => a.gamesPlayed - b.gamesPlayed,
     },
     {
-      key: "11",
-      title: "Imagen",
-      dataIndex: "photoUrl",
-      render: (photoUrl: string) => (
-        <Image width={50} src={photoUrl} />
+      key: "7",
+      title: (
+        <div>
+          JG
+          <Tooltip title="Juegos ganados">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
       ),
+      dataIndex: "victories",
+      sorter: (a: TeamStanding, b: TeamStanding) => a.victories - b.victories,
+    },
+    {
+      key: "8",
+      title: (
+        <div>
+          JE
+          <Tooltip title="Juegos empatados">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: "draws",
+      sorter: (a: TeamStanding, b: TeamStanding) => a.draws - b.draws,
+    },
+    {
+      key: "9",
+      title: (
+        <div>
+          JP
+          <Tooltip title="Juegos perdidos">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: "defeats",
+      sorter: (a: TeamStanding, b: TeamStanding) => a.defeats - b.defeats,
+    },
+    {
+      key: "10",
+      title: (
+        <div>
+          GF
+          <Tooltip title="Goles a favor">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: "goalsFor",
+      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsFor - b.goalsFor,
+    },
+    {
+      key: "11",
+      title: (
+        <div>
+          GC
+          <Tooltip title="Goles en contra">
+            <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: "goalsAgainst",
+      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsAgainst - b.goalsAgainst,
     },
     {
       key: "12",
@@ -123,40 +179,12 @@ function GeneralTable() {
       render: (record: TeamStanding) => (
         <>
           <EditOutlined onClick={() => onEditTeam(record)} />
-          <DeleteOutlined onClick={() => onDeleteTeam(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
 
-  const onAddTeam = () => {
-    const newId = Math.floor(Math.random() * 10000);
-    const newTeam: TeamStanding = {
-      team: `New Team ${newId}`,
-      victories: 0,
-      draws: 0,
-      defeats: 0,
-      position: dataSource.length + 1,
-      points: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      goalDifference: 0,
-      gamesPlayed: 0,
-      photoUrl: "https://via.placeholder.com/50",
-    };
-    setDataSource((prev) => [...prev, newTeam]);
-  };
 
-  const onDeleteTeam = (record: TeamStanding) => {
-    Modal.confirm({
-      title: "¿Estás seguro de que quieres eliminar este equipo?",
-      okText: "Sí",
-      okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((team) => team.team !== record.team));
-      },
-    });
-  };
 
   const onEditTeam = (record: TeamStanding) => {
     setIsEditing(true);

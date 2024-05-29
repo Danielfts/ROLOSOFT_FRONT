@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Button, Modal, message, Descriptions } from "antd";
+import { Table, Button, Modal, message, Descriptions, List, Avatar } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import { FaFutbol } from 'react-icons/fa';
 import RegisterMatch from "./RegisterMatch";
@@ -109,18 +109,8 @@ const Matches = () => {
     },
     {
       key: "2",
-      title: "Goles Equipo A",
-      render: (record: Match) => (
-        record.teamA.goals.length > 0 ? (
-          record.teamA.goals.map((goal) => (
-            <div key={goal.id}>
-              {goal.name} {goal.lastName} - Minuto: {goal.minute}
-            </div>
-          ))
-        ) : (
-          <div>No goals</div>
-        )
-      ),
+      title: "Total Goles Equipo A",
+      render: (record: Match) => record.teamA.goals.length,
     },
     {
       key: "3",
@@ -130,18 +120,8 @@ const Matches = () => {
     },
     {
       key: "4",
-      title: "Goles Equipo B",
-      render: (record: Match) => (
-        record.teamB.goals.length > 0 ? (
-          record.teamB.goals.map((goal) => (
-            <div key={goal.id}>
-              {goal.name} {goal.lastName} - Minuto: {goal.minute}
-            </div>
-          ))
-        ) : (
-          <div>No goals</div>
-        )
-      ),
+      title: "Total Goles Equipo B",
+      render: (record: Match) => record.teamB.goals.length,
     },
     {
       key: "5",
@@ -168,7 +148,7 @@ const Matches = () => {
         </>
       ),
     },
-  ];
+  ];  
 
   const phaseColumns = [
     {
@@ -299,11 +279,19 @@ const Matches = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Goles del Equipo A">
               {viewingMatch.teamA.goals.length > 0 ? (
-                viewingMatch.teamA.goals.map((goal) => (
-                  <div key={goal.id}>
-                    {goal.name} {goal.lastName} - Minuto: {goal.minute}
-                  </div>
-                ))
+                <List
+                  itemLayout="horizontal"
+                  dataSource={viewingMatch.teamA.goals}
+                  renderItem={(goal, index) => (
+                    <List.Item key={goal.id}>
+                      <List.Item.Meta
+                        avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                        title={`${goal.name} ${goal.lastName}`}
+                        description={`Minuto: ${goal.minute}`}
+                      />
+                    </List.Item>
+                  )}
+                />
               ) : (
                 <div>No goals</div>
               )}
@@ -313,11 +301,19 @@ const Matches = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Goles del Equipo B">
               {viewingMatch.teamB.goals.length > 0 ? (
-                viewingMatch.teamB.goals.map((goal) => (
-                  <div key={goal.id}>
-                    {goal.name} {goal.lastName} - Minuto: {goal.minute}
-                  </div>
-                ))
+                <List
+                  itemLayout="horizontal"
+                  dataSource={viewingMatch.teamB.goals}
+                  renderItem={(goal, index) => (
+                    <List.Item key={goal.id}>
+                      <List.Item.Meta
+                        avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                        title={`${goal.name} ${goal.lastName}`}
+                        description={`Minuto: ${goal.minute}`}
+                      />
+                    </List.Item>
+                  )}
+                />
               ) : (
                 <div>No goals</div>
               )}

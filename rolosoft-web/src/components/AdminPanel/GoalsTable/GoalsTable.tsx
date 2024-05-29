@@ -80,6 +80,12 @@ function GoalsTable() {
     },
     {
       key: "6",
+      title: "Puntos",
+      dataIndex: "points",
+      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.points - b.points,
+    },
+    {
+      key: "7",
       title: "Imagen Jugador",
       dataIndex: "playerPhotoUrl",
       render: (playerPhotoUrl: string) => (
@@ -87,7 +93,7 @@ function GoalsTable() {
       ),
     },
     {
-      key: "7",
+      key: "8",
       title: "Imagen Equipo",
       dataIndex: "teamPhotoUrl",
       render: (teamPhotoUrl: string) => (
@@ -95,7 +101,7 @@ function GoalsTable() {
       ),
     },
     {
-      key: "8",
+      key: "9",
       title: "Acciones",
       render: (record: ScoringTableEntry) => (
         <>
