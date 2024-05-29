@@ -123,10 +123,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
             <Form form={form} onFinish={handleSubmit} layout="vertical">
                 <Form.Item
                     name="phase"
-                    rules={[{ required: true, message: "Please select a phase" }]}
+                    rules={[{ required: true, message: "Por favor seleccione una fase" }]}
                 >
                     <Select
-                        placeholder="Select Phase"
+                        placeholder="Seleccione una fase"
                         onChange={(value) => setPhaseName(value as string)}
                     >
                         {phases.map((phase) => (
@@ -139,10 +139,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
 
                 <Form.Item
                     name="teamA"
-                    rules={[{ required: true, message: "Please select Team A" }]}
+                    rules={[{ required: true, message: "Por favor seleccione equipo A" }]}
                 >
                     <Select
-                        placeholder="Select Team A"
+                        placeholder="Seleccione equipo A"
                         onChange={(value) => setTeamA(value as string)}
                     >
                         {teams.map((team) => (
@@ -155,10 +155,10 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
 
                 <Form.Item
                     name="teamB"
-                    rules={[{ required: true, message: "Please select Team B" }]}
+                    rules={[{ required: true, message: "Por favor seleccione equipo B" }]}
                 >
                     <Select
-                        placeholder="Select Team B"
+                        placeholder="Seleccione equipo B"
                         onChange={(value) => setTeamB(value as string)}
                     >
                         {teams.map((team) => (
@@ -170,7 +170,7 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 </Form.Item>
 
                 <Form.Item name="dates" rules={[{ required: true, message: "Please select the dates" }]}>
-                    <RangePicker showTime placeholder={['Start Date', 'End Date']} format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
+                    <RangePicker showTime placeholder={['Fecha Inicio', 'Fecha Fin']} format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
                 </Form.Item>
 
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>

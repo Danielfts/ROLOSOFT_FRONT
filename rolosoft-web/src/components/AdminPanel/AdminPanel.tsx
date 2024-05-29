@@ -5,7 +5,7 @@ import Users from './Players/Players';
 import Teams from './Teams/Teams';
 import Matches from './Matches/Matches';
 import GoalsTable from './GoalsTable/GoalsTable';
-import GeneralTable from './ScoreTable/ScoreTable';
+import GeneralTable from './GeneralTable/GeneralTable';
 import News from './News/News';
 
 

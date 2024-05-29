@@ -13,7 +13,7 @@ type Student = {
   firstName: string;
   lastName: string;
   email: string;
-  curp: string;
+  CURP: string;
 };
 
 type RegisterTeamProps = {
@@ -71,17 +71,10 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   };
 
   const handleStudentSelect = (selectedItems: any) => {
-    console.log('Selected items:', selectedItems);
     const newSelectedStudents = selectedItems.map((item: any) => {
       return students.find(s => s.id === item.value);
     }).filter(Boolean) as Student[];
     setSelectedStudents(newSelectedStudents);
-    console.log('Selected students:', newSelectedStudents);
-  };
-
-  const handleStudentRemove = (studentId: string) => {
-    setSelectedStudents(selectedStudents.filter(s => s.id !== studentId));
-    console.log('Selected students after removal:', selectedStudents);
   };
 
   const handleSubmit = async (values: any) => {
@@ -95,8 +88,6 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
       sponsor: values.sponsor,
       students: selectedStudents.map(s => s.id),
     };
-
-    console.log('Payload to be sent:', payload);
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools`, payload, { headers });
@@ -155,7 +146,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
             maxTagCount={MAX_COUNT}
             value={selectedStudents.map(s => ({
               key: s.id,
-              label: `${s.firstName} ${s.lastName} - ${s.email} - ${s.curp}`,
+              label: `${s.firstName} ${s.lastName} - ${s.email} - ${s.CURP}`,
               value: s.id
             }))}
             labelInValue
@@ -163,7 +154,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
           >
             {filteredStudents.map(student => (
               <Select.Option key={student.id} value={student.id}>
-                {`${student.firstName} ${student.lastName} - ${student.email} - ${student.curp}`}
+                {`${student.firstName} ${student.lastName} - ${student.email} - ${student.CURP}`}
               </Select.Option>
             ))}
           </Select>

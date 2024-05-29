@@ -10,7 +10,7 @@ interface SchoolFormValues {
   state: string;
   postalCode: string;
   country: string;
-  number: string;  // Added number field
+  number: string;
 }
 
 interface RegisterSchoolsProps {

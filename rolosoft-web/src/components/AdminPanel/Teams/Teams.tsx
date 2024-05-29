@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Button, Modal, message, Descriptions, List, Avatar } from "antd";
-import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EyeOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
-import VirtualList from 'rc-virtual-list';
+import EditTeam from './EditTeam';
 
 type Address = {
   address1: string;
@@ -40,13 +40,13 @@ type School = {
   students: Student[];
 };
 
-const ContainerHeight = 400;
-
 const Teams = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingSchool, setViewingSchool] = useState<School | null>(null);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
   useEffect(() => {
     fetchSchools();
@@ -63,6 +63,7 @@ const Teams = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: token };
       const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
+      console.log('Fetched schools:', response.data.data); 
       if (response.status === 200 && response.data.success) {
         setSchools(response.data.data);
       } else {
@@ -82,7 +83,7 @@ const Teams = () => {
         try {
           const token = localStorage.getItem('token');
           const headers = { Authorization: token };
-          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
+          const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/schools/${record.id}`, { headers });
 
           if (response.status === 200) {
             setSchools((prev) => prev.filter((school) => school.id !== record.id));
@@ -95,6 +96,20 @@ const Teams = () => {
         }
       },
     });
+  };
+
+  const onViewSchool = (record: School) => {
+    setIsViewing(true);
+    setViewingSchool(record);
+  };
+
+  const onEditSchool = (record: School) => {
+    setIsEditing(true);
+    setEditingSchool(record);
+  };
+
+  const onRegisterTeam = () => {
+    setIsRegistering(true);
   };
 
   const columns = [
@@ -116,20 +131,12 @@ const Teams = () => {
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
+          <EditOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
           <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
   ];
-
-  const onViewSchool = (record: School) => {
-    setIsViewing(true);
-    setViewingSchool(record);
-  };
-
-  const onRegisterTeam = () => {
-    setIsRegistering(true);
-  };
 
   return (
     <div>
@@ -169,10 +176,6 @@ const Teams = () => {
                         </>
                       }
                     />
-                    <div style={{ textAlign: 'right' }}>
-                      <p></p>
-                      <p></p>
-                    </div>
                   </List.Item>
                 )}
               />
@@ -185,12 +188,27 @@ const Teams = () => {
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
-        width={500}
+        width={600}
       >
         <RegisterTeam onClose={() => {
           setIsRegistering(false);
           fetchSchools();
         }} />
+      </Modal>
+      <Modal
+        title="Edit Team"
+        open={isEditing}
+        footer={null}
+        onCancel={() => setIsEditing(false)}
+        width={800}
+      >
+        <EditTeam
+          school={editingSchool}
+          onClose={() => {
+            setIsEditing(false);
+            fetchSchools();
+          }}
+        />
       </Modal>
     </div>
   );
