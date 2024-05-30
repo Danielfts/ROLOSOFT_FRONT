@@ -1,64 +1,38 @@
-import { Button, Table, Modal, message, Descriptions } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Button, Table, Modal, message } from "antd";
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import RegisterUser from './RegisterUser';
+import UserDetails from './UserDetails';
+import { User } from '../../../types/types';
+import { fetchUsers, deleteUser } from '../../../services/userService';
 
-type Address = {
-  address1: string;
-  address2: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-};
-
-type User = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  birthDate: string;
-  gender: string;
-  role: string;
-  CURP: string;
-  address: Address;
-};
-
-function Users() {
-
+const Users: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [dataSource, setDataSource] = useState<User[]>([]);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const fetchUsersData = async () => {
+      const token = localStorage.getItem('token');
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    try {
-      if (!token) {
-        message.error('No se encontró ningun token, por favor inicie sesión');
-        return;
-      }
-      const response = await axios.get(process.env.REACT_APP_USERS_API_URL!, { headers });
-
-      if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
-
+      if (token) {
+        try {
+          const users = await fetchUsers(token);
+          if (users) {
+            setDataSource(users);
+          } else {
+            message.error("Failed to load users");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
       } else {
-        console.error('Fallo al obtener usuarios con estatus: ', response.status);
-        message.error('Error al obtener usuarios con error inesperado: ');
+        message.error('No token found');
       }
-    } catch (error) {
-      console.error('Fallo al obtener usuarios:', error);
-      message.error('Error al obtener usuarios');
-    }
-  };
+    };
+    fetchUsersData();
+  }, []);
 
   const columns = [
     { key: "2", title: "Nombres", dataIndex: "firstName", sorter: (a: User, b: User) => a.firstName.localeCompare(b.firstName) },
@@ -96,23 +70,14 @@ function Users() {
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            message.error('No se encontró ningun token, por favor inicie sesión');
-            return;
-          }
-          const headers = { Authorization: token }
-          const response = await axios.delete(`${process.env.REACT_APP_USERS_API_URL}/${record.id}`, { headers });
-
-          if (response.status === 200) {
-            setDataSource((prev) => prev.filter((user) => user.id !== record.id));
-            message.success("Usuario eliminado exitosamente!");
-          } else {
-            message.error('Fallo al eliminar usuario');
-          }
-        } catch (error) {
-          message.error('Fallo al eliminar usuario: ' + error);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          message.error('No se encontró ningun token, por favor inicie sesión');
+          return;
+        }
+        const success = await deleteUser(token, record.id);
+        if (success) {
+          setDataSource((prev) => prev.filter((user) => user.id !== record.id));
         }
       },
     });
@@ -124,40 +89,36 @@ function Users() {
         <Button type="primary" onClick={onAddUser}>Registrar Nuevo Usuario</Button>
         <div style={{ margin: "2%" }}></div>
         <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Detalles de usuario"
-          open={isViewing}
-          onOk={() => setIsViewing(false)}
-          onCancel={() => setIsViewing(false)}
-          width={500}
-        >
-          {viewingUser && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nombres">{viewingUser.firstName}</Descriptions.Item>
-              <Descriptions.Item label="Apellidos">{viewingUser.lastName}</Descriptions.Item>
-              <Descriptions.Item label="Email">{viewingUser.email}</Descriptions.Item>
-              <Descriptions.Item label="Teléfono">{viewingUser.phone}</Descriptions.Item>
-              <Descriptions.Item label="Rol">{viewingUser.role}</Descriptions.Item>
-              <Descriptions.Item label="CURP">{viewingUser.CURP}</Descriptions.Item>
-              <Descriptions.Item label="Fecha de nacimiento">{viewingUser.birthDate}</Descriptions.Item>
-              <Descriptions.Item label="Género">{viewingUser.gender}</Descriptions.Item>
-              {/* Address details */}
-              <Descriptions.Item label="Calle y Número">{viewingUser.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Colonia">{viewingUser.address.address2}</Descriptions.Item>
-              <Descriptions.Item label="Ciudad">{viewingUser.address.city}</Descriptions.Item>
-              <Descriptions.Item label="Estado">{viewingUser.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Código Postal">{viewingUser.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="País">{viewingUser.address.country}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
+        <UserDetails
+          visible={isViewing}
+          onClose={() => setIsViewing(false)}
+          user={viewingUser}
+        />
         <Modal
           title="Registrar Nuevo Usuario"
           open={isRegistering}
           footer={null}
           onCancel={() => {
             setIsRegistering(false);
-            fetchUsers();
+            const fetchUsersData = async () => {
+              const token = localStorage.getItem('token');
+
+              if (token) {
+                try {
+                  const users = await fetchUsers(token);
+                  if (users) {
+                    setDataSource(users);
+                  } else {
+                    message.error("Failed to load users");
+                  }
+                } catch (error) {
+                  message.error("Error fetching data");
+                }
+              } else {
+                message.error('No token found');
+              }
+            };
+            fetchUsersData();
           }}
           width={500}
         >
@@ -166,6 +127,6 @@ function Users() {
       </header>
     </div>
   );
-}
+};
 
 export default Users;

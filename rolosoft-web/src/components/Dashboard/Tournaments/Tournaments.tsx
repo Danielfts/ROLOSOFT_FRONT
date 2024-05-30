@@ -1,58 +1,39 @@
-import { Button, Table, Modal, message, Descriptions } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Button, Table, Modal, message } from "antd";
 import { DeleteOutlined, EyeOutlined, SettingOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import RegisterTournament from './RegisterTournament';
+import TournamentDetails from './TournamentDetails';
+import { Tournament } from '../../../types/types';
+import { fetchTournaments, deleteTournament } from '../../../services/tournamentService';
 
-type Address = {
-  address1: string;
-  address2: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-};
-
-type Tournament = {
-  id: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-  address: Address;
-};
-
-function Tournaments() {
+const Tournaments: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingTournament, setViewingTournament] = useState<Tournament | null>(null);
   const [dataSource, setDataSource] = useState<Tournament[]>([]);
 
   useEffect(() => {
-    fetchTournaments();
-  }, []);
+    const fetchTournamentsData = async () => {
+      const token = localStorage.getItem('token');
 
-  const fetchTournaments = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    try {
-      if (!token) {
-        message.error('No se encontró ningun token, por favor inicie sesión');
-        return;
-      }
-      const response = await axios.get(process.env.REACT_APP_TOURNAMENTS_API_URL!, { headers });
-
-      if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
+      if (token) {
+        try {
+          const tournaments = await fetchTournaments(token);
+          if (tournaments) {
+            setDataSource(tournaments);
+          } else {
+            message.error("Failed to load tournaments");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
       } else {
-        console.error('Failed to fetch tournaments with status:', response.status);
-        message.error('Error fetching tournaments with unexpected status.');
+        message.error('No token found');
       }
-    } catch (error) {
-      console.error('Failed to fetch tournaments:', error);
-      message.error('Error fetching tournaments');
-    }
-  };
+    };
+    fetchTournamentsData();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -93,19 +74,14 @@ function Tournaments() {
       okText: "Si",
       okType: "danger",
       onOk: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const headers = { Authorization: token }
-          const response = await axios.delete(`${process.env.REACT_APP_TOURNAMENTS_API_URL}/${record.id}`, { headers });
-
-          if (response.status === 200) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const success = await deleteTournament(token, record.id);
+          if (success) {
             setDataSource((prev) => prev.filter((tournament) => tournament.id !== record.id));
-            message.success("Torneo eliminado exitosamente!");
-          } else {
-            message.error('Failed to delete tournament');
           }
-        } catch (error) {
-          message.error('Failed to delete tournament: ' + error);
+        } else {
+          message.error('Authorization token is missing');
         }
       },
     });
@@ -122,27 +98,11 @@ function Tournaments() {
             onClick: () => administrateTournament(record.id),
           })}
         />
-        <Modal
-          title="Detalles del torneo"
-          open={isViewing}
-          onOk={() => setIsViewing(false)}
-          onCancel={() => setIsViewing(false)}
-          width={500}
-        >
-          {viewingTournament && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nombre">{viewingTournament.name}</Descriptions.Item>
-              <Descriptions.Item label="Fecha inicio">{viewingTournament.startDate}</Descriptions.Item>
-              <Descriptions.Item label="Fecha fin">{viewingTournament.endDate}</Descriptions.Item>
-              <Descriptions.Item label="Calle y Número">{viewingTournament.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Colonia">{viewingTournament.address.address2}</Descriptions.Item>
-              <Descriptions.Item label="Ciudad">{viewingTournament.address.city}</Descriptions.Item>
-              <Descriptions.Item label="Estado">{viewingTournament.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Código Postal">{viewingTournament.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="País">{viewingTournament.address.country}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
+        <TournamentDetails
+          visible={isViewing}
+          onClose={() => setIsViewing(false)}
+          tournament={viewingTournament}
+        />
         <Modal
           title="Registrar Nuevo Torneo"
           open={isRegistering}
@@ -152,12 +112,30 @@ function Tournaments() {
         >
           <RegisterTournament onClose={() => {
             setIsRegistering(false);
-            fetchTournaments();
+            const fetchTournamentsData = async () => {
+              const token = localStorage.getItem('token');
+
+              if (token) {
+                try {
+                  const tournaments = await fetchTournaments(token);
+                  if (tournaments) {
+                    setDataSource(tournaments);
+                  } else {
+                    message.error("Failed to load tournaments");
+                  }
+                } catch (error) {
+                  message.error("Error fetching data");
+                }
+              } else {
+                message.error('No token found');
+              }
+            };
+            fetchTournamentsData();
           }} />
         </Modal>
       </header>
     </div>
   );
-}
+};
 
 export default Tournaments;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, Input, Button, message } from 'antd';
 import { registerGoal } from "../../../services/goalService";
-import { fetchRegisteredStudent } from "../../../services/studentService";
+import { fetchStudentsByTeam } from "../../../services/studentService";
 import { Student, RGoal } from '../../../types/types';
 
 const { Option } = Select;
@@ -17,24 +17,33 @@ const RegisterGoal: React.FC<RGoal> = ({ match, onClose }) => {
             const tournamentId = localStorage.getItem('selectedTournamentId');
             const token = localStorage.getItem('token');
 
-            if (tournamentId && token) {
-                try {
-                    const studentData = await fetchRegisteredStudent(token, tournamentId);
-                    if (studentData) {
-                        setStudents(studentData);
-                    } else {
-                        message.error("Failed to load player data");
-                    }
-                } catch (error) {
-                    message.error("Error fetching data");
+            if (!tournamentId) {
+                message.error('No tournament ID found');
+                return;
+            }
+
+            if (!token) {
+                message.error('No token found');
+                return;
+            }
+
+            if (!selectedTeam) {
+                return; // Exit early if no team is selected
+            }
+
+            try {
+                const studentData = await fetchStudentsByTeam(token, tournamentId, selectedTeam);
+                if (studentData) {
+                    setStudents(studentData);
+                } else {
+                    message.error("Failed to load player data");
                 }
-            } else {
-                message.error('No tournament ID or token found');
+            } catch (error) {
+                message.error("Error fetching data");
             }
         };
-        if (selectedTeam) {
-            fetchPlayers();
-        }
+
+        fetchPlayers();
     }, [selectedTeam]);
 
     const handleStudentSelect = (value: string) => {
@@ -60,7 +69,6 @@ const RegisterGoal: React.FC<RGoal> = ({ match, onClose }) => {
 
             try {
                 if (await registerGoal(token, tournamentId, matchId, payload)) {
-                    onClose();
                     form.resetFields();
                     setSelectedTeam(null);
                     setSelectedStudent(null);

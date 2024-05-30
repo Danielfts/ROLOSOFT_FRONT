@@ -1,55 +1,38 @@
-import { Button, Table, Modal, message, Descriptions } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { Button, Table, Modal, message } from "antd";
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import RegisterSchools from './RegisterSchools';
+import SchoolDetails from './SchoolDetails';
+import { School } from '../../../types/types';
+import { fetchSchool, deleteSchool } from '../../../services/schoolService';
 
-type Address = {
-  address1: string;
-  address2: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-};
-
-type School = {
-  id: number;
-  name: string;
-  address: Address;
-};
-
-function Schools() {
+const Schools: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingSchool, setViewingSchool] = useState<School | null>(null);
   const [dataSource, setDataSource] = useState<School[]>([]);
 
   useEffect(() => {
+    const fetchSchools = async () => {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        try {
+          const schools = await fetchSchool(token);
+          if (schools) {
+            setDataSource(schools);
+          } else {
+            message.error("Failed to load schools");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No token found');
+      }
+    };
     fetchSchools();
   }, []);
-
-  const fetchSchools = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    try {
-      if (!token) {
-        message.error('No se encontró ningun token, por favor inicie sesión');
-        return;
-      }
-      const response = await axios.get(process.env.REACT_APP_SCHOOLS_API_URL!, { headers });
-
-      if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
-      } else {
-        console.error('Failed to fetch schools with status:', response.status);
-        message.error('Error fetching schools with unexpected status.');
-      }
-    } catch (error) {
-      console.error('Failed to fetch schools:', error);
-      message.error('Error fetching schools');
-    }
-  };
 
   const columns = [
     { key: "1", title: "Nombre", dataIndex: "name", sorter: (a: School, b: School) => a.name.localeCompare(b.name) },
@@ -76,23 +59,18 @@ function Schools() {
 
   const onDeleteSchool = (record: School) => {
     Modal.confirm({
-      title: "Esta seguro que desea elimianar esta escuela?",
-      okText: "Si",
+      title: "¿Estás seguro de que deseas eliminar esta escuela?",
+      okText: "Sí",
       okType: "danger",
       onOk: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const headers = { Authorization: token }
-          const response = await axios.delete(`${process.env.REACT_APP_SCHOOLS_API_URL}/${record.id}`, { headers });
-
-          if (response.status === 200) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const success = await deleteSchool(token, record.id);
+          if (success) {
             setDataSource((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("Escuela eliminada exitosamente!");
-          } else {
-            message.error('Failed to delete school');
           }
-        } catch (error) {
-          message.error('Failed to delete school: ' + error);
+        } else {
+          message.error('Authorization token is missing');
         }
       },
     });
@@ -104,43 +82,67 @@ function Schools() {
         <Button type="primary" onClick={onAddSchool}>Registrar Nueva Escuela</Button>
         <div style={{ margin: "2%" }}></div>
         <Table columns={columns} dataSource={dataSource} />
-        <Modal
-          title="Detalles de la escuela"
-          open={isViewing}
-          onOk={() => setIsViewing(false)}
-          onCancel={() => setIsViewing(false)}
-          width={500}
-        >
-          {viewingSchool && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nombre">{viewingSchool.name}</Descriptions.Item>
-              <Descriptions.Item label="Calle y Número">{viewingSchool.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Colonia">{viewingSchool.address.address2}</Descriptions.Item>
-              <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
-              <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Código Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="País">{viewingSchool.address.country}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
+        <SchoolDetails 
+          visible={isViewing}
+          onClose={() => setIsViewing(false)}
+          school={viewingSchool}
+        />
         <Modal
           title="Registrar Nueva Escuela"
           open={isRegistering}
           footer={null}
           onCancel={() => {
             setIsRegistering(false);
+            const fetchSchools = async () => {
+              const token = localStorage.getItem('token');
+
+              if (token) {
+                try {
+                  const schools = await fetchSchool(token);
+                  if (schools) {
+                    setDataSource(schools);
+                  } else {
+                    message.error("Failed to load schools");
+                  }
+                } catch (error) {
+                  message.error("Error fetching data");
+                }
+              } else {
+                message.error('No token found');
+              }
+            };
             fetchSchools();
           }}
           width={500}
         >
-          <RegisterSchools onClose={() => {
-            setIsRegistering(false);
-            fetchSchools();
-          }} />
+          <RegisterSchools 
+            onClose={() => {
+              setIsRegistering(false);
+              const fetchSchools = async () => {
+                const token = localStorage.getItem('token');
+
+                if (token) {
+                  try {
+                    const schools = await fetchSchool(token);
+                    if (schools) {
+                      setDataSource(schools);
+                    } else {
+                      message.error("Failed to load schools");
+                    }
+                  } catch (error) {
+                    message.error("Error fetching data");
+                  }
+                } else {
+                  message.error('No token found');
+                }
+              };
+              fetchSchools();
+            }} 
+          />
         </Modal>
       </header>
     </div>
   );
-}
+};
 
 export default Schools;

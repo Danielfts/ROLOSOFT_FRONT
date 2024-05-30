@@ -27,7 +27,7 @@ const MatchTable: React.FC<MatchTableProps> = ({ matches, onViewMatch, onDeleteM
       key: "3",
       title: "Equipo B",
       dataIndex: ["teamB", "name"],
-      sorter: (a: Match, b: Match) => a.teamB.name.localeCompare(b.teamB.name),
+      sorter: (a: Match, b: Match) => b.teamB.name.localeCompare(a.teamB.name),
     },
     {
       key: "4",

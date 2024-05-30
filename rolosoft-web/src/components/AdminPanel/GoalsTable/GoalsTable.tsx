@@ -41,6 +41,22 @@ function GoalsTable() {
       sorter: (a: GoalT, b: GoalT) => a.position - b.position,
     },
     {
+      key: "8",
+      title: "Imagen Equipo",
+      dataIndex: "teamPhotoUrl",
+      render: (teamPhotoUrl: string) => (
+        <Image width={50} src={teamPhotoUrl} />
+      ),
+    },
+    {
+      key: "7",
+      title: "Imagen Jugador",
+      dataIndex: "playerPhotoUrl",
+      render: (playerPhotoUrl: string) => (
+        <Image width={50} src={playerPhotoUrl} />
+      ),
+    },
+    {
       key: "2",
       title: "Nombre",
       dataIndex: "firstName",
@@ -69,22 +85,6 @@ function GoalsTable() {
       title: "Puntos",
       dataIndex: "points",
       sorter: (a: GoalT, b: GoalT) => a.points - b.points,
-    },
-    {
-      key: "7",
-      title: "Imagen Jugador",
-      dataIndex: "playerPhotoUrl",
-      render: (playerPhotoUrl: string) => (
-        <Image width={50} src={playerPhotoUrl} />
-      ),
-    },
-    {
-      key: "8",
-      title: "Imagen Equipo",
-      dataIndex: "teamPhotoUrl",
-      render: (teamPhotoUrl: string) => (
-        <Image width={50} src={teamPhotoUrl} />
-      ),
     },
     {
       key: "9",

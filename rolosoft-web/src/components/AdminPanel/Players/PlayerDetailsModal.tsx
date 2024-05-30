@@ -12,7 +12,7 @@ const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({ visible, onClos
   return (
     <Modal
       title="Detalles del Jugador"
-      visible={visible}
+      open={visible}
       onOk={onClose}
       onCancel={onClose}
       footer={null}

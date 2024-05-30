@@ -7,6 +7,18 @@ export type Address = {
   country: string;
 };
 
+export type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  birthDate: string;
+  gender: string;
+  role: string;
+  CURP: string;
+  address: Address;
+};
 export type Student = {
   id: string;
   CURP: string;
@@ -31,6 +43,15 @@ export type School = {
   address: Address;
   sponsor: string;
   students: Student[];
+  number: number;
+};
+
+export type Tournament = {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  address: Address;
 };
 
 export type Goal = {

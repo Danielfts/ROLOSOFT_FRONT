@@ -1,53 +1,47 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
-import axios from 'axios';
-
-interface SchoolFormValues {
-  name: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  number: string;
-}
+import { registerSchool } from '../../../services/schoolService';
+import { School } from '../../../types/types';
 
 interface RegisterSchoolsProps {
   onClose: () => void;
 }
 
 const RegisterSchools: React.FC<RegisterSchoolsProps> = ({ onClose }) => {
-  const [form] = Form.useForm<SchoolFormValues>();
+  const [form] = Form.useForm<School>();
 
-  const handleSubmit = async (values: SchoolFormValues) => {
+  const handleSubmit = async (values: School) => {
     const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const { name, address1, address2, city, state, postalCode, country, number } = values;
+
+    if (!token) {
+      message.error('No se encontró ningun token, por favor inicie sesión');
+      return;
+    }
+
     const payload = {
-      name,
+      name: values.name,
       address: {
-        address1,
-        address2,
-        city,
-        state,
-        postalCode,
-        country,
+        address1: values.address.address1,
+        address2: values.address.address2,
+        city: values.address.city,
+        state: values.address.state,
+        postalCode: values.address.postalCode,
+        country: values.address.country,
       },
-      number,
+      number: values.number,
     };
 
     try {
-      const response = await axios.post(process.env.REACT_APP_SCHOOLS_API_URL!, payload, { headers });
-      if (response.data.success) {
+      const success = await registerSchool(token, payload);
+      if (success) {
         message.success('Escuela registrada exitosamente!');
         form.resetFields();
         onClose();
       } else {
         message.error('Failed to register school.');
       }
-    } catch (error) {
-      message.error('An error occurred while registering the school.');
+    } catch (error: any) {
+      message.error(error.message || 'An error occurred while registering the school.');
       console.error('Registration error:', error);
     }
   };
@@ -55,29 +49,29 @@ const RegisterSchools: React.FC<RegisterSchoolsProps> = ({ onClose }) => {
   return (
     <div>
       <Form form={form} onFinish={handleSubmit} layout="vertical">
-        <Form.Item name="name" rules={[{ required: true, message: 'Please enter the school name' }]}>
+        <Form.Item name="name" rules={[{ required: true, message: 'Porfavor ingrese el nombre de la escuela' }]}>
           <Input placeholder="Nombre de la escuela" />
         </Form.Item>
-        <Form.Item name="address1" rules={[{ required: true, message: 'Please enter the address' }]}>
+        <Form.Item name={['address', 'address1']} rules={[{ required: true, message: 'Porfavor ingrese una calle y número' }]}>
           <Input placeholder="Calle y Número" />
         </Form.Item>
-        <Form.Item name="address2">
+        <Form.Item name={['address', 'address2']} rules={[{ required: true, message: 'Porfavor ingrese una Colonia' }]}>
           <Input placeholder="Colonia" />
         </Form.Item>
-        <Form.Item name="city" rules={[{ required: true, message: 'Please enter the city' }]}>
+        <Form.Item name={['address', 'city']} rules={[{ required: true, message: 'Porfavor ingrese una Ciudad' }]}>
           <Input placeholder="Ciudad" />
         </Form.Item>
-        <Form.Item name="state" rules={[{ required: true, message: 'Please enter the state' }]}>
+        <Form.Item name={['address', 'state']} rules={[{ required: true, message: 'Porfavor ingrese un Estado' }]}>
           <Input placeholder="Estado" />
         </Form.Item>
-        <Form.Item name="postalCode" rules={[{ required: true, message: 'Please enter the postal code' }]}>
+        <Form.Item name={['address', 'postalCode']} rules={[{ required: true, message: 'Porfavor ingrese un codigo postal' }]}>
           <Input placeholder="Código Postal" />
         </Form.Item>
-        <Form.Item name="country" rules={[{ required: true, message: 'Please enter the country' }]}>
+        <Form.Item name={['address', 'country']} rules={[{ required: true, message: 'Porfavor ingrese un Pais' }]}>
           <Input placeholder="País" />
         </Form.Item>
-        <Form.Item name="number" rules={[{ required: true, message: 'Please enter the number' }]}>
-          <Input placeholder="Número" />
+        <Form.Item name="number" rules={[{ required: true, message: 'Porfavor ingrese el numero de primaria' }]}>
+          <Input placeholder="Número de primaria"  />
         </Form.Item>
         <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
           <Button type="primary" htmlType="submit">Registrar</Button>
