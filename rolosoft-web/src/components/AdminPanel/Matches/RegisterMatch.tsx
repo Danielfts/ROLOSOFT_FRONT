@@ -1,24 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Form, Select, Button, message, DatePicker } from "antd";
-import axios from "axios";
+import { registerMatch } from "../../../services/matchService";
+import { fetchTeam } from "../../../services/teamService";
+import { fetchPhase } from "../../../services/phaseService";
+import { Team, Phase, RMatch } from "../../../types/types";
 
 const { RangePicker } = DatePicker;
 
-type Team = {
-    id: string;
-    name: string;
-};
-
-type Phase = {
-    id: string;
-    name: string;
-};
-
-type RegisterMatchProps = {
-    onClose: () => void;
-};
-
-const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
+const RegisterMatch: React.FC<RMatch> = ({ onClose }) => {
     const [form] = Form.useForm();
     const [teams, setTeams] = useState<Team[]>([]);
     const [phases, setPhases] = useState<Phase[]>([]);
@@ -27,94 +16,55 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
     const [phaseName, setPhaseName] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchTeams = async () => {
-            const token = localStorage.getItem("token");
-            const headers = { Authorization: token };
-            const tournamentId = localStorage.getItem("selectedTournamentId");
-            if (!tournamentId) {
-                message.error("No tournament ID found");
-                return;
-            }
-            try {
-                const response = await axios.get(
-                    `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`,
-                    { headers }
-                );
-                if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
-                    setTeams(response.data.data);
-                } else {
-                    message.error("Failed to fetch teams");
+        const getMatchData = async () => {
+            const tournamentId = localStorage.getItem('selectedTournamentId');
+            const token = localStorage.getItem('token');
+
+            if (tournamentId && token) {
+                try {
+                    const teamData = await fetchTeam(token, tournamentId);
+                    if (teamData) {
+                        setTeams(teamData);
+                    } else {
+                        message.error("Failed to load team data");
+                    }
+
+                    const phaseData = await fetchPhase(token, tournamentId);
+                    if (phaseData) {
+                        setPhases(phaseData);
+                    } else {
+                        message.error("Failed to load phase data");
+                    }
+                } catch (error) {
+                    message.error("Error fetching data");
                 }
-            } catch (error) {
-                message.error("Error fetching teams");
+            } else {
+                message.error('No tournament ID or token found');
             }
         };
-
-        const fetchPhases = async () => {
-            const token = localStorage.getItem("token");
-            const headers = { Authorization: token };
-            const tournamentId = localStorage.getItem("selectedTournamentId");
-            if (!tournamentId) {
-                message.error("No tournament ID found");
-                return;
-            }
-            try {
-                const response = await axios.get(
-                    `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases`,
-                    { headers }
-                );
-                if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
-                    setPhases(response.data.data);
-                } else {
-                    message.error("Failed to fetch phases");
-                }
-            } catch (error) {
-                message.error("Error fetching phases");
-            }
-        };
-
-        fetchTeams();
-        fetchPhases();
+        getMatchData();
     }, []);
 
     const handleSubmit = async (values: any) => {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: token };
         const tournamentId = localStorage.getItem("selectedTournamentId");
-        const payload = {
-            startDateTime: values.dates[0].toISOString(),
-            endDateTime: values.dates[1].toISOString(),
-            schoolA: {
-                id: values.teamA,
-            },
-            schoolB: {
-                id: values.teamB,
-            },
-        };
+        const token = localStorage.getItem('token');
+        if (tournamentId && token && phaseName) {
+            const payload = {
+                startDateTime: values.dates[0].toISOString(),
+                endDateTime: values.dates[1].toISOString(),
+                schoolA: { id: values.teamA },
+                schoolB: { id: values.teamB },
+            };
 
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases/${values.phase}/matches`,
-                payload,
-                { headers }
-            );
-
-            if (response.status === 201) {
-                message.success("Match registered successfully!");
+            if (await registerMatch(token, tournamentId, phaseName, payload)) {
                 onClose();
                 form.resetFields();
                 setTeamA(null);
                 setTeamB(null);
                 setPhaseName(null);
-            } else {
-                message.error("Failed to register match");
             }
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                message.error(`Error: ${error.response.data.message}`);
-            } else {
-                message.error("Error registering match");
-            }
+        } else {
+            message.error('No tournament ID, token, or phase ID found');
         }
     };
 

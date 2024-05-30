@@ -1,46 +1,12 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Table, Button, Modal, message, Descriptions, List, Avatar } from "antd";
 import { EyeOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
 import EditTeam from './EditTeam';
+import { fetchRegisteredSchool, deleteSchool } from '../../../services/schoolService';
+import { School } from '../../../types/types';
 
-type Address = {
-  address1: string;
-  address2: string | null;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-};
-
-type Student = {
-  id: string;
-  CURP: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  birthDate: string;
-  gender: string;
-  role: string;
-  phone: string;
-  address: Address;
-  student: {
-    fieldPosition: string;
-    shirtNumber: number;
-    IMSS: string;
-  };
-};
-
-type School = {
-  id: string;
-  name: string;
-  address: Address;
-  sponsor: string;
-  students: Student[];
-};
-
-const Teams = () => {
+const Teams: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [isViewing, setIsViewing] = useState<boolean>(false);
   const [viewingSchool, setViewingSchool] = useState<School | null>(null);
@@ -49,30 +15,28 @@ const Teams = () => {
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
   useEffect(() => {
-    fetchSchools();
-  }, []);
-
-  const fetchSchools = async () => {
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    if (!tournamentId) {
-      message.error('No tournament ID found');
-      return;
-    }
-
-    try {
+    const fetchData = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
       const token = localStorage.getItem('token');
-      const headers = { Authorization: token };
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=true`, { headers });
-      console.log('Fetched schools:', response.data.data); 
-      if (response.status === 200 && response.data.success) {
-        setSchools(response.data.data);
+
+      if (tournamentId && token) {
+        try {
+          const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+          if (registeredSchools) {
+            setSchools(registeredSchools);
+          } else {
+            message.error("Failed to load registered schools");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
       } else {
-        message.error('Failed to fetch schools');
+        message.error('No tournament ID or token found');
       }
-    } catch (error) {
-      message.error('Error fetching schools');
-    }
-  };
+    };
+
+    fetchData();
+  }, []);
 
   const onDeleteSchool = (record: School) => {
     Modal.confirm({
@@ -80,19 +44,17 @@ const Teams = () => {
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const headers = { Authorization: token };
-          const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/schools/${record.id}`, { headers });
-
-          if (response.status === 200) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            await deleteSchool(token, record.id);
             setSchools((prev) => prev.filter((school) => school.id !== record.id));
             message.success("School deleted successfully!");
-          } else {
+          } catch (error) {
             message.error('Failed to delete school');
           }
-        } catch (error) {
-          message.error('Failed to delete school: ' + error);
+        } else {
+          message.error('Authorization token is missing');
         }
       },
     });
@@ -162,7 +124,7 @@ const Teams = () => {
             <Descriptions.Item label="Jugadores">
               <List
                 dataSource={viewingSchool.students}
-                renderItem={(student: Student) => (
+                renderItem={(student) => (
                   <List.Item key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <List.Item.Meta
                       avatar={<Avatar src="https://via.placeholder.com/40" />}
@@ -184,7 +146,7 @@ const Teams = () => {
         )}
       </Modal>
       <Modal
-        title="Register New Team"
+        title="Registrar Nuevo Equipo"
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
@@ -192,11 +154,30 @@ const Teams = () => {
       >
         <RegisterTeam onClose={() => {
           setIsRegistering(false);
-          fetchSchools();
+          const fetchData = async () => {
+            const tournamentId = localStorage.getItem('selectedTournamentId');
+            const token = localStorage.getItem('token');
+  
+            if (tournamentId && token) {
+              try {
+                const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+                if (registeredSchools) {
+                  setSchools(registeredSchools);
+                } else {
+                  message.error("Failed to load registered schools");
+                }
+              } catch (error) {
+                message.error("Error fetching data");
+              }
+            } else {
+              message.error('No tournament ID or token found');
+            }
+          };
+          fetchData();
         }} />
       </Modal>
       <Modal
-        title="Edit Team"
+        title="Editar Equipo"
         open={isEditing}
         footer={null}
         onCancel={() => setIsEditing(false)}
@@ -206,7 +187,26 @@ const Teams = () => {
           school={editingSchool}
           onClose={() => {
             setIsEditing(false);
-            fetchSchools();
+            const fetchData = async () => {
+              const tournamentId = localStorage.getItem('selectedTournamentId');
+              const token = localStorage.getItem('token');
+    
+              if (tournamentId && token) {
+                try {
+                  const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+                  if (registeredSchools) {
+                    setSchools(registeredSchools);
+                  } else {
+                    message.error("Failed to load registered schools");
+                  }
+                } catch (error) {
+                  message.error("Error fetching data");
+                }
+              } else {
+                message.error('No tournament ID or token found');
+              }
+            };
+            fetchData();
           }}
         />
       </Modal>

@@ -166,7 +166,7 @@ const News: React.FC = () => {
       </div>
       <Modal
         title="Publicar Nueva Noticia"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
@@ -197,7 +197,7 @@ const News: React.FC = () => {
       </Modal>
       <Modal
         title="View News"
-        visible={isViewModalVisible}
+        open={isViewModalVisible}
         onCancel={() => setIsViewModalVisible(false)}
         footer={null}
       >

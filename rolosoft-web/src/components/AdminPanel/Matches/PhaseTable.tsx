@@ -1,14 +1,13 @@
 import { Table } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Phase } from "../../../types/types"; // Adjust the import path
+import { Phase } from "../../../types/types";
 
 interface PhaseTableProps {
   phases: Phase[];
   onViewPhase: (phase: Phase) => void;
-  onDeletePhase: (phase: Phase) => void;
 }
 
-const PhaseTable: React.FC<PhaseTableProps> = ({ phases, onViewPhase, onDeletePhase }) => {
+const PhaseTable: React.FC<PhaseTableProps> = ({ phases, onViewPhase }) => {
   const phaseColumns = [
     {
       key: "1",
@@ -34,7 +33,6 @@ const PhaseTable: React.FC<PhaseTableProps> = ({ phases, onViewPhase, onDeletePh
       render: (record: Phase) => (
         <>
           <EyeOutlined onClick={() => onViewPhase(record)} />
-          <DeleteOutlined onClick={() => onDeletePhase(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
