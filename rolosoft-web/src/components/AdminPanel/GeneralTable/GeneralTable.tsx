@@ -1,59 +1,43 @@
-import { Button, Table, Modal, message, Image, InputNumber, Tooltip } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
-
-type TeamStanding = {
-  team: string;
-  victories: number;
-  draws: number;
-  defeats: number;
-  position: number;
-  points: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDifference: number;
-  gamesPlayed: number;
-  photoUrl: string;
-};
+import React, { useState, useEffect } from "react";
+import { Table, Modal, message, Image, InputNumber, Tooltip } from "antd";
+import { EditOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { GeneralT } from "../../../types/types";
+import { fetchGeneralTable } from "../../../services/statisticTableService";
 
 function GeneralTable() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingTeam, setEditingTeam] = useState<TeamStanding | null>(null);
-  const [dataSource, setDataSource] = useState<TeamStanding[]>([]);
+  const [editingTeam, setEditingTeam] = useState<GeneralT | null>(null);
+  const [dataSource, setDataSource] = useState<GeneralT[]>([]);
 
   useEffect(() => {
-    fetchGeneralTable();
-  }, []);
+    const getGeneralTable = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
 
-  const fetchGeneralTable = async () => {
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    if (!tournamentId) {
-      message.error('No tournament ID found');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/general-table`, { headers });
-      if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
+      if (tournamentId && token) {
+        try {
+          const data = await fetchGeneralTable(token, tournamentId);
+          if (data) {
+            setDataSource(data);
+          } else {
+            message.error("Failed to load data");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
       } else {
-        message.error('Failed to fetch general table');
+        message.error('No tournament ID or token found');
       }
-    } catch (error) {
-      message.error('Error fetching general table');
-    }
-  };
+    };
+    getGeneralTable();
+  }, []);
 
   const columns = [
     {
       key: "1",
       title: "Posición",
       dataIndex: "position",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.position - b.position,
+      sorter: (a: GeneralT, b: GeneralT) => a.position - b.position,
     },
     {
       key: "2",
@@ -67,7 +51,7 @@ function GeneralTable() {
       key: "3",
       title: "Equipo",
       dataIndex: "team",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.team.localeCompare(b.team),
+      sorter: (a: GeneralT, b: GeneralT) => a.team.localeCompare(b.team),
     },
     {
       key: "4",
@@ -80,7 +64,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "points",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.points - b.points,
+      sorter: (a: GeneralT, b: GeneralT) => a.points - b.points,
     },
     {
       key: "5",
@@ -93,7 +77,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "goalDifference",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.goalDifference - b.goalDifference,
+      sorter: (a: GeneralT, b: GeneralT) => a.goalDifference - b.goalDifference,
     },
     {
       key: "6",
@@ -106,7 +90,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "gamesPlayed",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.gamesPlayed - b.gamesPlayed,
+      sorter: (a: GeneralT, b: GeneralT) => a.gamesPlayed - b.gamesPlayed,
     },
     {
       key: "7",
@@ -119,7 +103,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "victories",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.victories - b.victories,
+      sorter: (a: GeneralT, b: GeneralT) => a.victories - b.victories,
     },
     {
       key: "8",
@@ -132,7 +116,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "draws",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.draws - b.draws,
+      sorter: (a: GeneralT, b: GeneralT) => a.draws - b.draws,
     },
     {
       key: "9",
@@ -145,7 +129,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "defeats",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.defeats - b.defeats,
+      sorter: (a: GeneralT, b: GeneralT) => a.defeats - b.defeats,
     },
     {
       key: "10",
@@ -158,7 +142,7 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "goalsFor",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsFor - b.goalsFor,
+      sorter: (a: GeneralT, b: GeneralT) => a.goalsFor - b.goalsFor,
     },
     {
       key: "11",
@@ -171,12 +155,12 @@ function GeneralTable() {
         </div>
       ),
       dataIndex: "goalsAgainst",
-      sorter: (a: TeamStanding, b: TeamStanding) => a.goalsAgainst - b.goalsAgainst,
+      sorter: (a: GeneralT, b: GeneralT) => a.goalsAgainst - b.goalsAgainst,
     },
     {
       key: "12",
       title: "Acciones",
-      render: (record: TeamStanding) => (
+      render: (record: GeneralT) => (
         <>
           <EditOutlined onClick={() => onEditTeam(record)} />
         </>
@@ -184,9 +168,7 @@ function GeneralTable() {
     },
   ];
 
-
-
-  const onEditTeam = (record: TeamStanding) => {
+  const onEditTeam = (record: GeneralT) => {
     setIsEditing(true);
     setEditingTeam({ ...record });
   };

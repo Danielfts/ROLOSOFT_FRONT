@@ -1,40 +1,47 @@
 import axios from 'axios';
 import { message } from 'antd';
 
-const token = localStorage.getItem('token');
-const headers = { Authorization: token };
+export const fetchPhase = async (token: string, tournamentId: string): Promise<any | null> => {
+    if (!token) {
+        message.error('Authorization token is missing');
+        return null;
+    }
 
-export const fetchPhase = async (tournamentId: string) => {
+    if (!tournamentId) {
+        message.error('Tournament ID is missing');
+        return null;
+    }
+
+    const headers = { Authorization: token };
+
     try {
         const response = await axios.get(
             `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases`,
             { headers }
         );
+
         if (response.status === 200 && response.data.success) {
             return response.data.data;
         } else {
             message.error('Failed to fetch phases');
+            return null;
         }
-    } catch (error) {
-        message.error('Error fetching phases');
-    }
-};
-
-export const deletePhase = async (phaseId: string) => {
-    try {
-        const response = await axios.delete(
-            `${process.env.REACT_APP_BASE_URL}/phases/${phaseId}`,
-            { headers }
-        );
-        if (response.status === 200) {
-            message.success('Fase eliminada exitosamente!');
-            return true;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    message.error('Unauthorized access or token has expired');
+                } else if (error.response.status === 404) {
+                    message.error('Tournament not found');
+                } else {
+                    message.error('Error fetching phases');
+                }
+            } else {
+                message.error('Network error fetching phases');
+            }
         } else {
-            message.error('Failed to delete phase');
-            return false;
+            message.error('An unexpected error occurred');
         }
-    } catch (error) {
-        message.error('Failed to delete phase: ' + error);
-        return false;
+        return null;
     }
 };

@@ -7,7 +7,9 @@ import MatchTable from "./MatchTable";
 import PhaseTable from "./PhaseTable";
 import MatchDetailsModal from "./MatchDetailsModal";
 import PhaseDetailsModal from "./PhaseDetailsModal";
-import { Match, Phase } from "../../../types/types"; // Adjust the import path
+import { Match, Phase } from "../../../types/types";
+import { fetchMatch, deleteMatch } from "../../../services/matchService";
+import { fetchPhase } from "../../../services/phaseService";
 
 const Matches: React.FC = () => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -21,57 +23,34 @@ const Matches: React.FC = () => {
   const [viewingPhase, setViewingPhase] = useState<Phase | null>(null);
 
   useEffect(() => {
-    fetchMatches();
-    fetchPhases();
+    const getGeneralTable = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
+
+      if (tournamentId && token) {
+        try {
+          const matchData = await fetchMatch(token, tournamentId);
+          if (matchData) {
+            setMatches(matchData);
+          } else {
+            message.error("Failed to load match data");
+          }
+
+          const phaseData = await fetchPhase(token, tournamentId);
+          if (phaseData) {
+            setPhases(phaseData);
+          } else {
+            message.error("Failed to load phase data");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No tournament ID or token found');
+      }
+    };
+    getGeneralTable();
   }, []);
-
-  const fetchMatches = async () => {
-    const tournamentId = localStorage.getItem("selectedTournamentId");
-    if (!tournamentId) {
-      message.error("No tournament ID found");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: token };
-      const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/matches`,
-        { headers }
-      );
-      if (response.status === 200 && response.data.success) {
-        setMatches(response.data.data);
-      } else {
-        message.error("Failed to fetch matches");
-      }
-    } catch (error) {
-      message.error("Error fetching matches");
-    }
-  };
-
-  const fetchPhases = async () => {
-    const tournamentId = localStorage.getItem("selectedTournamentId");
-    if (!tournamentId) {
-      message.error("No tournament ID found");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: token };
-      const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/phases`,
-        { headers }
-      );
-      if (response.status === 200 && response.data.success) {
-        setPhases(response.data.data);
-      } else {
-        message.error("Failed to fetch phases");
-      }
-    } catch (error) {
-      message.error("Error fetching phases");
-    }
-  };
 
   const onViewPhase = (record: Phase) => {
     setIsViewingPhase(true);
@@ -83,52 +62,22 @@ const Matches: React.FC = () => {
     setViewingMatch(record);
   };
 
-  const onDeletePhase = async (record: Phase) => {
-    Modal.confirm({
-      title: "Estas seguro que desea eliminar esta fase?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          const token = localStorage.getItem("token");
-          const headers = { Authorization: token };
-          const response = await axios.delete(
-            `${process.env.REACT_APP_BASE_URL}/phases/${record.id}`,
-            { headers }
-          );
-
-          if (response.status === 200) {
-            setPhases((prev) => prev.filter((phase) => phase.id !== record.id));
-            message.success("Fase eliminada exitosamente!");
-          } else {
-            message.error("Failed to delete phase");
-          }
-        } catch (error) {
-          message.error("Failed to delete phase: " + error);
-        }
-      },
-    });
-  };
-
   const onDeleteMatch = async (record: Match) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this match?",
-      okText: "Yes",
+      title: "¿Estas seguro que desea eliminar este partido?",
+      okText: "Sí",
       okType: "danger",
       onOk: async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          message.error('No authorization token found');
+          return;
+        }
         try {
-          const token = localStorage.getItem("token");
-          const headers = { Authorization: token };
-          const response = await axios.delete(
-            `${process.env.REACT_APP_BASE_URL}/matches/${record.id}`,
-            { headers }
-          );
+          const success = await deleteMatch(token, record.id);
 
-          if (response.status === 200) {
+          if (success) {
             setMatches((prev) => prev.filter((match) => match.id !== record.id));
-            message.success("Partido eliminado exitosmente!");
-          } else {
-            message.error("Failed to delete match");
           }
         } catch (error) {
           message.error("Failed to delete match: " + error);
@@ -151,7 +100,6 @@ const Matches: React.FC = () => {
       <PhaseTable
         phases={phases}
         onViewPhase={onViewPhase}
-        onDeletePhase={onDeletePhase}
       />
       <div style={{ margin: "5%" }}></div>
       <Button type="primary" onClick={onRegisterMatch}>Registrar Nuevo Partido</Button>
@@ -182,7 +130,11 @@ const Matches: React.FC = () => {
         <RegisterMatch
           onClose={() => {
             setIsRegisteringMatch(false);
-            fetchMatches();
+            const tournamentId = localStorage.getItem("selectedTournamentId");
+            const token = localStorage.getItem("token");
+            if (tournamentId && token) {
+              fetchMatch(token, tournamentId);
+            }
           }}
         />
       </Modal>
@@ -197,7 +149,11 @@ const Matches: React.FC = () => {
           match={currentMatch}
           onClose={() => {
             setIsRegisteringGoal(false);
-            fetchMatches();
+            const tournamentId = localStorage.getItem("selectedTournamentId");
+            const token = localStorage.getItem("token");
+            if (tournamentId && token) {
+              fetchMatch(token, tournamentId);
+            }
           }}
         />
       </Modal>

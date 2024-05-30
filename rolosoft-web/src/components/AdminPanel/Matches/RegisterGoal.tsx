@@ -1,88 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, Input, Button, message } from 'antd';
-import axios from 'axios';
+import { registerGoal } from "../../../services/goalService";
+import { fetchRegisteredStudent } from "../../../services/studentService";
+import { Student, RGoal } from '../../../types/types';
 
 const { Option } = Select;
 
-type Goal = {
-    id: string;
-    name: string;
-    lastName: string;
-    minute: number;
-    playerNumber: number;
-};
-
-type Team = {
-    id: string;
-    name: string;
-    goals: Goal[];
-};
-
-type Match = {
-    id: string;
-    teamA: Team;
-    teamB: Team;
-    dateTimeStart: string;
-    dateTimeEnd: string;
-};
-
-type Student = {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    CURP: string;
-};
-
-type RegisterGoalProps = {
-    match: Match | null;
-    onClose: () => void;
-};
-
-const MAX_COUNT = 1;
-
-const RegisterGoal: React.FC<RegisterGoalProps> = ({ match, onClose }) => {
+const RegisterGoal: React.FC<RGoal> = ({ match, onClose }) => {
     const [form] = Form.useForm();
     const [students, setStudents] = useState<Student[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
     useEffect(() => {
+        const fetchPlayers = async () => {
+            const tournamentId = localStorage.getItem('selectedTournamentId');
+            const token = localStorage.getItem('token');
+
+            if (tournamentId && token) {
+                try {
+                    const studentData = await fetchRegisteredStudent(token, tournamentId);
+                    if (studentData) {
+                        setStudents(studentData);
+                    } else {
+                        message.error("Failed to load player data");
+                    }
+                } catch (error) {
+                    message.error("Error fetching data");
+                }
+            } else {
+                message.error('No tournament ID or token found');
+            }
+        };
         if (selectedTeam) {
-            fetchPlayers(selectedTeam);
+            fetchPlayers();
         }
     }, [selectedTeam]);
-
-    const fetchPlayers = async (teamId: string) => {
-        const tournamentId = localStorage.getItem('selectedTournamentId');
-        if (!tournamentId) {
-            message.error('No tournament ID found');
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('token');
-            const headers = { Authorization: token };
-            const response = await axios.get(
-                `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools/${teamId}/players`,
-                { headers }
-            );
-            if (response.status === 200 && response.data.success) {
-                setStudents(response.data.data);
-            } else {
-                message.error('Failed to fetch players');
-            }
-        } catch (error) {
-            message.error('Error fetching players');
-        }
-    };
 
     const handleStudentSelect = (value: string) => {
         const selected = students.find(s => s.id === value);
         setSelectedStudent(selected || null);
     };
 
-    const onSubmit = async (values: any) => {
+    const handleSubmit = async (values: any) => {
         if (!values.team || !selectedStudent || values.minute === undefined) {
             message.error('Please fill all fields');
             return;
@@ -90,41 +50,31 @@ const RegisterGoal: React.FC<RegisterGoalProps> = ({ match, onClose }) => {
 
         const tournamentId = localStorage.getItem('selectedTournamentId');
         const matchId = match?.id;
-        if (!tournamentId || !matchId) {
-            message.error('No tournament or match ID found');
-            return;
-        }
+        const token = localStorage.getItem('token');
+        if (tournamentId && matchId && token) {
+            const payload = {
+                student: { id: selectedStudent.id },
+                school: { id: values.team },
+                minute: values.minute,
+            };
 
-        const payload = {
-            student: { id: selectedStudent.id },
-            school: { id: values.team },
-            minute: values.minute,
-        };
-
-        try {
-            const token = localStorage.getItem('token');
-            const headers = { Authorization: token };
-            const response = await axios.post(
-                `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/matches/${matchId}`,
-                payload,
-                { headers }
-            );
-
-            if (response.status === 201 && response.data.success) {
-                message.success('Goal registered successfully');
-                onClose();
-                form.resetFields();
-            } else {
-
-                message.error('Failed to register goal');
+            try {
+                if (await registerGoal(token, tournamentId, matchId, payload)) {
+                    onClose();
+                    form.resetFields();
+                    setSelectedTeam(null);
+                    setSelectedStudent(null);
+                }
+            } catch (error) {
+                message.error('Error registering goal');
             }
-        } catch (error) {
-            message.error('Error registering goal');
+        } else {
+            message.error('No tournament ID, match ID, or token found');
         }
     };
 
     return (
-        <Form form={form} onFinish={onSubmit} layout="vertical">
+        <Form form={form} onFinish={handleSubmit} layout="vertical">
             <Form.Item name="team" rules={[{ required: true, message: 'Seleccione un equipo' }]}>
                 <Select
                     placeholder="Selecciona un equipo"

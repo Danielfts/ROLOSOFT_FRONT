@@ -15,7 +15,27 @@ const Teams: React.FC = () => {
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
   useEffect(() => {
-    fetchRegisteredSchool().then(setSchools).catch(() => message.error('Failed to fetch schools'));
+    const fetchData = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
+
+      if (tournamentId && token) {
+        try {
+          const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+          if (registeredSchools) {
+            setSchools(registeredSchools);
+          } else {
+            message.error("Failed to load registered schools");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No tournament ID or token found');
+      }
+    };
+
+    fetchData();
   }, []);
 
   const onDeleteSchool = (record: School) => {
@@ -24,12 +44,17 @@ const Teams: React.FC = () => {
       okText: "Yes",
       okType: "danger",
       onOk: async () => {
-        try {
-          await deleteSchool(record.id);
-          setSchools((prev) => prev.filter((school) => school.id !== record.id));
-          message.success("School deleted successfully!");
-        } catch (error) {
-          message.error('Failed to delete school');
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            await deleteSchool(token, record.id);
+            setSchools((prev) => prev.filter((school) => school.id !== record.id));
+            message.success("School deleted successfully!");
+          } catch (error) {
+            message.error('Failed to delete school');
+          }
+        } else {
+          message.error('Authorization token is missing');
         }
       },
     });
@@ -129,7 +154,26 @@ const Teams: React.FC = () => {
       >
         <RegisterTeam onClose={() => {
           setIsRegistering(false);
-          fetchRegisteredSchool().then(setSchools).catch(() => message.error('Failed to fetch schools'));
+          const fetchData = async () => {
+            const tournamentId = localStorage.getItem('selectedTournamentId');
+            const token = localStorage.getItem('token');
+  
+            if (tournamentId && token) {
+              try {
+                const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+                if (registeredSchools) {
+                  setSchools(registeredSchools);
+                } else {
+                  message.error("Failed to load registered schools");
+                }
+              } catch (error) {
+                message.error("Error fetching data");
+              }
+            } else {
+              message.error('No tournament ID or token found');
+            }
+          };
+          fetchData();
         }} />
       </Modal>
       <Modal
@@ -143,11 +187,29 @@ const Teams: React.FC = () => {
           school={editingSchool}
           onClose={() => {
             setIsEditing(false);
-            fetchRegisteredSchool().then(setSchools).catch(() => message.error('Failed to fetch schools'));
+            const fetchData = async () => {
+              const tournamentId = localStorage.getItem('selectedTournamentId');
+              const token = localStorage.getItem('token');
+    
+              if (tournamentId && token) {
+                try {
+                  const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+                  if (registeredSchools) {
+                    setSchools(registeredSchools);
+                  } else {
+                    message.error("Failed to load registered schools");
+                  }
+                } catch (error) {
+                  message.error("Error fetching data");
+                }
+              } else {
+                message.error('No tournament ID or token found');
+              }
+            };
+            fetchData();
           }}
         />
       </Modal>
-
     </div>
   );
 };

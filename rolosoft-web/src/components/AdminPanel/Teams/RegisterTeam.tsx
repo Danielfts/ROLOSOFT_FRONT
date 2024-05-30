@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, Button, message, Input } from 'antd';
-import axios from 'axios';
 import { DownOutlined } from '@ant-design/icons';
 import { registerTeam } from '../../../services/teamService';
 import { fetchUnregisteredSchool } from '../../../services/schoolService';
-
 import { fetchUnregisteredStudent } from '../../../services/studentService';
 import { School, Student } from '../../../types/types';
 
@@ -22,9 +20,35 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUnregisteredSchool().then(setSchools).catch(() => message.error('Failed to fetch schools'));
-    fetchUnregisteredStudent().then(setStudents).catch(() => message.error('Failed to fetch students'));
-  }, []);  
+    const fetchData = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
+
+      if (tournamentId && token) {
+        try {
+          const unregisteredSchools = await fetchUnregisteredSchool(token, tournamentId);
+          if (unregisteredSchools) {
+            setSchools(unregisteredSchools);
+          } else {
+            message.error("Failed to load unregistered schools");
+          }
+
+          const unregisteredStudents = await fetchUnregisteredStudent(token, tournamentId);
+          if (unregisteredStudents) {
+            setStudents(unregisteredStudents);
+          } else {
+            message.error("Failed to load unregistered students");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No tournament ID or token found');
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleStudentSelect = (selectedItems: any) => {
     const newSelectedStudents = selectedItems.map((item: any) => {
@@ -34,15 +58,28 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   };
 
   const handleSubmit = async (values: any) => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    const token = localStorage.getItem('token');
+
+    if (!tournamentId || !token) {
+      message.error('No tournament ID or token found');
+      return;
+    }
+
+    if (!selectedSchool) {
+      message.error('Por favor seleccione una escuela');
+      return;
+    }
+
     try {
-      await registerTeam(selectedSchool, values.sponsor, selectedStudents.map(s => s.id));
+      await registerTeam(token, tournamentId, selectedSchool, values.sponsor, selectedStudents.map(s => s.id));
       message.success('Equipo registrado exitosamente!');
       onClose();
       form.resetFields();
       setSelectedSchool(null);
       setSelectedStudents([]);
     } catch (error) {
-      message.error('Error registering team');
+      message.error('Error registrando el equipo');
     }
   };
 

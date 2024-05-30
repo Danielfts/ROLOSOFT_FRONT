@@ -2,24 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Form, Select, Button, message, DatePicker } from "antd";
 import { registerMatch } from "../../../services/matchService";
 import { fetchTeam } from "../../../services/teamService";
+import { fetchPhase } from "../../../services/phaseService";
+import { Team, Phase, RMatch } from "../../../types/types";
 
 const { RangePicker } = DatePicker;
 
-type Team = {
-    id: string;
-    name: string;
-};
-
-type Phase = {
-    id: string;
-    name: string;
-};
-
-type RegisterMatchProps = {
-    onClose: () => void;
-};
-
-const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
+const RegisterMatch: React.FC<RMatch> = ({ onClose }) => {
     const [form] = Form.useForm();
     const [teams, setTeams] = useState<Team[]>([]);
     const [phases, setPhases] = useState<Phase[]>([]);
@@ -28,15 +16,39 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
     const [phaseName, setPhaseName] = useState<string | null>(null);
 
     useEffect(() => {
-        const tournamentId = localStorage.getItem("selectedTournamentId");
-        if (tournamentId) {
-            fetchTeam(tournamentId).then((data) => setTeams(data || []));
-        }
+        const getMatchData = async () => {
+            const tournamentId = localStorage.getItem('selectedTournamentId');
+            const token = localStorage.getItem('token');
+
+            if (tournamentId && token) {
+                try {
+                    const teamData = await fetchTeam(token, tournamentId);
+                    if (teamData) {
+                        setTeams(teamData);
+                    } else {
+                        message.error("Failed to load team data");
+                    }
+
+                    const phaseData = await fetchPhase(token, tournamentId);
+                    if (phaseData) {
+                        setPhases(phaseData);
+                    } else {
+                        message.error("Failed to load phase data");
+                    }
+                } catch (error) {
+                    message.error("Error fetching data");
+                }
+            } else {
+                message.error('No tournament ID or token found');
+            }
+        };
+        getMatchData();
     }, []);
 
     const handleSubmit = async (values: any) => {
         const tournamentId = localStorage.getItem("selectedTournamentId");
-        if (tournamentId && phaseName) {
+        const token = localStorage.getItem('token');
+        if (tournamentId && token && phaseName) {
             const payload = {
                 startDateTime: values.dates[0].toISOString(),
                 endDateTime: values.dates[1].toISOString(),
@@ -44,13 +56,15 @@ const RegisterMatch: React.FC<RegisterMatchProps> = ({ onClose }) => {
                 schoolB: { id: values.teamB },
             };
 
-            if (await registerMatch(tournamentId, phaseName, payload)) {
+            if (await registerMatch(token, tournamentId, phaseName, payload)) {
                 onClose();
                 form.resetFields();
                 setTeamA(null);
                 setTeamB(null);
                 setPhaseName(null);
             }
+        } else {
+            message.error('No tournament ID, token, or phase ID found');
         }
     };
 

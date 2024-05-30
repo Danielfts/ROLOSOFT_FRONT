@@ -1,88 +1,74 @@
 import { Button, Table, Modal, message, Image, InputNumber } from "antd";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { GoalT } from "../../../types/types";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-
-type ScoringTableEntry = {
-  studentId: string;
-  firstName: string;
-  lastName: string;
-  teamName: string;
-  goals: number;
-  position: number;
-  points: number;
-  schoolId: string;
-  playerPhotoUrl: string;
-  teamPhotoUrl: string;
-};
+import { fetchGoalTable } from "../../../services/statisticTableService";
 
 function GoalsTable() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingPlayer, setEditingPlayer] = useState<ScoringTableEntry | null>(null);
-  const [dataSource, setDataSource] = useState<ScoringTableEntry[]>([]);
+  const [editingPlayer, setEditingPlayer] = useState<GoalT | null>(null);
+  const [dataSource, setDataSource] = useState<GoalT[]>([]);
 
   useEffect(() => {
-    fetchScoringTable();
-  }, []);
+    const getGoalTable = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
 
-  const fetchScoringTable = async () => {
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    if (!tournamentId) {
-      message.error('No tournament ID found');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/scoring-table`, { headers });
-      if (response.status === 200 && response.data.success) {
-        setDataSource(response.data.data);
+      if (tournamentId && token) {
+        try {
+          const data = await fetchGoalTable(token, tournamentId);
+          if (data) {
+            setDataSource(data);
+          } else {
+            message.error("Failed to load data");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
       } else {
-        message.error('Failed to fetch scoring table');
+        message.error('No tournament ID or token found');
       }
-    } catch (error) {
-      message.error('Error fetching scoring table');
-    }
-  };
+    };
+    getGoalTable();
+  }, []);
 
   const columns = [
     {
       key: "1",
       title: "Posición",
       dataIndex: "position",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.position - b.position,
+      sorter: (a: GoalT, b: GoalT) => a.position - b.position,
     },
     {
       key: "2",
       title: "Nombre",
       dataIndex: "firstName",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.firstName.localeCompare(b.firstName),
+      sorter: (a: GoalT, b: GoalT) => a.firstName.localeCompare(b.firstName),
     },
     {
       key: "3",
       title: "Apellido",
       dataIndex: "lastName",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.lastName.localeCompare(b.lastName),
+      sorter: (a: GoalT, b: GoalT) => a.lastName.localeCompare(b.lastName),
     },
     {
       key: "4",
       title: "Equipo",
       dataIndex: "teamName",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.teamName.localeCompare(b.teamName),
+      sorter: (a: GoalT, b: GoalT) => a.teamName.localeCompare(b.teamName),
     },
     {
       key: "5",
       title: "Goles",
       dataIndex: "goals",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.goals - b.goals,
+      sorter: (a: GoalT, b: GoalT) => a.goals - b.goals,
     },
     {
       key: "6",
       title: "Puntos",
       dataIndex: "points",
-      sorter: (a: ScoringTableEntry, b: ScoringTableEntry) => a.points - b.points,
+      sorter: (a: GoalT, b: GoalT) => a.points - b.points,
     },
     {
       key: "7",
@@ -103,7 +89,7 @@ function GoalsTable() {
     {
       key: "9",
       title: "Acciones",
-      render: (record: ScoringTableEntry) => (
+      render: (record: GoalT) => (
         <>
           <EditOutlined onClick={() => onEditPlayer(record)} />
           <DeleteOutlined onClick={() => onDeletePlayer(record)} style={{ color: "red", marginLeft: 12 }} />
@@ -114,7 +100,7 @@ function GoalsTable() {
 
   const onAddPlayer = () => {
     const newId = Math.floor(Math.random() * 10000).toString();
-    const newPlayer: ScoringTableEntry = {
+    const newPlayer: GoalT = {
       studentId: newId,
       firstName: `New Player ${newId}`,
       lastName: "Last Name",
@@ -129,7 +115,7 @@ function GoalsTable() {
     setDataSource((prev) => [...prev, newPlayer]);
   };
 
-  const onDeletePlayer = (record: ScoringTableEntry) => {
+  const onDeletePlayer = (record: GoalT) => {
     Modal.confirm({
       title: "¿Estás seguro de que quieres eliminar este jugador?",
       okText: "Sí",
@@ -140,7 +126,7 @@ function GoalsTable() {
     });
   };
 
-  const onEditPlayer = (record: ScoringTableEntry) => {
+  const onEditPlayer = (record: GoalT) => {
     setIsEditing(true);
     setEditingPlayer({ ...record });
   };

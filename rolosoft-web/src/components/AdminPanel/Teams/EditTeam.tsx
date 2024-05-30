@@ -15,8 +15,28 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchStudents = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
+
+      if (school && tournamentId && token) {
+        try {
+          const unregisteredStudents = await fetchUnregisteredStudent(token, tournamentId);
+          if (unregisteredStudents) {
+            setStudents(unregisteredStudents);
+          } else {
+            message.error("Failed to load unregistered students");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No tournament ID or token found');
+      }
+    };
+
     if (school) {
-      fetchUnregisteredStudent().then(setStudents).catch(() => message.error('Failed to fetch students'));
+      fetchStudents();
     }
   }, [school]);
 
@@ -31,16 +51,23 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
 
   const handleAddPlayer = async () => {
     if (!selectedPlayer || !school) {
-      message.error('Por favor selecione un jugador');
+      message.error('Por favor seleccione un jugador');
       return;
     }
 
-    try {
-      await addStudentToTeam(school.id, selectedPlayer);
-      message.success('Jugador agregado exitosamente!');
-      onClose();
-    } catch (error) {
-      message.error('Error al agregar jugador');
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    const token = localStorage.getItem('token');
+    if (tournamentId && token) {
+      try {
+        const success = await addStudentToTeam(token, tournamentId, school.id, selectedPlayer);
+        if (success) {
+          onClose();
+        }
+      } catch (error) {
+        message.error('Error al agregar jugador');
+      }
+    } else {
+      message.error('No tournament ID or token found');
     }
   };
 

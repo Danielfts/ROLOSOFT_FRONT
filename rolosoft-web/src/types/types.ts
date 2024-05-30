@@ -61,3 +61,41 @@ export type Phase = {
   startDate: string;
   endDate: string;
 };
+
+export type GeneralT = {
+  team: string;
+  victories: number;
+  draws: number;
+  defeats: number;
+  position: number;
+  points: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  gamesPlayed: number;
+  photoUrl: string;
+};
+
+export type GoalT = {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  teamName: string;
+  goals: number;
+  position: number;
+  points: number;
+  schoolId: string;
+  playerPhotoUrl: string;
+  teamPhotoUrl: string;
+};
+
+
+export type RGoal = {
+  match: Match | null;
+  onClose: () => void;
+};
+
+export type RMatch = {
+  onClose: () => void;
+};
+

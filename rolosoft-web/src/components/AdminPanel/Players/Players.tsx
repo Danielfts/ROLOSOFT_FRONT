@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { message, Modal } from 'antd';
-import axios from 'axios';
-import { fetchRegisteredStudent } from '../../../services/studentService';
+import { fetchRegisteredStudent, deleteStudent } from '../../../services/studentService';
 import { Student } from '../../../types/types';
 import PlayerDetailsModal from './PlayerDetailsModal';
 import PlayerTable from './PlayerTable';
@@ -12,9 +11,26 @@ const Players: React.FC = () => {
   const [dataSource, setDataSource] = useState<Student[]>([]);
 
   useEffect(() => {
-    fetchRegisteredStudent()
-      .then(setDataSource)
-      .catch(() => message.error('Error fetching registered students'));
+    const fetchStudents = async () => {
+      const tournamentId = localStorage.getItem('selectedTournamentId');
+      const token = localStorage.getItem('token');
+
+      if (tournamentId && token) {
+        try {
+          const students = await fetchRegisteredStudent(token, tournamentId);
+          if (students) {
+            setDataSource(students);
+          } else {
+            message.error("Failed to load registered students");
+          }
+        } catch (error) {
+          message.error("Error fetching data");
+        }
+      } else {
+        message.error('No tournament ID or token found');
+      }
+    };
+    fetchStudents();
   }, []);
 
   const onViewPlayer = (record: Student) => {
@@ -24,23 +40,18 @@ const Players: React.FC = () => {
 
   const onDeletePlayer = (record: Student) => {
     Modal.confirm({
-      title: "Estas seguro que desea eliminar a este jugador?",
-      okText: "Yes",
+      title: "¿Estás seguro de que deseas eliminar a este jugador?",
+      okText: "Sí",
       okType: "danger",
       onOk: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const headers = { Authorization: token };
-          const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/players/${record.CURP}`, { headers });
-
-          if (response.status === 200) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const success = await deleteStudent(token, record.CURP);
+          if (success) {
             setDataSource((prev) => prev.filter((player) => player.CURP !== record.CURP));
-            message.success("Jugador eliminado exitosamente!");
-          } else {
-            message.error('Fallo al eliminar jugador');
           }
-        } catch (error) {
-          message.error('Fallo al eliminar jugador: ' + error);
+        } else {
+          message.error('Authorization token is missing');
         }
       },
     });
