@@ -1,5 +1,5 @@
 import { Modal, Descriptions, List, Avatar } from "antd";
-import { Match } from "../../../types/types"; // Adjust the import path
+import { Match } from "../../../types/types"; 
 
 interface MatchDetailsModalProps {
   isViewing: boolean;

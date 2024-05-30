@@ -135,7 +135,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
         </Form.Item>
 
         <Form.Item name="sponsor" rules={[{ required: true, message: 'Ingrese el nombre del Sponsor' }]}>
-          <Input placeholder="Sponsor Name" />
+          <Input placeholder="Nombre del Sponsor" />
         </Form.Item>
 
         <Form.Item name="students" rules={[{ required: true, message: 'Seleccione 11 jugadores' }]}>

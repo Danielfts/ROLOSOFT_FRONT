@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, Input, Button, message } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Option } = Select;

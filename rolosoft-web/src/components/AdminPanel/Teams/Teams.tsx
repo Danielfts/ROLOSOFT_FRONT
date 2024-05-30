@@ -184,7 +184,7 @@ const Teams = () => {
         )}
       </Modal>
       <Modal
-        title="Register New Team"
+        title="Registrar Nuevo Equipo"
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
@@ -196,7 +196,7 @@ const Teams = () => {
         }} />
       </Modal>
       <Modal
-        title="Edit Team"
+        title="Editar Equipo"
         open={isEditing}
         footer={null}
         onCancel={() => setIsEditing(false)}

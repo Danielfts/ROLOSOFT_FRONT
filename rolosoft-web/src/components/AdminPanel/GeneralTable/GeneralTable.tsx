@@ -86,7 +86,7 @@ function GeneralTable() {
       key: "5",
       title: (
         <div>
-          DF
+          DIF
           <Tooltip title="Diferencia de goles">
             <QuestionCircleOutlined style={{ marginLeft: 8 }} />
           </Tooltip>
