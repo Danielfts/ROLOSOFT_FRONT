@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Form, Input, Layout, message } from 'antd';
-import axios from 'axios';
+import { loginUser } from '../../services/authService';
 
 const { Content } = Layout;
 
@@ -34,33 +34,10 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const onFinish = async (values: LoginFormFields) => {
-    try {
-      const response = await axios.post(process.env.REACT_APP_LOGIN_API_URL!, {
-        email: values.email,
-        password: values.password,
-      });
-
-      if (response.status === 200) {
-        localStorage.setItem('token', response.data.data.token); // Storing the token
-        message.success('Inicio de sesión exitoso');
-        navigate('/dashboard');
-      } else {
-        message.error('Inicio de sesión fallido: ' + response.data.message);
-      }
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          message.error('El correo no se encontró');
-        } else if (error.response?.status === 401) {
-          message.error('Contraseña incorrecta');
-        } else {
-          message.error('Inicio de sesión fallido. Revisar la consola para más detalles.');
-        }
-        console.error('Error de inicio de sesión:', error);
-      } else {
-        console.error('Error de inicio de sesión:', error);
-        message.error('Error inesperado durante el inicio de sesión. Revisar la consola para más detalles.');
-      }
+    const token = await loginUser(values);
+    if (token) {
+      message.success('Inicio de sesión exitoso');
+      navigate('/dashboard');
     }
   };
 
