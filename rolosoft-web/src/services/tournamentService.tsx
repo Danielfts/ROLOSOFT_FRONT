@@ -2,6 +2,42 @@ import axios from 'axios';
 import { message } from 'antd';
 import { Tournament } from '../types/types';
 
+export const registerTournament = async (token: string, payload: Omit<Tournament, 'id'>): Promise<boolean> => {
+    const headers = { Authorization: token };
+    if (!token) {
+        message.error('Authorization token is missing');
+        return false;
+    }
+
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/`, payload, { headers });
+
+        if (response.status === 201) {
+            message.success('Torneo Registrado Exitosamente!');
+            return true;
+        } else {
+            message.error('Failed to register tournament.');
+            return false;
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    message.error('Unauthorized access or token has expired');
+                } else if (error.response.status === 404) {
+                    message.error('Resource not found');
+                } else {
+                    message.error(`Error: ${error.response.data.message}`);
+                }
+            } else {
+                message.error('Network error registering tournament');
+            }
+        } else {
+            message.error('An unexpected error occurred');
+        }
+        return false;
+    }
+};
 
 export const fetchTournaments = async (token: string): Promise<Tournament[] | null> => {
   const headers = { Authorization: token };

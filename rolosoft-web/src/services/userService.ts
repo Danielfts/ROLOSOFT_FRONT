@@ -1,6 +1,51 @@
 import axios from 'axios';
 import { message } from 'antd';
-import { User } from '../types/types';
+import { User, Student } from '../types/types';
+
+export const registerUser = async (token: string, payload: User | Student): Promise<boolean> => {
+    const headers = { Authorization: token };
+    if (!token) {
+        message.error('Authorization token is missing');
+        return false;
+    }
+
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_USERS_API_URL}`, payload, { headers });
+
+        if (response.status === 201) {
+            message.success('El usuario fue registrado exitosamente!');
+            return true;
+        } else {
+            message.error('Failed to register user');
+            return false;
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                const errorMessage = error.response.data.message;
+                if (error.response.status === 403) {
+                    message.error('No tienes permiso para realizar esta acción.');
+                } else if (error.response.status === 400) {
+                    if (errorMessage === 'CURP already exists') {
+                        message.error('Una cuenta ya se registró con ese CURP');
+                    } else if (errorMessage === 'email already exists') {
+                        message.error('Una cuenta ya se registró con ese correo electrónico');
+                    } else {
+                        message.error(`Error: ${errorMessage || 'Error de servidor'}`);
+                    }
+                } else {
+                    message.error(`Error: ${errorMessage || 'Error de servidor'}`);
+                }
+            } else {
+                message.error('Error de red o servidor, por favor verifica tu conexión.');
+            }
+        } else {
+            message.error('Un error inesperado ha ocurrido.');
+        }
+        return false;
+    }
+};
+
 
 export const fetchUsers = async (token: string): Promise<User[] | null> => {
   const headers = { Authorization: token };

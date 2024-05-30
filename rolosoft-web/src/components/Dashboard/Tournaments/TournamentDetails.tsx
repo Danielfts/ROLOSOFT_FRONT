@@ -13,7 +13,7 @@ const TournamentDetails: React.FC<TournamentDetailsProps> = ({ visible, onClose,
     <Modal
       title="Detalles del torneo"
       open={visible}
-      footer={null}  // This removes the footer
+      footer={null} 
       onCancel={onClose}
       width={500}
     >

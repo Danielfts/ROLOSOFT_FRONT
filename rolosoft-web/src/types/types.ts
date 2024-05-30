@@ -110,7 +110,6 @@ export type GoalT = {
   teamPhotoUrl: string;
 };
 
-
 export type RGoal = {
   match: Match | null;
   onClose: () => void;

@@ -1,4 +1,3 @@
-// authService.ts
 import axios from 'axios';
 import { message } from 'antd';
 
@@ -10,7 +9,7 @@ interface LoginFormFields {
 
 export const loginUser = async (values: LoginFormFields): Promise<string | null> => {
   try {
-    const response = await axios.post(process.env.REACT_APP_LOGIN_API_URL!, {
+    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/users/login`, {
       email: values.email,
       password: values.password,
     });
@@ -18,7 +17,7 @@ export const loginUser = async (values: LoginFormFields): Promise<string | null>
     if (response.status === 200) {
       const token = response.data.data.token;
       if (values.remember) {
-        localStorage.setItem('token', token);  
+        localStorage.setItem('token', token);
         sessionStorage.setItem('token', token);
       }
       return token;
