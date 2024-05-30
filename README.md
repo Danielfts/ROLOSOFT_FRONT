@@ -11,7 +11,7 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 ### Admin Dashboard
 - **Log In**: Autenticate admin users.
 
-<img width="1729" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/b4c5eb99-caa7-4ba5-b7fe-4f83e8ec61fa">
+<img width="2002" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/8a702914-5765-45af-a4e0-aa1958e03e16">
 
 - **User Management**: Create and manage accounts for students and other admins.
 
@@ -19,7 +19,7 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 
 - **School Profiles**: Register and manage school profiles participating in the tournaments.
 
-<img width="2054" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/c35691c1-a2e6-48d3-ba6b-1e5f97612ba1">
+<img width="2040" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/fa1f71e0-da66-413c-a957-03a27670c48e">
 
 - **Tournaments**: Create and manage yearly tournaments with unique configurations.
 
@@ -39,6 +39,9 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 
 - **News**: Create and manage news related to the tournament.
 
+<img width="2050" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/aacd29df-cd7f-4f40-ba70-09161b25f2b5">
+
+
 ### User Roles
 - **Admin**: Full access to manage the entire system.
 - **Student/Parents**: View their profiles, match schedules, and team statistics via the iOS app.
@@ -57,11 +60,16 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 - **Sequelize**: An ORM for Node.js, making it easy to interact with the database.
 - **Postman**: A collaboration platform for API development.
 
+<img width="1400" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/9eba3166-2d1e-4488-8e8f-86f754b917ab">
+
+
 ### Hosting
 - **Google Cloud Platform (GCP)**: The web application is hosted on GCP, providing scalability and reliability.
 
 ### Mobile
 - **iOS App**: An application for iOS devices, allowing players and parents to view tournament details, schedules, and statistics.
+
+<img width="801" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/efd3f463-a8dd-433d-9cdb-193f6f580309">
 
 ## Installation
 
