@@ -2,19 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Form, Select, Button, message, Input } from 'antd';
 import axios from 'axios';
 import { DownOutlined } from '@ant-design/icons';
+import { registerTeam } from '../../../services/teamService';
+import { fetchUnregisteredSchool } from '../../../services/schoolService';
 
-type School = {
-  id: string;
-  name: string;
-};
-
-type Student = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  CURP: string;
-};
+import { fetchUnregisteredStudent } from '../../../services/studentService';
+import { School, Student } from '../../../types/types';
 
 type RegisterTeamProps = {
   onClose: () => void;
@@ -30,45 +22,9 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSchools();
-    fetchStudents();
-  }, []);
-
-  const fetchSchools = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    if (!tournamentId) {
-      message.error('No tournament ID found');
-      return;
-    }
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools?registered=false`, { headers });
-      if (response.status === 200 && response.data.success && Array.isArray(response.data.data)) {
-        setSchools(response.data.data);
-      } else {
-        message.error('Failed to fetch schools');
-      }
-    } catch (error) {
-      message.error('Error fetching schools');
-    }
-  };
-
-  const fetchStudents = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/players?registered=false`, { headers });
-      if (response.status === 200 && Array.isArray(response.data.data)) {
-        setStudents(response.data.data);
-      } else {
-        message.error('Failed to fetch students');
-      }
-    } catch (error) {
-      message.error('Error fetching students');
-    }
-  };
+    fetchUnregisteredSchool().then(setSchools).catch(() => message.error('Failed to fetch schools'));
+    fetchUnregisteredStudent().then(setStudents).catch(() => message.error('Failed to fetch students'));
+  }, []);  
 
   const handleStudentSelect = (selectedItems: any) => {
     const newSelectedStudents = selectedItems.map((item: any) => {
@@ -78,30 +34,13 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
   };
 
   const handleSubmit = async (values: any) => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-    const payload = {
-      school: {
-        id: selectedSchool,
-      },
-      sponsor: values.sponsor,
-      students: selectedStudents.map(s => s.id),
-    };
-
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools`, payload, { headers });
-      if (response.status === 201) {
-        message.success('Equipo registrado exitosamente!');
-        onClose();
-        form.resetFields();
-        setSelectedSchool(null);
-        setSelectedStudents([]);
-        await fetchStudents(); 
-        await fetchSchools();
-      } else {
-        message.error('Failed to register team');
-      }
+      await registerTeam(selectedSchool, values.sponsor, selectedStudents.map(s => s.id));
+      message.success('Equipo registrado exitosamente!');
+      onClose();
+      form.resetFields();
+      setSelectedSchool(null);
+      setSelectedStudents([]);
     } catch (error) {
       message.error('Error registering team');
     }

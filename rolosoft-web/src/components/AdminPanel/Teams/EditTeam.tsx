@@ -1,41 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Select, Button, message, List, Avatar, Descriptions } from 'antd';
-import axios from 'axios';
-
-type Address = {
-  address1: string;
-  address2: string | null;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-};
-
-type Student = {
-  id: string;
-  CURP: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  birthDate: string;
-  gender: string;
-  role: string;
-  phone: string;
-  address: Address;
-  student: {
-    fieldPosition: string;
-    shirtNumber: number;
-    IMSS: string;
-  };
-};
-
-type School = {
-  id: string;
-  name: string;
-  address: Address;
-  sponsor: string;
-  students: Student[];
-};
+import { addStudentToTeam } from '../../../services/teamService';
+import { fetchUnregisteredStudent } from '../../../services/studentService';
+import { School, Student } from '../../../types/types';
 
 type EditTeamProps = {
   school: School | null;
@@ -49,7 +16,7 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
 
   useEffect(() => {
     if (school) {
-      fetchAvailablePlayers();
+      fetchUnregisteredStudent().then(setStudents).catch(() => message.error('Failed to fetch students'));
     }
   }, [school]);
 
@@ -57,23 +24,6 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
     form.resetFields();
     setSelectedPlayer(null);
   }, [school]);
-
-  const fetchAvailablePlayers = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/players?registered=false`, { headers });
-      if (response.status === 200 && Array.isArray(response.data.data)) {
-        setStudents(response.data.data);
-      } else {
-        message.error('Failed to fetch players');
-      }
-    } catch (error) {
-      message.error('Error fetching players');
-    }
-  };
 
   const handlePlayerSelect = (value: string) => {
     setSelectedPlayer(value);
@@ -85,23 +35,10 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: token };
-    const tournamentId = localStorage.getItem('selectedTournamentId');
-
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/tournaments/${tournamentId}/schools/${school.id}/students/${selectedPlayer}`,
-        {},
-        { headers }
-      );
-
-      if (response.status === 201) {
-        message.success('Jugador agregado exitosamente!');
-        onClose();
-      } else {
-        message.error('Failed to add player');
-      }
+      await addStudentToTeam(school.id, selectedPlayer);
+      message.success('Jugador agregado exitosamente!');
+      onClose();
     } catch (error) {
       message.error('Error al agregar jugador');
     }
@@ -116,7 +53,7 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
           <Descriptions.Item label="Jugadores">
             <List
               dataSource={school.students}
-              renderItem={(student: Student) => (
+              renderItem={(student) => (
                 <List.Item key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <List.Item.Meta
                     avatar={<Avatar src="https://via.placeholder.com/40" />}
