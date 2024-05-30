@@ -4,7 +4,7 @@
 
 ## Overview
 
-Welcome to the Frisa Charity Soccer Tournaments Management System! This project aims to manage annual soccer tournaments for 200 kids, organized by Frisa Charity. It includes both a web application for administrators and an iOS app for players and parents. 
+Welcome to the Frisa Charity Soccer Tournaments Management System! This project aims to manage annual soccer tournaments for 200 kids, organized by [Frisa](https://www.frisa.com/es/welcome). It includes both a web application for administrators and an iOS app for players and parents. 
 
 ## Features
 
