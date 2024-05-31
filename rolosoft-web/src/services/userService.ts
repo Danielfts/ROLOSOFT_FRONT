@@ -10,7 +10,7 @@ export const registerUser = async (token: string, payload: User | Student): Prom
     }
 
     try {
-        const response = await axios.post(`${process.env.REACT_APP_USERS_API_URL}`, payload, { headers });
+        const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/users/`, payload, { headers });
 
         if (response.status === 201) {
             message.success('El usuario fue registrado exitosamente!');
@@ -55,7 +55,7 @@ export const fetchUsers = async (token: string): Promise<User[] | null> => {
   }
 
   try {
-    const response = await axios.get(`${process.env.REACT_APP_USERS_API_URL}`, { headers });
+    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/users/`, { headers });
 
     if (response.status === 200 && response.data.success) {
       return response.data.data;
@@ -91,7 +91,7 @@ export const deleteUser = async (token: string, userId: string): Promise<boolean
   }
 
   try {
-    const response = await axios.delete(`${process.env.REACT_APP_USERS_API_URL}/${userId}`, { headers });
+    const response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/users/${userId}`, { headers });
 
     if (response.status === 200) {
       message.success('Usuario eliminado exitosamente!');
