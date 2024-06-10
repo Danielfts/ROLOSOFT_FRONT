@@ -47,7 +47,6 @@ const Tournaments: React.FC = () => {
       render: (record: Tournament) => (
         <>
           <EyeOutlined onClick={(e) => { e.stopPropagation(); onViewTournament(record); }} />
-          <DeleteOutlined onClick={(e) => { e.stopPropagation(); onDeleteTournament(record); }} style={{ color: "red", marginLeft: 12 }} />
           <SettingOutlined onClick={(e) => { e.stopPropagation(); administrateTournament(record.id); }} style={{ marginLeft: 12 }} />
         </>
       ),
@@ -66,25 +65,6 @@ const Tournaments: React.FC = () => {
 
   const onAddTournament = () => {
     setIsRegistering(true);
-  };
-
-  const onDeleteTournament = (record: Tournament) => {
-    Modal.confirm({
-      title: "Esta seguro que desea elimianar este torneo?",
-      okText: "Si",
-      okType: "danger",
-      onOk: async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const success = await deleteTournament(token, record.id);
-          if (success) {
-            setDataSource((prev) => prev.filter((tournament) => tournament.id !== record.id));
-          }
-        } else {
-          message.error('Authorization token is missing');
-        }
-      },
-    });
   };
 
   return (

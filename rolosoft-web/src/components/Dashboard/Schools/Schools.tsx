@@ -42,7 +42,6 @@ const Schools: React.FC = () => {
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
-          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
@@ -56,26 +55,7 @@ const Schools: React.FC = () => {
   const onAddSchool = () => {
     setIsRegistering(true);
   };
-
-  const onDeleteSchool = (record: School) => {
-    Modal.confirm({
-      title: "¿Estás seguro de que deseas eliminar esta escuela?",
-      okText: "Sí",
-      okType: "danger",
-      onOk: async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const success = await deleteSchool(token, record.id);
-          if (success) {
-            setDataSource((prev) => prev.filter((school) => school.id !== record.id));
-          }
-        } else {
-          message.error('Authorization token is missing');
-        }
-      },
-    });
-  };
-
+  
   return (
     <div className="App">
       <header className="App-header">

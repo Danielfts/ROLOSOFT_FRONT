@@ -94,7 +94,6 @@ const Teams: React.FC = () => {
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
           <EditOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
-          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },

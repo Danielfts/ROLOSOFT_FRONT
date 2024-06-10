@@ -49,7 +49,6 @@ const Users: React.FC = () => {
       render: (record: User) => (
         <>
           <EyeOutlined onClick={() => onViewUser(record)} />
-          <DeleteOutlined onClick={() => onDeleteUser(record)} style={{ color: "red", marginLeft: 12 }} />
         </>
       ),
     },
@@ -62,25 +61,6 @@ const Users: React.FC = () => {
 
   const onAddUser = () => {
     setIsRegistering(true);
-  };
-
-  const onDeleteUser = (record: User) => {
-    Modal.confirm({
-      title: "Estas seguro que desea eliminar a este usuario?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          message.error('No se encontró ningun token, por favor inicie sesión');
-          return;
-        }
-        const success = await deleteUser(token, record.id);
-        if (success) {
-          setDataSource((prev) => prev.filter((user) => user.id !== record.id));
-        }
-      },
-    });
   };
 
   return (

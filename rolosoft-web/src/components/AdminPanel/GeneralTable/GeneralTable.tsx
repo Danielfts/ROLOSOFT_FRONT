@@ -157,21 +157,7 @@ function GeneralTable() {
       dataIndex: "goalsAgainst",
       sorter: (a: GeneralT, b: GeneralT) => a.goalsAgainst - b.goalsAgainst,
     },
-    {
-      key: "12",
-      title: "Acciones",
-      render: (record: GeneralT) => (
-        <>
-          <EditOutlined onClick={() => onEditTeam(record)} />
-        </>
-      ),
-    },
   ];
-
-  const onEditTeam = (record: GeneralT) => {
-    setIsEditing(true);
-    setEditingTeam({ ...record });
-  };
 
   const resetEditing = () => {
     setIsEditing(false);

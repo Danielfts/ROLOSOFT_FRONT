@@ -20,6 +20,7 @@ export type User = {
   address: Address;
 };
 export type Student = {
+  cards: any[];
   id: string;
   CURP: string;
   firstName: string;

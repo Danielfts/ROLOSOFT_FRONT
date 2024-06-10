@@ -32,7 +32,7 @@ const PlayerTable: React.FC<PlayerTableProps> = ({ dataSource, onViewPlayer, onD
     { key: "5", title: "CURP", dataIndex: "CURP", sorter: (a: Student, b: Student) => a.CURP.localeCompare(b.CURP) },
     {
       key: "6",
-      title: "Puntos",
+      title: "Tarjeta Verde",
       dataIndex: "points",
       render: (_: any, record: Student) => record.cards?.length || 0,
     },
@@ -42,7 +42,6 @@ const PlayerTable: React.FC<PlayerTableProps> = ({ dataSource, onViewPlayer, onD
       render: (record: Student) => (
         <>
           <EyeOutlined onClick={() => onViewPlayer(record)} />
-          <DeleteOutlined onClick={() => onDeletePlayer(record)} style={{ color: "red", marginLeft: 12 }} />
           <FileAddOutlined onClick={() => showModal(record)} style={{ color: "green", marginLeft: 12 }} />
         </>
       ),

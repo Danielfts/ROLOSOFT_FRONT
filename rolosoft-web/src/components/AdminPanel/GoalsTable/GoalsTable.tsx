@@ -86,50 +86,7 @@ function GoalsTable() {
       dataIndex: "points",
       sorter: (a: GoalT, b: GoalT) => a.points - b.points,
     },
-    {
-      key: "9",
-      title: "Acciones",
-      render: (record: GoalT) => (
-        <>
-          <EditOutlined onClick={() => onEditPlayer(record)} />
-          <DeleteOutlined onClick={() => onDeletePlayer(record)} style={{ color: "red", marginLeft: 12 }} />
-        </>
-      ),
-    },
   ];
-
-  const onAddPlayer = () => {
-    const newId = Math.floor(Math.random() * 10000).toString();
-    const newPlayer: GoalT = {
-      studentId: newId,
-      firstName: `New Player ${newId}`,
-      lastName: "Last Name",
-      teamName: "New Team",
-      goals: 0,
-      position: dataSource.length + 1,
-      points: 0,
-      schoolId: newId,
-      playerPhotoUrl: "https://via.placeholder.com/50",
-      teamPhotoUrl: "https://via.placeholder.com/50",
-    };
-    setDataSource((prev) => [...prev, newPlayer]);
-  };
-
-  const onDeletePlayer = (record: GoalT) => {
-    Modal.confirm({
-      title: "¿Estás seguro de que quieres eliminar este jugador?",
-      okText: "Sí",
-      okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((player) => player.studentId !== record.studentId));
-      },
-    });
-  };
-
-  const onEditPlayer = (record: GoalT) => {
-    setIsEditing(true);
-    setEditingPlayer({ ...record });
-  };
 
   const resetEditing = () => {
     setIsEditing(false);

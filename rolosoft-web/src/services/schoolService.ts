@@ -9,7 +9,7 @@ export const registerSchool = async (token: string, payload: any): Promise<boole
   }
 
   try {
-    const response = await axios.post(`${process.env.REACT_APP_SCHOOLS_API_URL}`, payload, { headers });
+    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/schools`, payload, { headers });
 
     if (response.status === 201) {
       return true;

@@ -55,7 +55,6 @@ const MatchTable: React.FC<MatchTableProps> = ({ matches, onViewMatch, onDeleteM
             <FaFutbol />
           </span>
           <EyeOutlined onClick={() => onViewMatch(record)} style={{ marginRight: 12 }} />
-          <DeleteOutlined onClick={() => onDeleteMatch(record)} style={{ color: "red" }} />
         </>
       ),
     },
