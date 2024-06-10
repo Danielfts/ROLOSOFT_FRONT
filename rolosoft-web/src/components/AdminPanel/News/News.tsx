@@ -123,20 +123,6 @@ const News: React.FC = () => {
     setIsViewModalVisible(true);
   };
 
-  const handleDeleteNews = async (newsId: string) => {
-    try {
-      const response = await axios.delete(`https://660d2bd96ddfa2943b33731c.mockapi.io/api/news/${newsId}`);
-      if (response.status === 200) {
-        message.success('News deleted successfully!');
-        setNews((prevNews) => prevNews.filter(news => news.id !== newsId));
-      } else {
-        message.error('Failed to delete news');
-      }
-    } catch (error) {
-      message.error('Error deleting news');
-    }
-  };
-
   const uploadButton = (
     <div>
       {loading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -157,7 +143,6 @@ const News: React.FC = () => {
             style={{ width: 300 }}
             actions={[
               <EyeOutlined key="view" onClick={() => handleViewNews(item)} />,
-              <DeleteOutlined key="delete" onClick={() => handleDeleteNews(item.id)} />,
             ]}
           >
             <p>{item.text.substring(0, 100)}...</p>

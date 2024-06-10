@@ -47,7 +47,7 @@ export const fetchTournaments = async (token: string): Promise<Tournament[] | nu
   }
 
   try {
-    const response = await axios.get(`${process.env.REACT_APP_TOURNAMENTS_API_URL}`, { headers });
+    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/tournaments/`, { headers });
 
     if (response.status === 200 && response.data.success) {
       return response.data.data;

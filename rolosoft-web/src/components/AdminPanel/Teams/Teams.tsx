@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, message, Descriptions, List, Avatar } from "antd";
-import { EyeOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Table, Button, message, Avatar, Modal } from "antd";
+import { EyeOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
 import EditTeam from './EditTeam';
-import { fetchRegisteredSchool, deleteSchool } from '../../../services/schoolService';
-import { School } from '../../../types/types';
+import TeamDetailsModal from './TeamDetailsModal';
+import { fetchRegisteredSchool } from '../../../services/schoolService';
+import { School, Student } from '../../../types/types';
 
 const Teams: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -14,51 +15,29 @@ const Teams: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const tournamentId = localStorage.getItem('selectedTournamentId');
-      const token = localStorage.getItem('token');
+  const fetchSchools = async () => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    const token = localStorage.getItem('token');
 
-      if (tournamentId && token) {
-        try {
-          const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
-          if (registeredSchools) {
-            setSchools(registeredSchools);
-          } else {
-            message.error("Failed to load registered schools");
-          }
-        } catch (error) {
-          message.error("Error fetching data");
-        }
-      } else {
-        message.error('No tournament ID or token found');
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const onDeleteSchool = (record: School) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this school?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            await deleteSchool(token, record.id);
-            setSchools((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("School deleted successfully!");
-          } catch (error) {
-            message.error('Failed to delete school');
-          }
+    if (tournamentId && token) {
+      try {
+        const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
+        if (registeredSchools) {
+          setSchools(registeredSchools);
         } else {
-          message.error('Authorization token is missing');
+          message.error("Failed to load registered schools");
         }
-      },
-    });
+      } catch (error) {
+        message.error("Error fetching data");
+      }
+    } else {
+      message.error('No tournament ID or token found');
+    }
   };
+
+  useEffect(() => {
+    fetchSchools();
+  }, []);
 
   const onViewSchool = (record: School) => {
     setIsViewing(true);
@@ -79,6 +58,15 @@ const Teams: React.FC = () => {
       key: "1",
       title: "Nombre",
       dataIndex: "name",
+      render: (_: any, record: School) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar
+            src={record.shieldFileName ? `${process.env.REACT_APP_BASE_URL}/static/${record.shieldFileName}` : undefined}
+            icon={!record.shieldFileName ? <UserOutlined /> : undefined}
+          />
+          <span style={{ marginLeft: 8 }}>{record.name}</span>
+        </div>
+      ),
       sorter: (a: School, b: School) => a.name.localeCompare(b.name),
     },
     {
@@ -93,8 +81,7 @@ const Teams: React.FC = () => {
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
-          <EditOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
-          <DeleteOutlined onClick={() => onDeleteSchool(record)} style={{ color: "red", marginLeft: 12 }} />
+          <UserAddOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
         </>
       ),
     },
@@ -105,111 +92,38 @@ const Teams: React.FC = () => {
       <Button type="primary" onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
       <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
-      <Modal
-        title="Detalles de la Escuela"
-        open={isViewing}
-        onCancel={() => setIsViewing(false)}
-        footer={null}
-        width={700}
-      >
-        {viewingSchool && (
-          <Descriptions bordered column={1}>
-            <Descriptions.Item label="Nombre">{viewingSchool.name}</Descriptions.Item>
-            <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-            <Descriptions.Item label="Calle">{viewingSchool.address.address1}</Descriptions.Item>
-            <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
-            <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
-            <Descriptions.Item label="Codigo Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
-            <Descriptions.Item label="Pais">{viewingSchool.address.country}</Descriptions.Item>
-            <Descriptions.Item label="Jugadores">
-              <List
-                dataSource={viewingSchool.students}
-                renderItem={(student) => (
-                  <List.Item key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <List.Item.Meta
-                      avatar={<Avatar src="https://via.placeholder.com/40" />}
-                      title={`${student.firstName} ${student.lastName}`}
-                      description={
-                        <>
-                          <div>CURP: {student.CURP}</div>
-                          <div>Email: {student.email}</div>
-                          <div>Posición: {student.student.fieldPosition}</div>
-                          <div>Numero Camiseta: {student.student.shirtNumber}</div>
-                        </>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
+      <TeamDetailsModal
+        visible={isViewing}
+        onClose={() => setIsViewing(false)}
+        school={viewingSchool}
+      />
       <Modal
         title="Registrar Nuevo Equipo"
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
-        width={600}
       >
         <RegisterTeam onClose={() => {
           setIsRegistering(false);
-          const fetchData = async () => {
-            const tournamentId = localStorage.getItem('selectedTournamentId');
-            const token = localStorage.getItem('token');
-  
-            if (tournamentId && token) {
-              try {
-                const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
-                if (registeredSchools) {
-                  setSchools(registeredSchools);
-                } else {
-                  message.error("Failed to load registered schools");
-                }
-              } catch (error) {
-                message.error("Error fetching data");
-              }
-            } else {
-              message.error('No tournament ID or token found');
-            }
-          };
-          fetchData();
+          fetchSchools();
         }} />
       </Modal>
-      <Modal
-        title="Editar Equipo"
-        open={isEditing}
-        footer={null}
-        onCancel={() => setIsEditing(false)}
-        width={800}
-      >
-        <EditTeam
-          school={editingSchool}
-          onClose={() => {
-            setIsEditing(false);
-            const fetchData = async () => {
-              const tournamentId = localStorage.getItem('selectedTournamentId');
-              const token = localStorage.getItem('token');
-    
-              if (tournamentId && token) {
-                try {
-                  const registeredSchools = await fetchRegisteredSchool(token, tournamentId);
-                  if (registeredSchools) {
-                    setSchools(registeredSchools);
-                  } else {
-                    message.error("Failed to load registered schools");
-                  }
-                } catch (error) {
-                  message.error("Error fetching data");
-                }
-              } else {
-                message.error('No tournament ID or token found');
-              }
-            };
-            fetchData();
-          }}
-        />
-      </Modal>
+      {editingSchool && (
+        <Modal
+          title="Agregar Jugador"
+          open={isEditing}
+          footer={null}
+          onCancel={() => setIsEditing(false)}
+        >
+          <EditTeam
+            school={editingSchool}
+            onClose={() => {
+              setIsEditing(false);
+              fetchSchools();
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

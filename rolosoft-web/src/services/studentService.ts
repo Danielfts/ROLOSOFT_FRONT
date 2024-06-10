@@ -178,3 +178,96 @@ export const deleteStudent = async (token: string, studentCURP: string): Promise
         return false;
     }
 };
+
+export const uploadStudentImage = async (token: string, studentId: string, imageFile: File): Promise<string | null> => {
+    const headers = {
+      Authorization: token,
+      'Content-Type': 'multipart/form-data',
+    };
+  
+    if (!token) {
+      message.error('Falta el token de autorización');
+      return null;
+    }
+  
+    if (!studentId) {
+      message.error('Falta el ID del estudiante');
+      return null;
+    }
+  
+    const formData = new FormData();
+    formData.append('image', imageFile);
+  
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/users/${studentId}/photo`,
+        formData,
+        { headers }
+      );
+  
+      if (response.status === 201 && response.data.success) {
+        return response.data.data.filename;
+      } else {
+        message.error('Error al subir la imagen');
+        return null;
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          message.error(`Error: ${error.response.data.message}`);
+        } else {
+          message.error('Error de red al subir la imagen');
+        }
+      } else {
+        message.error('Ocurrió un error inesperado');
+      }
+      return null;
+    }
+  };
+  
+  export const registerGreenCard = async (token: string, studentId: string, reason: string): Promise<boolean> => {
+    const headers = { Authorization: token };
+
+    if (!token) {
+        message.error('Falta el token de autorización');
+        return false;
+    }
+
+    if (!studentId) {
+        message.error('Falta el ID del estudiante');
+        return false;
+    }
+
+    const payload = { reason };
+
+    try {
+        const response = await axios.post(
+            `${process.env.REACT_APP_BASE_URL}/users/${studentId}/green-cards`,
+            payload,
+            { headers }
+        );
+
+        if (response.status === 201 && response.data.success) {
+            message.success('¡Tarjeta verde registrada con éxito!');
+            return true;
+        } else {
+            message.error('Error al registrar la tarjeta verde');
+            return false;
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    message.error('Acceso no autorizado o el token ha expirado');
+                } else {
+                    message.error(`Error: ${error.response.data.message}`);
+                }
+            } else {
+                message.error('Error de red al registrar la tarjeta verde');
+            }
+        } else {
+            message.error('Ocurrió un error inesperado');
+        }
+        return false;
+    }
+};
