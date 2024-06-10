@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, message, Upload, Tooltip, Divider } from 'antd';
-import { InboxOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
+import { InboxOutlined, EyeOutlined } from '@ant-design/icons';
 import RegisterUser from './RegisterUser';
 import UserDetails from './UserDetails';
 import { User } from '../../../types/types';

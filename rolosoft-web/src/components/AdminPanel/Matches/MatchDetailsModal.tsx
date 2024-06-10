@@ -11,11 +11,14 @@ interface MatchDetailsModalProps {
 }
 
 const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({ isViewing, viewingMatch, onCancel }) => {
-  // Function to get player's avatar
   const getPlayerAvatar = (goal: any) => {
-    const photoFileName = goal.student?.student?.photoFileName;
+    const photoFileName = goal.photoFileName; 
+    console.log('Goal photoFileName:', photoFileName);
+    const avatarUrl = photoFileName ? `${process.env.REACT_APP_BASE_URL}/static/${photoFileName}` : null;
+    console.log('Constructed avatar URL:', avatarUrl);
+
     return photoFileName
-      ? <Avatar src={`${process.env.REACT_APP_BASE_URL}/static/${photoFileName}`} />
+      ? <Avatar src={avatarUrl} />
       : <Avatar icon={<UserOutlined />} />;
   };
 

@@ -1,5 +1,5 @@
 import { Table } from "antd";
-import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EyeOutlined } from "@ant-design/icons";
 import { Phase } from "../../../types/types";
 
 interface PhaseTableProps {

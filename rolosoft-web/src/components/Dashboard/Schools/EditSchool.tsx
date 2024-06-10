@@ -88,7 +88,7 @@ const EditSchool: React.FC<EditSchoolProps> = ({ visible, onCancel, school, onSa
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       title="Editar Escudo de la Escuela"
       footer={null}
       onCancel={onCancel}
