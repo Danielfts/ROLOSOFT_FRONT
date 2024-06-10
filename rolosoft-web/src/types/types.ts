@@ -107,6 +107,7 @@ export type GeneralT = {
   goalsAgainst: number;
   goalDifference: number;
   gamesPlayed: number;
+  shieldFileName: string;
 };
 
 export type GoalT = {
