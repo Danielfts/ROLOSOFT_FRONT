@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, message, Avatar, InputNumber, Tooltip } from 'antd';
-import { EditOutlined, QuestionCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Table, message, Avatar, Tooltip } from 'antd';
+import { QuestionCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { GeneralT } from '../../../types/types';
 import { fetchGeneralTable } from '../../../services/statisticTableService';
 

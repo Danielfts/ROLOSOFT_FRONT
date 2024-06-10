@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, message } from "antd";
-import { DeleteOutlined, EyeOutlined, SettingOutlined } from "@ant-design/icons";
+import { EyeOutlined, SettingOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import RegisterTournament from './RegisterTournament';
 import TournamentDetails from './TournamentDetails';

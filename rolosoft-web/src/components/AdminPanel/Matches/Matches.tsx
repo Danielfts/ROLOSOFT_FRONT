@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Button, message, Modal } from "antd";
 import RegisterMatch from "./RegisterMatch";
 import RegisterGoal from "./RegisterGoal";
@@ -62,30 +61,6 @@ const Matches: React.FC = () => {
         setViewingMatch(record);
     };
 
-    const onDeleteMatch = async (record: Match) => {
-        Modal.confirm({
-            title: "¿Estas seguro que desea eliminar este partido?",
-            okText: "Sí",
-            okType: "danger",
-            onOk: async () => {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    message.error('No authorization token found');
-                    return;
-                }
-                try {
-                    const success = await deleteMatch(token, record.id);
-
-                    if (success) {
-                        setMatches((prev) => prev.filter((match) => match.id !== record.id));
-                    }
-                } catch (error) {
-                    message.error("Failed to delete match: " + error);
-                }
-            },
-        });
-    };
-
     const onRegisterMatch = () => {
         setIsRegisteringMatch(true);
     };
@@ -107,7 +82,6 @@ const Matches: React.FC = () => {
             <MatchTable
                 matches={matches}
                 onViewMatch={onViewMatch}
-                onDeleteMatch={onDeleteMatch}
                 onRegisterGoal={onRegisterGoal}
             />
             <MatchDetailsModal

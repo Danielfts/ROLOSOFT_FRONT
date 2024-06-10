@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Form, Upload, Button, message, UploadProps } from 'antd';
-import { PlusOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons';
+import { InboxOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Student } from '../../../types/types';
 import { uploadStudentImage } from '../../../services/studentService';
 

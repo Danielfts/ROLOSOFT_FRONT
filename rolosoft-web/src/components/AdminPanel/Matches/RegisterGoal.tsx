@@ -28,7 +28,7 @@ const RegisterGoal: React.FC<RGoal> = ({ match, onClose }) => {
             }
 
             if (!selectedTeam) {
-                return; // Exit early if no team is selected
+                return;
             }
 
             try {

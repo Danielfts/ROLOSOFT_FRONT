@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Avatar, Modal, message, InputNumber, Button } from 'antd';
-import { EditOutlined, UserOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Avatar, Modal, message, InputNumber } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { GoalT } from '../../../types/types';
 import { fetchGoalTable } from '../../../services/statisticTableService';
 

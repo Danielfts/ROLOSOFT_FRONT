@@ -1,7 +1,5 @@
-// RegisterTournament.tsx
 import React from 'react';
 import { Form, Input, DatePicker, Button, message } from 'antd';
-import moment from 'moment';
 import { registerTournament } from '../../../services/tournamentService';
 import { Tournament } from '../../../types/types';
 

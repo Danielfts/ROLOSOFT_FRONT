@@ -8,7 +8,6 @@ import Tournaments from './Tournaments/Tournaments';
 const { Header, Sider, Content } = Layout;
 
 const Dashboard: React.FC = () => {
-  // Initialize state with localStorage value or default to '1'
   const [selectedMenu, setSelectedMenu] = useState(() => {
     const savedMenu = localStorage.getItem('selectedMenu');
     return savedMenu ? savedMenu : '1';
@@ -43,7 +42,7 @@ const Dashboard: React.FC = () => {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[selectedMenu]}  // Use selectedKeys instead of defaultSelectedKeys
+          selectedKeys={[selectedMenu]}
           items={[
             {
               key: '1',

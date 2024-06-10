@@ -9,11 +9,10 @@ import moment from 'moment';
 interface MatchTableProps {
   matches: Match[];
   onViewMatch: (match: Match) => void;
-  onDeleteMatch: (match: Match) => void;
   onRegisterGoal: (match: Match) => void;
 }
 
-const MatchTable: React.FC<MatchTableProps> = ({ matches, onViewMatch, onDeleteMatch, onRegisterGoal }) => {
+const MatchTable: React.FC<MatchTableProps> = ({ matches, onViewMatch, onRegisterGoal }) => {
   const matchColumns = [
     {
       key: "1",

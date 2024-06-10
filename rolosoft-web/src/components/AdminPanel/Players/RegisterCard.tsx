@@ -34,7 +34,7 @@ const RegisterCard: React.FC<RegisterCardProps> = ({ visible, onCancel, student 
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       title="Registrar Tarjeta Verde"
       onCancel={onCancel} 
       footer={null}
