@@ -1,37 +1,63 @@
-import { Button, Table, Modal, message, Image, InputNumber } from "antd";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { GoalT } from "../../../types/types";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { fetchGoalTable } from "../../../services/statisticTableService";
+import React, { useState, useEffect } from 'react';
+import { Table, Avatar, Modal, message, InputNumber, Button } from 'antd';
+import { EditOutlined, UserOutlined, DeleteOutlined } from '@ant-design/icons';
+import { GoalT } from '../../../types/types';
+import { fetchGoalTable } from '../../../services/statisticTableService';
 
-function GoalsTable() {
+const GoalsTable: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingPlayer, setEditingPlayer] = useState<GoalT | null>(null);
   const [dataSource, setDataSource] = useState<GoalT[]>([]);
 
-  useEffect(() => {
-    const getGoalTable = async () => {
-      const tournamentId = localStorage.getItem('selectedTournamentId');
-      const token = localStorage.getItem('token');
+  const fetchGoals = async () => {
+    const tournamentId = localStorage.getItem('selectedTournamentId');
+    const token = localStorage.getItem('token');
 
-      if (tournamentId && token) {
-        try {
-          const data = await fetchGoalTable(token, tournamentId);
-          if (data) {
-            setDataSource(data);
-          } else {
-            message.error("Failed to load data");
-          }
-        } catch (error) {
-          message.error("Error fetching data");
+    if (tournamentId && token) {
+      try {
+        const data = await fetchGoalTable(token, tournamentId);
+        if (data) {
+          setDataSource(data);
+        } else {
+          message.error("Failed to load data");
         }
-      } else {
-        message.error('No tournament ID or token found');
+      } catch (error) {
+        message.error("Error fetching data");
       }
-    };
-    getGoalTable();
+    } else {
+      message.error('No tournament ID or token found');
+    }
+  };
+
+  useEffect(() => {
+    fetchGoals();
   }, []);
+
+  const handleEdit = (record: GoalT) => {
+    setIsEditing(true);
+    setEditingPlayer(record);
+  };
+
+  const handleDelete = (record: GoalT) => {
+    Modal.confirm({
+      title: "¿Estás seguro de que quieres eliminar a este jugador?",
+      okText: "Sí",
+      okType: "danger",
+      onOk: () => {
+        setDataSource((prev) => prev.filter((player) => player.studentId !== record.studentId));
+        message.success("Jugador eliminado exitosamente!");
+      },
+    });
+  };
+
+  const handleSave = () => {
+    setDataSource((prev) =>
+      prev.map((player) => (player.studentId === editingPlayer?.studentId ? editingPlayer : player))
+    );
+    setIsEditing(false);
+    setEditingPlayer(null);
+    message.success("Goles actualizados exitosamente!");
+  };
 
   const columns = [
     {
@@ -41,25 +67,18 @@ function GoalsTable() {
       sorter: (a: GoalT, b: GoalT) => a.position - b.position,
     },
     {
-      key: "8",
-      title: "Imagen Equipo",
-      dataIndex: "teamPhotoUrl",
-      render: (teamPhotoUrl: string) => (
-        <Image width={50} src={teamPhotoUrl} />
-      ),
-    },
-    {
-      key: "7",
-      title: "Imagen Jugador",
-      dataIndex: "playerPhotoUrl",
-      render: (playerPhotoUrl: string) => (
-        <Image width={50} src={playerPhotoUrl} />
-      ),
-    },
-    {
       key: "2",
       title: "Nombre",
       dataIndex: "firstName",
+      render: (_: any, record: GoalT) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar 
+            src={record.photoFileName ? `${process.env.REACT_APP_BASE_URL}/static/${record.photoFileName}` : undefined} 
+            icon={!record.photoFileName ? <UserOutlined /> : undefined} 
+          />
+          <span style={{ marginLeft: 8 }}>{record.firstName}</span>
+        </div>
+      ),
       sorter: (a: GoalT, b: GoalT) => a.firstName.localeCompare(b.firstName),
     },
     {
@@ -72,6 +91,15 @@ function GoalsTable() {
       key: "4",
       title: "Equipo",
       dataIndex: "teamName",
+      render: (_: any, record: GoalT) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar 
+            src={record.shieldFileName ? `${process.env.REACT_APP_BASE_URL}/static/${record.shieldFileName}` : undefined} 
+            icon={!record.shieldFileName ? <UserOutlined /> : undefined} 
+          />
+          <span style={{ marginLeft: 8 }}>{record.teamName}</span>
+        </div>
+      ),
       sorter: (a: GoalT, b: GoalT) => a.teamName.localeCompare(b.teamName),
     },
     {
@@ -88,41 +116,47 @@ function GoalsTable() {
     },
   ];
 
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingPlayer(null);
-  };
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <Table columns={columns} dataSource={dataSource} rowKey="studentId" />
-        <Modal
-          title="Editar Jugador"
-          open={isEditing}
-          okText="Guardar"
-          onCancel={resetEditing}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((player) => (player.studentId === editingPlayer?.studentId ? editingPlayer : player))
-            );
-            resetEditing();
-          }}
-        >
-          <InputNumber
-            min={0}
-            style={{ margin: "10px 0" }}
-            value={editingPlayer?.goals}
-            onChange={(goals) =>
-              setEditingPlayer((prev) =>
-                prev ? { ...prev, goals: goals || 0 } : null
-              )
-            }
-          />
-        </Modal>
-      </header>
+    <div>
+      <Table columns={columns} dataSource={dataSource} rowKey="studentId" />
+      <Modal
+        title="Editar Goles del Jugador"
+        visible={isEditing}
+        okText="Guardar"
+        onCancel={() => {
+          setIsEditing(false);
+          setEditingPlayer(null);
+        }}
+        onOk={handleSave}
+      >
+        {editingPlayer && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+              <Avatar 
+                size={64}
+                src={editingPlayer.photoFileName ? `${process.env.REACT_APP_BASE_URL}/static/${editingPlayer.photoFileName}` : undefined} 
+                icon={!editingPlayer.photoFileName ? <UserOutlined /> : undefined} 
+              />
+              <div style={{ marginLeft: 16 }}>
+                <h3>{`${editingPlayer.firstName} ${editingPlayer.lastName}`}</h3>
+                <p>{editingPlayer.teamName}</p>
+              </div>
+            </div>
+            <InputNumber
+              min={0}
+              style={{ marginBottom: 16 }}
+              value={editingPlayer.goals}
+              onChange={(goals) =>
+                setEditingPlayer((prev) =>
+                  prev ? { ...prev, goals: goals || 0 } : null
+                )
+              }
+            />
+          </>
+        )}
+      </Modal>
     </div>
   );
-}
+};
 
 export default GoalsTable;

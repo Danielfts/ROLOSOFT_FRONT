@@ -33,7 +33,7 @@ export type Student = {
   address: Address;
   student: {
     greenCards: any;
-    photoFileName: any;
+    photoFileName?: any;
     fieldPosition: string;
     shirtNumber: number;
     IMSS: string;
@@ -48,7 +48,7 @@ export type GreenCard = {
 };
 
 export type School = {
-  shieldFileName: string;
+  shieldFileName?: string;
   id: string;
   name: string;
   address: Address;
@@ -74,9 +74,11 @@ export type Goal = {
 };
 
 export type Team = {
+  shieldFileName: string;
   id: string;
   name: string;
   goals: Goal[];
+  points: number;
 };
 
 export type Match = {
@@ -105,7 +107,6 @@ export type GeneralT = {
   goalsAgainst: number;
   goalDifference: number;
   gamesPlayed: number;
-  photoUrl: string;
 };
 
 export type GoalT = {
@@ -117,8 +118,8 @@ export type GoalT = {
   position: number;
   points: number;
   schoolId: string;
-  playerPhotoUrl: string;
-  teamPhotoUrl: string;
+  photoFileName?: string;
+  shieldFileName?: string;
 };
 
 export type RGoal = {

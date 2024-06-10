@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, message, Descriptions, List, Avatar, Image } from "antd";
-import { EyeOutlined, EditOutlined, UserOutlined } from "@ant-design/icons";
+import { Table, Button, message, Avatar, Modal } from "antd";
+import { EyeOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
 import RegisterTeam from './RegisterTeam';
 import EditTeam from './EditTeam';
-import { fetchRegisteredSchool, deleteSchool } from '../../../services/schoolService';
+import TeamDetailsModal from './TeamDetailsModal';
+import { fetchRegisteredSchool } from '../../../services/schoolService';
 import { School, Student } from '../../../types/types';
 
 const Teams: React.FC = () => {
@@ -37,28 +38,6 @@ const Teams: React.FC = () => {
   useEffect(() => {
     fetchSchools();
   }, []);
-
-  const onDeleteSchool = (record: School) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this school?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            await deleteSchool(token, record.id);
-            setSchools((prev) => prev.filter((school) => school.id !== record.id));
-            message.success("School deleted successfully!");
-          } catch (error) {
-            message.error('Failed to delete school');
-          }
-        } else {
-          message.error('Authorization token is missing');
-        }
-      },
-    });
-  };
 
   const onViewSchool = (record: School) => {
     setIsViewing(true);
@@ -102,7 +81,7 @@ const Teams: React.FC = () => {
       render: (record: School) => (
         <>
           <EyeOutlined onClick={() => onViewSchool(record)} />
-          <EditOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
+          <UserAddOutlined onClick={() => onEditSchool(record)} style={{ marginLeft: 12 }} />
         </>
       ),
     },
@@ -113,74 +92,16 @@ const Teams: React.FC = () => {
       <Button type="primary" onClick={onRegisterTeam}>Registrar Nuevo Equipo</Button>
       <div style={{ margin: "2%" }}></div>
       <Table columns={columns} dataSource={schools} rowKey="id" />
-      <Modal
-        title="Detalles de la Escuela"
-        open={isViewing}
-        onCancel={() => setIsViewing(false)}
-        footer={null}
-        width={700}
-      >
-        {viewingSchool && (
-          <>
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              {viewingSchool.shieldFileName ? (
-                <Image
-                  width={150}
-                  src={`${process.env.REACT_APP_BASE_URL}/static/${viewingSchool.shieldFileName}`}
-                  alt={`${viewingSchool.name} Shield`}
-                />
-              ) : (
-                <Avatar
-                  size={150}
-                  icon={<UserOutlined />}
-                />
-              )}
-              <h3 style={{ marginTop: '16px' }}>{viewingSchool.name}</h3>
-            </div>
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nombre">{viewingSchool.name}</Descriptions.Item>
-              <Descriptions.Item label="Sponsor">{viewingSchool.sponsor}</Descriptions.Item>
-              <Descriptions.Item label="Calle">{viewingSchool.address.address1}</Descriptions.Item>
-              <Descriptions.Item label="Ciudad">{viewingSchool.address.city}</Descriptions.Item>
-              <Descriptions.Item label="Estado">{viewingSchool.address.state}</Descriptions.Item>
-              <Descriptions.Item label="Codigo Postal">{viewingSchool.address.postalCode}</Descriptions.Item>
-              <Descriptions.Item label="Pais">{viewingSchool.address.country}</Descriptions.Item>
-              <Descriptions.Item label="Jugadores">
-                <List
-                  dataSource={viewingSchool.students}
-                  renderItem={(student: Student) => (
-                    <List.Item key={student.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar
-                            src={student.student.photoFileName ? `${process.env.REACT_APP_BASE_URL}/static/${student.student.photoFileName}` : undefined}
-                            icon={!student.student.photoFileName ? <UserOutlined /> : undefined}
-                          />
-                        }
-                        title={`${student.firstName} ${student.lastName}`}
-                        description={
-                          <>
-                            <div>CURP: {student.CURP}</div>
-                            <div>Email: {student.email}</div>
-                            <div>Posición: {student.student.fieldPosition}</div>
-                            <div>Numero Camiseta: {student.student.shirtNumber}</div>
-                          </>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Descriptions.Item>
-            </Descriptions>
-          </>
-        )}
-      </Modal>
+      <TeamDetailsModal
+        visible={isViewing}
+        onClose={() => setIsViewing(false)}
+        school={viewingSchool}
+      />
       <Modal
         title="Registrar Nuevo Equipo"
         open={isRegistering}
         footer={null}
         onCancel={() => setIsRegistering(false)}
-        width={600}
       >
         <RegisterTeam onClose={() => {
           setIsRegistering(false);
@@ -189,11 +110,10 @@ const Teams: React.FC = () => {
       </Modal>
       {editingSchool && (
         <Modal
-          title="Editar Equipo"
+          title="Agregar Jugador"
           open={isEditing}
           footer={null}
           onCancel={() => setIsEditing(false)}
-          width={800}
         >
           <EditTeam
             school={editingSchool}
