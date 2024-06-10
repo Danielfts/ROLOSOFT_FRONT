@@ -32,10 +32,19 @@ export type Student = {
   phone: string;
   address: Address;
   student: {
+    greenCards: any;
+    photoFileName: any;
     fieldPosition: string;
     shirtNumber: number;
     IMSS: string;
   };
+};
+
+export type GreenCard = {
+  id: string;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type School = {
