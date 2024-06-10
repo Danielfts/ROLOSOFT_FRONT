@@ -48,6 +48,7 @@ export type GreenCard = {
 };
 
 export type School = {
+  shieldFileName: string;
   id: string;
   name: string;
   address: Address;

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Form, Upload, Button, message, UploadProps } from 'antd';
 import { PlusOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Student } from '../../../types/types';
-import { uploadStudentImage } from '../../../services/studentService';
+import { School } from '../../../types/types';
+import { uploadSchoolShield } from '../../../services/schoolService';
 
-type EditPlayerProps = {
+type EditSchoolProps = {
   visible: boolean;
   onCancel: () => void;
-  student: Student;
-  onSave: (updatedStudent: Student) => void;
+  school: School;
+  onSave: (updatedSchool: School) => void;
 };
 
-const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onSave }) => {
+const EditSchool: React.FC<EditSchoolProps> = ({ visible, onCancel, school, onSave }) => {
   const [fileList, setFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>('');
@@ -19,12 +19,12 @@ const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onS
   const beforeUpload = (file: File) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
-      message.error('¡Solo puedes subir archivos JPG/PNG!');
+      message.error('Solo puedes subir archivos JPG/PNG!');
       return Upload.LIST_IGNORE;
     }
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error('¡La imagen debe ser menor a 2MB!');
+      message.error('La imagen debe ser menor a 2MB!');
       return Upload.LIST_IGNORE;
     }
     return false;
@@ -54,15 +54,15 @@ const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onS
     setLoading(true);
 
     try {
-      const filename = await uploadStudentImage(localStorage.getItem('token')!, student.id, imageFile);
+      const filename = await uploadSchoolShield(localStorage.getItem('token')!, school.id, imageFile);
       if (!filename) throw new Error('Error al subir la imagen');
 
-      const photoUrl = `${process.env.REACT_APP_BASE_URL}/static/${filename}`;
-      const updatedStudent = { ...student, photoUrl };
+      const shieldUrl = `${process.env.REACT_APP_BASE_URL}/static/${filename}`;
+      const updatedSchool = { ...school, shieldUrl };
 
-      message.success('Imagen actualizada exitosamente!');
-      onSave(updatedStudent);
-      onCancel();
+      message.success('Escudo de la escuela actualizado exitosamente!');
+      onSave(updatedSchool); 
+      onCancel(); 
     } catch (error) {
       message.error((error as Error).message);
     } finally {
@@ -79,10 +79,17 @@ const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onS
     });
   };
 
+  const uploadButton = (
+    <div>
+      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>Subir</div>
+    </div>
+  );
+
   return (
     <Modal
       visible={visible}
-      title="Subir imagen del jugador"
+      title="Editar Escudo de la Escuela"
       footer={null}
       onCancel={onCancel}
     >
@@ -91,18 +98,18 @@ const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onS
           <Upload.Dragger
             name="file"
             multiple={false}
-            fileList={[]}
+            fileList={fileList}
             listType="picture-card"
             beforeUpload={beforeUpload}
             onChange={handleChange}
             showUploadList={false}
           >
             {imageUrl ? (
-              <img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+              <img src={imageUrl} alt="escudo" style={{ width: '100%' }} />
             ) : (
               <div>
                 {loading ? <LoadingOutlined /> : <InboxOutlined />}
-                <div style={{ marginTop: 8 }}>Haz clic o arrastra un archivo a esta área</div>
+                <div style={{ marginTop: 8 }}>Haz clic o arrastra el archivo aquí para subir</div>
                 <div>Elija una sola imagen en formato JPG/PNG y menor a 2MB</div>
               </div>
             )}
@@ -122,4 +129,4 @@ const EditPlayer: React.FC<EditPlayerProps> = ({ visible, onCancel, student, onS
   );
 };
 
-export default EditPlayer;
+export default EditSchool;

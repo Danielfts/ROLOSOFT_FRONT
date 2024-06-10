@@ -35,7 +35,6 @@ export const registerSchool = async (token: string, payload: any): Promise<boole
   }
 };
 
-
 export const fetchSchool = async (token: string): Promise<School[] | null> => {
     const headers = { Authorization: token };
     if (!token) {
@@ -204,3 +203,49 @@ export const deleteSchool = async (token: string, schoolId: string): Promise<boo
         return false;
     }
 };
+
+export const uploadSchoolShield = async (token: string, schoolId: string, imageFile: File): Promise<string | null> => {
+    const headers = {
+      Authorization: token,
+      'Content-Type': 'multipart/form-data',
+    };
+  
+    if (!token) {
+      message.error('Falta el token de autorización');
+      return null;
+    }
+  
+    if (!schoolId) {
+      message.error('Falta el ID de la escuela');
+      return null;
+    }
+  
+    const formData = new FormData();
+    formData.append('shield', imageFile);
+  
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/schools/${schoolId}/shield`,
+        formData,
+        { headers }
+      );
+  
+      if (response.status === 201 && response.data.success) {
+        return response.data.data.filename;
+      } else {
+        message.error('Error al subir la imagen');
+        return null;
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          message.error(`Error: ${error.response.data.message}`);
+        } else {
+          message.error('Error de red al subir la imagen');
+        }
+      } else {
+        message.error('Ocurrió un error inesperado');
+      }
+      return null;
+    }
+  };
