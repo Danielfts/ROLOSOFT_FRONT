@@ -38,6 +38,7 @@ export type Student = {
     shirtNumber: number;
     IMSS: string;
   };
+  photoFileName: string;
 };
 
 export type GreenCard = {
@@ -71,6 +72,7 @@ export type Goal = {
   lastName: string;
   minute: number;
   playerNumber: number;
+  photoFileName: string;
 };
 
 export type Team = {
