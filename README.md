@@ -17,13 +17,17 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 
 <img width="2046" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/0d7a58c7-dd1c-4fae-8d7b-7c3316057eaa">
 
-- **School Profiles**: Register and manage school profiles participating in the tournaments.
+- **School Profiles**: Register, manage and upload pictures to school profiles participating in the tournaments.
 
-<img width="2040" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/fa1f71e0-da66-413c-a957-03a27670c48e">
+<img width="1753" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/b5d9a2da-9951-4dd8-9e44-418546ccdfac">
 
 - **Tournaments**: Create and manage yearly tournaments with unique configurations.
 
 <img width="2051" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/379ecdb1-3252-4350-80ac-0eb124ab7d6e">
+
+- **Players**: Manage and upload pictures for students and registering green cards. 
+
+- <img width="1741" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/9abbe53f-2f39-463f-b75c-264c07bffae1">
 
 - **Teams**: Create, edit, and delete teams by selecting a school and 11 players.
 
@@ -31,11 +35,12 @@ Welcome to the Frisa Charity Soccer Tournaments Management System! This project 
 
 - **Matches**: Schedule matches by selecting a phase, two teams, start, and end date. Add goals at the end of the match.
 
-<img width="2043" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/15908278-30da-47e0-81e8-2f370f189657">
+<img width="1746" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/1d6c598b-0e10-45cd-bf79-441ab881e260">
 
 - **Statistics**: View score tables with player statistics and general tables with team statistics, including games played, lost, and won.
 
-<img width="2040" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/81429627-e247-4a5c-b533-6c6c02e6ea9c">
+<img width="1746" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/9a5ab027-61ef-48d6-a020-b05354fe88d0">
+<img width="1742" alt="image" src="https://github.com/rolosoft-co-mx/ROLOSOFT_WEB_FRONT/assets/78885738/e7a28e9d-4652-4347-b90a-ec452f2a53af">
 
 - **News**: Create and manage news related to the tournament.
 
