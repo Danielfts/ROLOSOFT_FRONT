@@ -43,6 +43,7 @@ const SchoolDetails: React.FC<SchoolDetailsProps> = ({ visible, onClose, school 
             <Descriptions.Item label="Estado">{school.address.state}</Descriptions.Item>
             <Descriptions.Item label="Código Postal">{school.address.postalCode}</Descriptions.Item>
             <Descriptions.Item label="País">{school.address.country}</Descriptions.Item>
+            <Descriptions.Item label="Clave">{school.clave}</Descriptions.Item>
           </Descriptions>
         </>
       )}
