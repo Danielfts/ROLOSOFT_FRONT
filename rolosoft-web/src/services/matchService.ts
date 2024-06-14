@@ -21,7 +21,7 @@ export const registerMatch = async (token: string, tournamentId: string, phaseId
         );
 
         if (response.status === 201) {
-            message.success('Match registered successfully!');
+            message.success('Partido registrado exitosamente!');
             return true;
         } else {
             message.error('Failed to register match');

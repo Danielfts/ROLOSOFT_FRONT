@@ -21,7 +21,7 @@ export const registerGoal = async (token: string, tournamentId: string, matchId:
         );
 
         if (response.status === 201 && response.data.success) {
-            message.success('Goal registered successfully');
+            message.success('Gol registrado exitosamente!');
             return true;
         } else {
             message.error('Failed to register goal');

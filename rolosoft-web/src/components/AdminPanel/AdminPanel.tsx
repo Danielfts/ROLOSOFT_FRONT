@@ -6,8 +6,6 @@ import Teams from './Teams/Teams';
 import Matches from './Matches/Matches';
 import GoalsTable from './GoalsTable/GoalsTable';
 import GeneralTable from './GeneralTable/GeneralTable';
-import News from './News/News';
-
 
 const { Header, Sider, Content } = Layout;
 
@@ -30,8 +28,6 @@ const AdminPanel: React.FC = () => {
         return <GoalsTable />;
       case '5':
         return <GeneralTable />;
-      case '6':
-        return <News />;
       default:
         return <div>Select a menu item</div>;
     }
@@ -76,12 +72,6 @@ const AdminPanel: React.FC = () => {
               label: 'Tabla General',
               onClick: () => setSelectedMenu('5'),
             },
-            {
-              key: '6',
-              icon: <NotificationOutlined />,
-              label: 'Noticias',
-              onClick: () => setSelectedMenu('6'),
-            }
           ]}
         />
       </Sider>

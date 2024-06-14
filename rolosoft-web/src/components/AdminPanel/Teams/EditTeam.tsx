@@ -87,9 +87,9 @@ const EditTeam: React.FC<EditTeamProps> = ({ school, onClose }) => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item>
+        <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
           <Button type="primary" onClick={handleAddPlayer}>
-            Añadir Jugador
+            Registrar
           </Button>
         </Form.Item>
       </Form>

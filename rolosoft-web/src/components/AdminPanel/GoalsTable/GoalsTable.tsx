@@ -110,7 +110,7 @@ const GoalsTable: React.FC = () => {
     },
     {
       key: "6",
-      title: "Puntos",
+      title: "Tarjetas Verdes",
       dataIndex: "points",
       sorter: (a: GoalT, b: GoalT) => a.points - b.points,
     },

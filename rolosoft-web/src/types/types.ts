@@ -55,7 +55,7 @@ export type School = {
   address: Address;
   sponsor: string;
   students: Student[];
-  number: number;
+  clave: string;
 };
 
 export type Tournament = {

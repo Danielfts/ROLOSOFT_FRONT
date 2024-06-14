@@ -28,7 +28,7 @@ const RegisterSchools: React.FC<RegisterSchoolsProps> = ({ onClose }) => {
         postalCode: values.address.postalCode,
         country: values.address.country,
       },
-      number: values.number,
+      clave: values.clave,
     };
 
     try {
@@ -70,7 +70,7 @@ const RegisterSchools: React.FC<RegisterSchoolsProps> = ({ onClose }) => {
         <Form.Item name={['address', 'country']} rules={[{ required: true, message: 'Porfavor ingrese un Pais' }]}>
           <Input placeholder="País" />
         </Form.Item>
-        <Form.Item name="number" rules={[{ required: true, message: 'Porfavor ingrese el numero de primaria' }]}>
+        <Form.Item name="clave" rules={[{ required: true, message: 'Porfavor ingrese la clave de la primaria' }]}>
           <Input placeholder="Número de primaria"  />
         </Form.Item>
         <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
