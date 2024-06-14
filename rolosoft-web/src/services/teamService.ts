@@ -117,7 +117,7 @@ export const addStudentToTeam = async (token: string, tournamentId: string, scho
         );
 
         if (response.status === 201) {
-            message.success('Player added to team successfully!');
+            message.success('Jugador agregado exitosamente!');
             return true;
         } else {
             message.error('Failed to add player to team');

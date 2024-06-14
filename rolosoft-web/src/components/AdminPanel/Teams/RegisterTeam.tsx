@@ -138,7 +138,7 @@ const RegisterTeam: React.FC<RegisterTeamProps> = ({ onClose }) => {
 
         <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
           <Button type="primary" htmlType="submit">
-            Registrar Equipo
+            Registrar
           </Button>
         </Form.Item>
       </Form>

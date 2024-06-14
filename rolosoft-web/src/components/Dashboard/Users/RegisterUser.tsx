@@ -98,9 +98,7 @@ const RegisterUser: React.FC = () => {
             if (success) {
                 message.success('El usuario fue registrado exitosamente!');
                 form.resetFields();
-            } else {
-                message.error('No estás autorizado para realizar esta acción.');
-            }
+            } 
         } catch (error) {
             console.error('Error al registrar usuario:', error);
         }

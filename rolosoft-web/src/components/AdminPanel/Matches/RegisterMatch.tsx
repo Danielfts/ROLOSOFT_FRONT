@@ -125,7 +125,7 @@ const RegisterMatch: React.FC<RMatch> = ({ onClose }) => {
 
                 <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                     <Button type="primary" htmlType="submit">
-                        Register Match
+                        Registrar
                     </Button>
                 </Form.Item>
             </Form>

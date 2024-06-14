@@ -113,7 +113,7 @@ const RegisterGoal: React.FC<RGoal> = ({ match, onClose }) => {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 10, span: 14 }}>
                 <Button type="primary" htmlType="submit">
-                    Registrar Gol
+                    Registrar
                 </Button>
             </Form.Item>
         </Form>
